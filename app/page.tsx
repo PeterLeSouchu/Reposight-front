@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import Marquee from "react-fast-marquee";
 import { ArrowRight, BarChart3, Brain, Zap, Star } from "lucide-react";
+import Link from "next/link";
 
 export default function LandingPage() {
   return (
@@ -27,12 +28,13 @@ export default function LandingPage() {
           RepoSight
         </motion.h1>
 
-        <button
-          type="button"
-          className="bg-violet-600 hover:bg-violet-700 rounded-full px-6 py-2 font-semibold shadow-lg shadow-violet-900/30 transition-transform duration-200 hover:scale-105"
+        <Link
+          href="/login"
+          className="relative bg-violet-600 rounded-full px-6 py-2 font-semibold shadow-lg shadow-violet-900/30 cursor-pointer transition-all duration-300 border border-violet-500/20 hover:border-violet-300/60 hover:bg-violet-500/90 hover:shadow-violet-300/30 hover:shadow-lg overflow-hidden group"
         >
-          Se connecter
-        </button>
+          <span className="relative z-10">Se connecter</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+        </Link>
       </header>
 
       {/* HERO */}
@@ -69,12 +71,15 @@ export default function LandingPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          <button
-            type="button"
-            className="bg-violet-600 hover:bg-violet-700 rounded-full px-8 py-4 text-lg font-semibold flex items-center gap-3 shadow-lg shadow-violet-800/40 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-violet-400"
+          <Link
+            href="/login"
+            className="relative bg-violet-600 rounded-full px-8 py-4 text-lg font-semibold flex items-center gap-3 shadow-lg shadow-violet-800/40 transition-all duration-300 border border-violet-500/20 hover:border-violet-300/60 hover:bg-violet-500/90 hover:shadow-violet-300/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-violet-400 overflow-hidden group"
           >
-            Découvrir l'application <ArrowRight size={18} />
-          </button>
+            <span className="relative z-10 flex items-center gap-3">
+              Découvrir l'application <ArrowRight size={18} />
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+          </Link>
         </motion.div>
 
         <motion.img
@@ -182,17 +187,25 @@ export default function LandingPage() {
           Ce qu'en pensent les développeurs
         </h3>
 
-        <div className="max-w-6xl mx-auto">
+        <div className=" mx-auto">
           <Marquee pauseOnHover gradient={false} speed={40}>
             {[
               {
-                name: "Lucas B.",
-                text: "Clarté incroyable sur mes stats GitHub.",
+                name: "Inès P.",
+                text: "Le design et la précision des graphiques sont exceptionnels. Je peux maintenant analyser facilement la performance de mes équipes et identifier les tendances de productivité. L'export PDF est un plus énorme pour mes rapports mensuels.",
               },
-              { name: "Inès P.", text: "Design et précision des graphiques." },
-              { name: "Thomas D.", text: "Simple, fluide et puissant." },
-              { name: "Amina K.", text: "Interface superbe, UX premium." },
-              { name: "Hugo R.", text: "Gagne du temps chaque semaine." },
+              {
+                name: "Thomas D.",
+                text: "Simple, fluide et puissant - exactement ce que je cherchais ! L'intégration GitHub est transparente et les analyses automatiques me font gagner des heures chaque semaine. Les recommandations IA sont vraiment pertinentes.",
+              },
+              {
+                name: "Amina K.",
+                text: "Interface superbe avec une UX premium. Les visualisations sont magnifiques et les données sont présentées de manière très claire. L'application est devenue indispensable pour suivre l'évolution de mes projets open source.",
+              },
+              {
+                name: "Hugo R.",
+                text: "RepoSight me fait gagner du temps chaque semaine en automatisant l'analyse de mes dépôts. Les insights sur les langages utilisés et les patterns de commits sont très utiles pour optimiser mon workflow de développement.",
+              },
             ].map((t, i) => (
               <div
                 key={i}
@@ -211,12 +224,18 @@ export default function LandingPage() {
             ))}
           </Marquee>
         </div>
-      </section>
 
-      {/* FOOTER */}
-      <footer className="text-center py-6 text-sm text-slate-400 border-t border-violet-900/20 bg-[#060010]">
-        RepoSight © 2025 — Créé avec passion par [Ton Nom]
-      </footer>
+        {/* FOOTER */}
+        <footer className="text-center pt-36 pb-8 text-sm text-slate-400">
+          <Link
+            href="/cgu"
+            className="text-violet-400 hover:text-violet-300 underline transition-colors mb-2 block mx-auto"
+          >
+            Conditions Générales d'Utilisation
+          </Link>
+          <p>RepoSight © 2025</p>
+        </footer>
+      </section>
     </div>
   );
 }
