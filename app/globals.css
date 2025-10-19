@@ -119,4 +119,16 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Garde l'effet de bounce mais avec la bonne couleur */
+  html {
+    background-color: #060010;
+  }
+
+  /* Assure que le body prend toute la hauteur */
+  html,
+  body {
+    height: 100%;
+    overflow-x: hidden;
+  }
 }
