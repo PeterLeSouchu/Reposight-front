@@ -43,14 +43,21 @@ export default function LoginPage() {
             Retour
           </button>
         </motion.div>
-        <motion.h1
+        <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="text-2xl font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent"
+          className="flex items-center gap-3"
         >
-          RepoSight
-        </motion.h1>
+          <img
+            src="/logo-reposight.png"
+            alt="RepoSight Logo"
+            className="w-8 h-8"
+          />
+          <h1 className="text-2xl -ml-2.5  font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+            eposight
+          </h1>
+        </motion.div>
         <div className="w-20"></div> {/* Spacer pour centrer le titre */}
       </header>
 

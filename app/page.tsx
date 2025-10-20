@@ -19,22 +19,35 @@ export default function LandingPage() {
 
       {/* HEADER */}
       <header className="flex items-center justify-between px-8 py-6 max-w-6xl mx-auto w-full relative z-10">
-        <motion.h1
+        <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="text-2xl font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent"
+          className="flex items-center gap-3"
         >
-          RepoSight
-        </motion.h1>
+          <img
+            src="/logo-reposight.png"
+            alt="RepoSight Logo"
+            className="w-8 h-8"
+          />
+          <h1 className="text-2xl -ml-2.5 font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+            eposight
+          </h1>
+        </motion.div>
 
-        <Link
-          href="/login"
-          className="relative bg-violet-600 rounded-full px-6 py-2 font-semibold shadow-lg shadow-violet-900/30 cursor-pointer transition-all duration-300 border border-violet-500/20 hover:border-violet-300/60 hover:bg-violet-500/90 hover:shadow-violet-300/30 hover:shadow-lg overflow-hidden group"
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
         >
-          <span className="relative z-10">Se connecter</span>
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
-        </Link>
+          <Link
+            href="/login"
+            className="relative bg-violet-600 rounded-full px-6 py-2 font-semibold shadow-lg shadow-violet-900/30 cursor-pointer transition-all duration-300 border border-violet-500/20 hover:border-violet-300/60 hover:bg-violet-500/90 hover:shadow-violet-300/30 hover:shadow-lg overflow-hidden group block"
+          >
+            <span className="relative z-10">Se connecter</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+          </Link>
+        </motion.div>
       </header>
 
       {/* HERO */}
