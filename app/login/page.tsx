@@ -9,8 +9,12 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleGitHubLogin = () => {
-    // TODO: Implémenter la logique de connexion GitHub OAuth
-    console.log("Connexion avec GitHub...");
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
+    // window.open(
+    //   `${process.env.NEXT_PUBLIC_API_URL}/auth/github`,
+    //   "github-login",
+    //   "width=600,height=700"
+    // );
   };
 
   const handleBack = () => {
@@ -84,7 +88,7 @@ export default function LoginPage() {
 
             <motion.button
               onClick={handleGitHubLogin}
-              className="relative w-full bg-gray-900 cursor-pointer hover:bg-gray-800 text-white rounded-xl px-6 py-4 font-semibold flex items-center justify-center gap-3 shadow-lg border-2 border-gray-700 hover:border-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-gray-900 focus:border-violet-400 overflow-hidden group"
+              className="relative w-full bg-gray-900 cursor-pointer hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl px-6 py-4 font-semibold flex items-center justify-center gap-3 shadow-lg border-2 border-gray-700 hover:border-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-gray-900 focus:border-violet-400 overflow-hidden group"
               aria-label="Se connecter avec votre compte GitHub"
             >
               <span className="relative z-10 flex items-center gap-3">
