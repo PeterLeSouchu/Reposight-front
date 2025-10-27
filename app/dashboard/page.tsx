@@ -19,29 +19,45 @@ export default function Dashboard() {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const response = await api.post("/auth/logout");
-      return response.data;
+      // Essayer d'appeler le backend, mais on ne bloque pas en cas d'erreur
+      try {
+        const response = await api.post("/auth/logout");
+        return response.data;
+      } catch (error) {
+        // On ignore l'erreur car on va faire le logout côté client de toute façon
+        console.log(
+          "Backend logout failed, continuing with client-side logout"
+        );
+        return null;
+      }
     },
     onSuccess: () => {
-      // Invalider le cache de l'auth
-      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-
-      // Effacer le localStorage
-      localStorage.clear();
-
-      // Rediriger vers la page d'accueil
-      router.push("/");
+      handleClientSideLogout();
     },
     onError: (error) => {
       console.error("Erreur lors de la déconnexion:", error);
-
-      // Effacer quand même localStorage et cookies même en cas d'erreur
-      localStorage.clear();
-
-      // Rediriger vers la page d'accueil
-      router.push("/");
+      handleClientSideLogout();
     },
   });
+
+  const handleClientSideLogout = () => {
+    // Invalider le cache de l'auth
+    queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+
+    // Effacer le localStorage
+    localStorage.clear();
+
+    // Supprimer tous les cookies
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+
+    // Utiliser window.location.href pour forcer une navigation complète
+    // Cela permet de recharger complètement l'application et de supprimer le cookie JWT
+    window.location.href = "/";
+  };
 
   const handleLogout = () => {
     logoutMutation.mutate();

@@ -7,21 +7,32 @@ export function middleware(request: NextRequest) {
   // Routes qui nécessitent une authentification
   const protectedRoutes = ["/dashboard"];
 
-  // Vérifier si la route est protégée
+  // Routes interdites si l'utilisateur est déjà connecté
+  const authRoutes = ["/", "/login"];
+
+  // Récupérer le cookie JWT
+  const sessionCookie = request.cookies.get("jwt");
+
+  // Vérifier si la route nécessite une authentification
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
 
-  if (isProtectedRoute) {
-    // Vérifier la présence du cookie de session (JWT)
-    const sessionCookie = request.cookies.get("jwt"); // Ajustez selon le nom de votre cookie
+  // Vérifier si la route est interdite aux utilisateurs connectés
+  const isAuthRoute = authRoutes.includes(pathname);
 
+  if (isProtectedRoute) {
     // Si pas de session, rediriger vers la page de login
     if (!sessionCookie) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
     }
+  }
+
+  // Si l'utilisateur est connecté et essaie d'accéder à / ou /login, rediriger vers dashboard
+  if (isAuthRoute && sessionCookie) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
