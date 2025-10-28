@@ -1,14 +1,17 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Github, ArrowLeft } from "lucide-react";
+import { Github, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleGitHubLogin = () => {
+    setIsLoading(true);
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
     // window.open(
     //   `${process.env.NEXT_PUBLIC_API_URL}/auth/github`,
@@ -74,7 +77,7 @@ export default function LoginPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="w-full max-w-md mx-auto px-6"
         >
-          <div className="bg-[#1a002d]/90 backdrop-blur-md rounded-3xl p-8 border border-violet-800/30 shadow-2xl">
+          <div className="bg-[#1a002d]/90 backdrop-blur-md rounded-3xl p-8 border border-violet-700/30 shadow-2xl">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-white mb-4">
                 Connexion à RepoSight
@@ -88,12 +91,22 @@ export default function LoginPage() {
 
             <motion.button
               onClick={handleGitHubLogin}
-              className="relative w-full bg-gray-900 cursor-pointer hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl px-6 py-4 font-semibold flex items-center justify-center gap-3 shadow-lg border-2 border-gray-700 hover:border-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-gray-900 focus:border-violet-400 overflow-hidden group"
+              disabled={isLoading}
+              className="relative w-full bg-slate-800/50 cursor-pointer hover:bg-slate-800/70 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl px-6 py-4 font-semibold flex items-center justify-center gap-3 shadow-lg border border-slate-700/50 hover:border-slate-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-400 overflow-hidden group"
               aria-label="Se connecter avec votre compte GitHub"
             >
               <span className="relative z-10 flex items-center gap-3">
-                <Github size={20} className="text-gray-200" />
-                Se connecter avec GitHub
+                {isLoading ? (
+                  <>
+                    Se connecter avec GitHub{" "}
+                    <Loader2 size={18} className="animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    <Github size={20} className="text-violet-300" />
+                    Se connecter avec GitHub
+                  </>
+                )}
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
             </motion.button>

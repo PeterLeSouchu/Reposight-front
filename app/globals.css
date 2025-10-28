@@ -131,4 +131,14 @@
     height: 100%;
     overflow-x: hidden;
   }
+
+  /* Pattern de points subtils pour l'arrière-plan */
+  .dot-pattern {
+    background-image: radial-gradient(
+      circle,
+      rgba(139, 92, 246, 0.25) 1px,
+      transparent 1px
+    );
+    background-size: 25px 25px;
+  }
 }

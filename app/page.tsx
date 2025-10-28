@@ -27,7 +27,7 @@ export default function LandingPage() {
         >
           <img
             src="/logo-reposight.png"
-            alt="RepoSight Logo"
+            alt="Reposight Logo"
             className="w-8 h-8"
           />
           <h1 className="text-2xl -ml-2.5 font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
@@ -75,7 +75,7 @@ export default function LandingPage() {
           transition={{ delay: 0.3 }}
           className="text-lg text-slate-300 max-w-2xl mb-8"
         >
-          RepoSight centralise vos données GitHub et les transforme en
+          Reposight centralise vos données GitHub et les transforme en
           visualisations claires et exploitables.
         </motion.p>
 
@@ -96,7 +96,7 @@ export default function LandingPage() {
         </motion.div>
 
         <motion.img
-          src="/dashboard-preview.png"
+          src="/logo-reposight.png"
           alt="aperçu dashboard"
           className="mt-12 max-w-4xl rounded-2xl border border-violet-700/30 shadow-2xl"
           initial={{ opacity: 0, y: 40 }}
@@ -109,7 +109,7 @@ export default function LandingPage() {
       {/* WHY */}
       <section className="py-24 px-6 bg-[#0b0017]/70 border-t border-violet-900/20 backdrop-blur-md relative overflow-hidden">
         <h3 className="text-3xl font-bold text-center mb-16">
-          Pourquoi choisir <span className="text-violet-400">RepoSight</span> ?
+          Pourquoi choisir <span className="text-violet-400">Reposight</span> ?
         </h3>
 
         <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto text-center">
@@ -159,12 +159,12 @@ export default function LandingPage() {
             {
               step: "1",
               title: "Connectez votre compte GitHub",
-              desc: "Autorisez RepoSight à accéder à vos dépôts publics et privés. Grâce à OAuth sécurisé, vos données sont protégées et accessibles uniquement par vous.",
+              desc: "Autorisez Reposight à accéder à vos dépôts publics et privés. Grâce à OAuth sécurisé, vos données sont protégées et accessibles uniquement par vous.",
             },
             {
               step: "2",
               title: "Analyse automatique",
-              desc: "Visualisez commits, pull requests, issues et langages utilisés. RepoSight calcule des statistiques avancées et met en avant les tendances clés de vos projets.",
+              desc: "Visualisez commits, pull requests, issues et langages utilisés. Reposight calcule des statistiques avancées et met en avant les tendances clés de vos projets.",
             },
             {
               step: "3",
@@ -217,7 +217,7 @@ export default function LandingPage() {
               },
               {
                 name: "Hugo R.",
-                text: "RepoSight me fait gagner du temps chaque semaine en automatisant l'analyse de mes dépôts. Les insights sur les langages utilisés et les patterns de commits sont très utiles pour optimiser mon workflow de développement.",
+                text: "Reposight me fait gagner du temps chaque semaine en automatisant l'analyse de mes dépôts. Les insights sur les langages utilisés et les patterns de commits sont très utiles pour optimiser mon workflow de développement.",
               },
             ].map((t, i) => (
               <div
@@ -246,7 +246,7 @@ export default function LandingPage() {
           >
             Conditions Générales d'Utilisation
           </Link>
-          <p>RepoSight © 2025</p>
+          <p>Reposight © 2025</p>
         </footer>
       </section>
     </div>

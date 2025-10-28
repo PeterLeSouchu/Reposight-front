@@ -2,13 +2,19 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { LogOut, Plus, ExternalLink } from "lucide-react";
+import { motion } from "motion/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 export default function Dashboard() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
   const { data, isLoading, error } = useQuery({
     queryKey: ["auth", "me"],
     queryFn: async () => {
@@ -41,9 +47,6 @@ export default function Dashboard() {
   });
 
   const handleClientSideLogout = () => {
-    // Invalider le cache de l'auth
-    queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-
     // Effacer le localStorage
     localStorage.clear();
 
@@ -82,30 +85,76 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen p-8 bg-[#060010] text-white">
-      <div className="flex justify-between items-start mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
-          <p className="text-gray-300">Bienvenue sur votre tableau de bord !</p>
-        </div>
-        <button
-          onClick={handleLogout}
-          disabled={logoutMutation.isPending}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-        >
-          <LogOut size={18} />
-          {logoutMutation.isPending ? "Déconnexion..." : "Déconnexion"}
-        </button>
+    <div className="relative min-h-screen p-8 text-white overflow-hidden bg-[#060010]">
+      {/* BACKGROUND EFFECT */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-0 left-0 w-[900px] h-[900px] bg-violet-600/20 rounded-full blur-[180px] -translate-x-1/2 -translate-y-1/2" />
       </div>
 
-      {data && (
-        <div className="bg-[#1a002d]/90 backdrop-blur-md rounded-3xl p-8 border border-violet-800/30 shadow-2xl">
-          <h2 className="text-2xl font-bold mb-4">Vos informations</h2>
-          <pre className="text-sm text-gray-300 overflow-auto">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      )}
+      {/* DOT PATTERN */}
+      <div className="absolute inset-0 z-0 dot-pattern" />
+
+      <div className="relative z-10 flex justify-between items-center mb-8">
+        {data && (
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="flex items-center gap-4"
+          >
+            <DropdownMenu>
+              <DropdownMenuTrigger className="cursor-pointer border-none outline-none hover:opacity-90 transition-opacity">
+                <img
+                  src={data.avatar}
+                  alt={`Avatar de ${data.username}`}
+                  className="w-12 h-12 rounded-full border-2 border-violet-500/50 hover:border-violet-400/70 transition-all"
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel className="flex flex-col gap-1">
+                  <span className="font-semibold text-sm">{data.username}</span>
+                  <span className="text-xs text-slate-400">{data.email}</span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Link
+                    className="flex items-center gap-2 cursor-pointer"
+                    href={`https://github.com/${data.username}`}
+                    target="_blank"
+                  >
+                    <ExternalLink size={14} /> Profil Github
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  disabled={logoutMutation.isPending}
+                  className="flex items-center gap-2 cursor-pointer text-red-600  focus:text-red-500"
+                >
+                  <LogOut className="text-red-600" size={16} />
+                  {logoutMutation.isPending ? "Déconnexion..." : "Déconnexion"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <div>
+              <h2 className="text-2xl font-bold text-white">{data.username}</h2>
+              <p className="text-sm text-violet-300/70">{data.email}</p>
+            </div>
+          </motion.div>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+          className="flex items-center gap-3"
+        >
+          <button className="px-6 py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-all font-medium shadow-lg shadow-violet-900/30 border border-violet-500/20 flex justify-center items-center gap-2">
+            <Plus size={18} /> Nouveau repo
+          </button>
+        </motion.div>
+      </div>
     </div>
   );
 }
