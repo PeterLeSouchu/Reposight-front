@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 
 export default function Dashboard() {
@@ -66,14 +67,6 @@ export default function Dashboard() {
     logoutMutation.mutate();
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        <div className="text-xl">Chargement...</div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
@@ -95,6 +88,20 @@ export default function Dashboard() {
       <div className="absolute inset-0 z-0 dot-pattern" />
 
       <div className="relative z-10 flex justify-between items-center mb-8">
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="flex items-center gap-4"
+          >
+            <Skeleton className="h-12 w-12 rounded-full bg-slate-800/50" />
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-7 w-32 rounded-md bg-slate-800/50" />
+              <Skeleton className="h-5 w-48 rounded-md bg-slate-800/50" />
+            </div>
+          </motion.div>
+        )}
         {data && (
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -116,9 +123,9 @@ export default function Dashboard() {
                   <span className="text-xs text-slate-400">{data.email}</span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
                   <Link
-                    className="flex items-center gap-2 cursor-pointer"
+                    className="flex items-center gap-2 "
                     href={`https://github.com/${data.username}`}
                     target="_blank"
                   >
