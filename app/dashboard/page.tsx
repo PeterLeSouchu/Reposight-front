@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { LogOut, Plus, ExternalLink } from "lucide-react";
 import { motion } from "motion/react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,9 +33,6 @@ export default function Dashboard() {
         return response.data;
       } catch (error) {
         // On ignore l'erreur car on va faire le logout côté client de toute façon
-        console.log(
-          "Backend logout failed, continuing with client-side logout"
-        );
         return null;
       }
     },
@@ -79,12 +77,10 @@ export default function Dashboard() {
 
   return (
     <div className="relative min-h-screen p-8 text-white overflow-hidden bg-[#060010]">
-      {/* BACKGROUND EFFECT */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute top-0 left-0 w-[900px] h-[900px] bg-violet-600/20 rounded-full blur-[180px] -translate-x-1/2 -translate-y-1/2" />
       </div>
 
-      {/* DOT PATTERN */}
       <div className="absolute inset-0 z-0 dot-pattern" />
 
       <div className="relative z-10 flex justify-between items-center mb-8">
@@ -162,6 +158,50 @@ export default function Dashboard() {
           </button>
         </motion.div>
       </div>
+
+      {data && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+          className="relative z-10 bg-[#1a002d]/90 backdrop-blur-md rounded-3xl p-8 border border-violet-700/30 shadow-2xl"
+        >
+          <h2 className="text-2xl font-bold mb-6 text-violet-200">
+            Vos informations
+          </h2>
+          <div className="space-y-4">
+            <div className="flex flex-col gap-2">
+              <span className="text-sm text-slate-400">ID</span>
+              <span className="text-white">{data.id}</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm text-slate-400">GitHub ID</span>
+              <span className="text-white">{data.githubId}</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm text-slate-400">Username</span>
+              <span className="text-white">{data.username}</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm text-slate-400">Email</span>
+              <span className="text-white">{data.email}</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm text-slate-400">Avatar</span>
+              <span className="text-white break-all">{data.avatar}</span>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-violet-700/30">
+            <h3 className="text-lg font-semibold mb-4 text-violet-200">
+              Données brutes (JSON)
+            </h3>
+            <pre className="text-sm text-slate-300 overflow-auto bg-slate-900/30 p-4 rounded-lg border border-violet-800/20">
+              {JSON.stringify(data, null, 2)}
+            </pre>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
