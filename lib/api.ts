@@ -1,4 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { useAuthStore } from "./authStore";
 
 // Configuration de l'instance axios
 const api = axios.create({
@@ -7,6 +8,16 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+// Interceptor de requête pour injecter le token d'accès si présent
+api.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().accessToken;
+  if (token) {
+    config.headers = config.headers ?? {};
+    (config.headers as any).Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // Flag pour éviter les boucles infinies et les refresh multiples simultanés
@@ -68,6 +79,17 @@ api.interceptors.response.use(
         // Appeler la route de refresh
         const response = await api.post("/auth/refresh", {});
 
+        // Sauvegarder le nouvel accessToken en mémoire
+        const { accessToken } = (response.data as any) ?? {};
+        if (accessToken) {
+          useAuthStore.getState().setAccessToken(accessToken);
+          // Mettre à jour l'en-tête de la requête originale pour éviter une 2e 401
+          originalRequest.headers = {
+            ...(originalRequest.headers || {}),
+            Authorization: `Bearer ${accessToken}`,
+          } as any;
+        }
+
         // Traiter la queue avec succès
         processQueue(null, response.data);
         isRefreshing = false;
@@ -78,6 +100,11 @@ api.interceptors.response.use(
         // Traiter la queue avec l'erreur
         processQueue(refreshError as AxiosError, null);
         isRefreshing = false;
+
+        // Nettoyer le token en mémoire
+        try {
+          useAuthStore.getState().clearAccessToken();
+        } catch {}
 
         // Rediriger vers /login si le refresh_token est invalide
         if (typeof window !== "undefined") {

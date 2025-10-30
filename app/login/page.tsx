@@ -13,11 +13,6 @@ export default function LoginPage() {
   const handleGitHubLogin = () => {
     setIsLoading(true);
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
-    // window.open(
-    //   `${process.env.NEXT_PUBLIC_API_URL}/auth/github`,
-    //   "github-login",
-    //   "width=600,height=700"
-    // );
   };
 
   const handleBack = () => {
