@@ -44,8 +44,8 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        <div className="text-xl text-red-400">
+      <div className="min-h-screen flex items-center justify-center text-slate-900">
+        <div className="text-xl text-red-600">
           Erreur lors du chargement des données
         </div>
       </div>
@@ -53,9 +53,34 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="relative min-h-screen p-8 text-white overflow-hidden bg-[#060010]">
+    <div className="relative min-h-screen p-8 text-slate-900 overflow-hidden bg-[#fafafa]">
+      {/* BACKGROUND - Gradient violet dynamique */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 left-0 w-[900px] h-[900px] bg-violet-600/20 rounded-full blur-[180px] -translate-x-1/2 -translate-y-1/2" />
+        <motion.div
+          className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2"
+          animate={{ opacity: [0.6, 0.8, 0.6], scale: [1, 1.12, 1] }}
+          transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/3 right-1/4 w-[900px] h-[900px] bg-purple-500/15 rounded-full blur-[280px]"
+          animate={{ opacity: [0.4, 0.6, 0.4], scale: [1, 1.1, 1] }}
+          transition={{
+            repeat: Infinity,
+            duration: 20,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 left-1/4 w-[800px] h-[800px] bg-indigo-400/12 rounded-full blur-[220px]"
+          animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.08, 1] }}
+          transition={{
+            repeat: Infinity,
+            duration: 18,
+            ease: "easeInOut",
+            delay: 4,
+          }}
+        />
       </div>
 
       <div className="absolute inset-0 z-0 dot-pattern" />
@@ -68,10 +93,10 @@ export default function Dashboard() {
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="flex items-center gap-4"
           >
-            <Skeleton className="h-12 w-12 rounded-full bg-slate-800/50" />
+            <Skeleton className="h-12 w-12 rounded-full bg-slate-200" />
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-7 w-32 rounded-md bg-slate-800/50" />
-              <Skeleton className="h-5 w-48 rounded-md bg-slate-800/50" />
+              <Skeleton className="h-7 w-32 rounded-md bg-slate-200" />
+              <Skeleton className="h-5 w-48 rounded-md bg-slate-200" />
             </div>
           </motion.div>
         )}
@@ -87,13 +112,13 @@ export default function Dashboard() {
                 <img
                   src={data.avatar}
                   alt={`Avatar de ${data.username}`}
-                  className="w-12 h-12 rounded-full border-2 border-violet-500/50 hover:border-violet-400/70 transition-all"
+                  className="w-12 h-12 rounded-full border-2 border-violet-600/50 hover:border-violet-700/70 transition-all"
                 />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuLabel className="flex flex-col gap-1">
                   <span className="font-semibold text-sm">{data.username}</span>
-                  <span className="text-xs text-slate-400">{data.email}</span>
+                  <span className="text-xs text-slate-600">{data.email}</span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer">
@@ -118,8 +143,10 @@ export default function Dashboard() {
               </DropdownMenuContent>
             </DropdownMenu>
             <div>
-              <h2 className="text-2xl font-bold text-white">{data.username}</h2>
-              <p className="text-sm text-violet-300/70">{data.email}</p>
+              <h2 className="text-2xl font-bold text-slate-900">
+                {data.username}
+              </h2>
+              <p className="text-sm text-violet-600">{data.email}</p>
             </div>
           </motion.div>
         )}
@@ -130,7 +157,7 @@ export default function Dashboard() {
           transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
           className="flex items-center gap-3"
         >
-          <button className="px-6 py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-all font-medium shadow-lg shadow-violet-900/30 border border-violet-500/20 flex justify-center items-center gap-2">
+          <button className="px-6 py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-all font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2">
             <Plus size={18} /> Nouveau repo
           </button>
         </motion.div>
@@ -141,39 +168,39 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-          className="relative z-10 bg-[#1a002d]/90 backdrop-blur-md rounded-3xl p-8 border border-violet-700/30 shadow-2xl"
+          className="relative z-10 bg-slate-50 backdrop-blur-md rounded-3xl p-8 border border-violet-200/50 shadow-xl"
         >
-          <h2 className="text-2xl font-bold mb-6 text-violet-200">
+          <h2 className="text-2xl font-bold mb-6 text-violet-700">
             Vos informations
           </h2>
           <div className="space-y-4">
             <div className="flex flex-col gap-2">
-              <span className="text-sm text-slate-400">ID</span>
-              <span className="text-white">{data.id}</span>
+              <span className="text-sm text-slate-600">ID</span>
+              <span className="text-slate-900">{data.id}</span>
             </div>
             <div className="flex flex-col gap-2">
-              <span className="text-sm text-slate-400">GitHub ID</span>
-              <span className="text-white">{data.githubId}</span>
+              <span className="text-sm text-slate-600">GitHub ID</span>
+              <span className="text-slate-900">{data.githubId}</span>
             </div>
             <div className="flex flex-col gap-2">
-              <span className="text-sm text-slate-400">Username</span>
-              <span className="text-white">{data.username}</span>
+              <span className="text-sm text-slate-600">Username</span>
+              <span className="text-slate-900">{data.username}</span>
             </div>
             <div className="flex flex-col gap-2">
-              <span className="text-sm text-slate-400">Email</span>
-              <span className="text-white">{data.email}</span>
+              <span className="text-sm text-slate-600">Email</span>
+              <span className="text-slate-900">{data.email}</span>
             </div>
             <div className="flex flex-col gap-2">
-              <span className="text-sm text-slate-400">Avatar</span>
-              <span className="text-white break-all">{data.avatar}</span>
+              <span className="text-sm text-slate-600">Avatar</span>
+              <span className="text-slate-900 break-all">{data.avatar}</span>
             </div>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-violet-700/30">
-            <h3 className="text-lg font-semibold mb-4 text-violet-200">
+          <div className="mt-6 pt-6 border-t border-violet-200/50">
+            <h3 className="text-lg font-semibold mb-4 text-violet-700">
               Données brutes (JSON)
             </h3>
-            <pre className="text-sm text-slate-300 overflow-auto bg-slate-900/30 p-4 rounded-lg border border-violet-800/20">
+            <pre className="text-sm text-slate-700 overflow-auto bg-slate-100 p-4 rounded-lg border border-violet-200/50">
               {JSON.stringify(data, null, 2)}
             </pre>
           </div>

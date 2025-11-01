@@ -122,7 +122,7 @@
 
   /* Garde l'effet de bounce mais avec la bonne couleur */
   html {
-    background-color: #060010;
+    background-color: #fafafa;
   }
 
   /* Assure que le body prend toute la hauteur */
@@ -130,13 +130,14 @@
   body {
     height: 100%;
     overflow-x: hidden;
+    scroll-behavior: smooth;
   }
 
   /* Pattern de points subtils pour l'arrière-plan */
   .dot-pattern {
     background-image: radial-gradient(
       circle,
-      rgba(139, 92, 246, 0.25) 1px,
+      rgba(167, 139, 250, 0.25) 1px,
       transparent 1px
     );
     background-size: 25px 25px;

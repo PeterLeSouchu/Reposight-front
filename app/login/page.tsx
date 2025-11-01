@@ -20,13 +20,33 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col text-white overflow-hidden bg-[#060010]">
-      {/* BACKGROUND */}
+    <div className="relative min-h-screen flex flex-col text-slate-900 overflow-hidden bg-[#fafafa]">
+      {/* BACKGROUND - Gradient violet dynamique */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div
-          className="absolute top-1/2 left-1/2 w-[900px] h-[900px] bg-violet-600/30 rounded-full blur-[180px] -translate-x-1/2 -translate-y-1/2"
-          animate={{ opacity: [0.25, 0.45, 0.25], scale: [1, 1.04, 1] }}
-          transition={{ repeat: Infinity, duration: 12, ease: "easeInOut" }}
+          className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2"
+          animate={{ opacity: [0.6, 0.8, 0.6], scale: [1, 1.12, 1] }}
+          transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/3 right-1/4 w-[900px] h-[900px] bg-purple-500/15 rounded-full blur-[280px]"
+          animate={{ opacity: [0.4, 0.6, 0.4], scale: [1, 1.1, 1] }}
+          transition={{
+            repeat: Infinity,
+            duration: 20,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 left-1/4 w-[800px] h-[800px] bg-indigo-400/12 rounded-full blur-[220px]"
+          animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.08, 1] }}
+          transition={{
+            repeat: Infinity,
+            duration: 18,
+            ease: "easeInOut",
+            delay: 4,
+          }}
         />
       </div>
 
@@ -39,7 +59,7 @@ export default function LoginPage() {
         >
           <button
             onClick={handleBack}
-            className="flex items-center cursor-pointer gap-2 text-violet-400 hover:text-violet-300 transition-colors"
+            className="flex items-center cursor-pointer gap-2 text-violet-600 hover:text-violet-700 transition-colors"
           >
             <ArrowLeft size={18} />
             Retour
@@ -53,10 +73,10 @@ export default function LoginPage() {
         >
           <img
             src="/logo-reposight.png"
-            alt="RepoSight Logo"
+            alt="Reposight Logo"
             className="w-8 h-8"
           />
-          <h1 className="text-2xl -ml-2.5  font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+          <h1 className="text-2xl -ml-2.5  font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
             eposight
           </h1>
         </motion.div>
@@ -72,12 +92,12 @@ export default function LoginPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="w-full max-w-md mx-auto px-6"
         >
-          <div className="bg-[#1a002d]/90 backdrop-blur-md rounded-3xl p-8 border border-violet-700/30 shadow-2xl">
+          <div className="bg-slate-50 backdrop-blur-md rounded-3xl p-8 border border-violet-200/50 shadow-xl">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-4">
-                Connexion à RepoSight
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">
+                Connexion à Reposight
               </h2>
-              <p className="text-slate-300 text-sm leading-relaxed">
+              <p className="text-slate-600 text-sm leading-relaxed">
                 Pour utiliser l'application, vous devez connecter votre compte
                 GitHub. Cela nous permet d'analyser vos dépôts et de générer des
                 rapports personnalisés.
@@ -87,7 +107,7 @@ export default function LoginPage() {
             <motion.button
               onClick={handleGitHubLogin}
               disabled={isLoading}
-              className="relative w-full bg-slate-800/50 cursor-pointer hover:bg-slate-800/70 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl px-6 py-4 font-semibold flex items-center justify-center gap-3 shadow-lg border border-slate-700/50 hover:border-slate-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-400 overflow-hidden group"
+              className="relative w-full bg-violet-600 cursor-pointer hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl px-6 py-4 font-semibold flex items-center justify-center gap-3 shadow-md border border-violet-500/30 hover:border-violet-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-500 overflow-hidden group"
               aria-label="Se connecter avec votre compte GitHub"
             >
               <span className="relative z-10 flex items-center gap-3">
@@ -98,7 +118,7 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    <Github size={20} className="text-violet-300" />
+                    <Github size={20} className="text-white" />
                     Se connecter avec GitHub
                   </>
                 )}
@@ -107,11 +127,11 @@ export default function LoginPage() {
             </motion.button>
 
             <div className="mt-6 text-center">
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600">
                 En vous connectant, vous acceptez nos{" "}
                 <Link
                   href="/cgu"
-                  className="text-violet-400 hover:text-violet-300 underline transition-colors"
+                  className="text-violet-600 hover:text-violet-700 underline transition-colors"
                 >
                   conditions d'utilisation
                 </Link>{" "}
@@ -123,8 +143,8 @@ export default function LoginPage() {
       </main>
 
       {/* FOOTER */}
-      <footer className="text-center py-8 text-sm text-slate-400">
-        RepoSight © 2025
+      <footer className="text-center py-8 text-sm text-slate-600">
+        Reposight © 2025
       </footer>
     </div>
   );
