@@ -1,7 +1,5 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
 import { LogOut, Plus, ExternalLink } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -15,54 +13,33 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { useQueryUser } from "@/query/useQueryUser";
+import { useMutationLogout } from "@/mutation/useMutationLogout";
+import { useAuthStore } from "@/lib/authStore";
 
 export default function Dashboard() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["auth", "me"],
-    queryFn: async () => {
-      const response = await api.get("/auth/me");
-      return response.data;
-    },
-  });
-
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      // Essayer d'appeler le backend, mais on ne bloque pas en cas d'erreur
-      try {
-        const response = await api.post("/auth/logout");
-        return response.data;
-      } catch (error) {
-        // On ignore l'erreur car on va faire le logout côté client de toute façon
-        return null;
-      }
-    },
-    onSuccess: () => {
-      handleClientSideLogout();
-    },
-    onError: (error) => {
-      console.error("Erreur lors de la déconnexion:", error);
-      handleClientSideLogout();
-    },
-  });
+  const { data, isLoading, error } = useQueryUser();
+  const { mutate: logoutMutate, isPending: isLoggingOut } = useMutationLogout();
 
   const handleClientSideLogout = () => {
+    // Nettoyer le token d'accès du store
+    useAuthStore.getState().clearAccessToken();
     // Effacer le localStorage
     localStorage.clear();
-
-    // Supprimer tous les cookies
-    document.cookie.split(";").forEach((c) => {
-      document.cookie = c
-        .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-
-    // Utiliser window.location.href pour forcer une navigation complète
-    // Cela permet de recharger complètement l'application et de supprimer le cookie JWT
+    // Rediriger vers la page d'accueil
     window.location.href = "/";
   };
 
   const handleLogout = () => {
-    logoutMutation.mutate();
+    logoutMutate(undefined, {
+      onSuccess: () => {
+        handleClientSideLogout();
+      },
+      onError: (error) => {
+        console.error("Erreur lors de la déconnexion:", error);
+        handleClientSideLogout();
+      },
+    });
   };
 
   if (error) {
@@ -132,11 +109,11 @@ export default function Dashboard() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  disabled={logoutMutation.isPending}
+                  disabled={isLoggingOut}
                   className="flex items-center gap-2 cursor-pointer text-red-600  focus:text-red-500"
                 >
                   <LogOut className="text-red-600" size={16} />
-                  {logoutMutation.isPending ? "Déconnexion..." : "Déconnexion"}
+                  {isLoggingOut ? "Déconnexion..." : "Déconnexion"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

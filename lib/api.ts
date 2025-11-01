@@ -1,19 +1,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "./authStore";
 
-// Instance principale sans credentials (pour la plupart des requêtes)
+// Instance principale sans credentials par défaut
+// On peut activer withCredentials: true dans les options des requêtes spécifiques
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
   withCredentials: false, // Pas de cookies par défaut
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Instance dédiée uniquement pour le refresh token avec credentials
-const refreshApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
-  withCredentials: true, // Cookies uniquement pour le refresh
   headers: {
     "Content-Type": "application/json",
   },
@@ -85,8 +77,14 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Appeler la route de refresh avec l'instance dédiée (avec credentials)
-        const response = await refreshApi.post("/auth/refresh", {});
+        // Appeler la route de refresh avec withCredentials: true pour recevoir/envoyer les cookies
+        const response = await api.post(
+          "/auth/refresh",
+          {},
+          {
+            withCredentials: true,
+          }
+        );
 
         // Sauvegarder le nouvel accessToken en mémoire
         const { accessToken } = (response.data as any) ?? {};
