@@ -54,29 +54,39 @@ export default function LandingPage() {
       {/* BACKGROUND - Gradient violet dynamique */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div
-          className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2"
+          className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2 will-change-[opacity,transform]"
           animate={{ opacity: [0.6, 0.8, 0.6], scale: [1, 1.12, 1] }}
-          transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
+          transition={{
+            repeat: Infinity,
+            duration: 15,
+            ease: "easeInOut",
+            type: "tween",
+          }}
+          style={{ transformOrigin: "center center" }}
         />
         <motion.div
-          className="absolute top-1/3 right-1/4 w-[900px] h-[900px] bg-purple-500/15 rounded-full blur-[280px]"
+          className="absolute top-1/3 right-1/4 w-[900px] h-[900px] bg-purple-500/15 rounded-full blur-[280px] will-change-[opacity,transform]"
           animate={{ opacity: [0.4, 0.6, 0.4], scale: [1, 1.1, 1] }}
           transition={{
             repeat: Infinity,
             duration: 20,
             ease: "easeInOut",
             delay: 2,
+            type: "tween",
           }}
+          style={{ transformOrigin: "center center" }}
         />
         <motion.div
-          className="absolute bottom-1/4 left-1/4 w-[800px] h-[800px] bg-indigo-400/12 rounded-full blur-[220px]"
+          className="absolute bottom-1/4 left-1/4 w-[800px] h-[800px] bg-indigo-400/12 rounded-full blur-[220px] will-change-[opacity,transform]"
           animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.08, 1] }}
           transition={{
             repeat: Infinity,
             duration: 18,
             ease: "easeInOut",
             delay: 4,
+            type: "tween",
           }}
+          style={{ transformOrigin: "center center" }}
         />
       </div>
 
@@ -107,19 +117,19 @@ export default function LandingPage() {
             <nav className="hidden md:flex items-center gap-2 rounded-full px-4 py-2">
               <a
                 href="#fonctionnalites"
-                className="text-sm font-medium text-slate-700 hover:text-violet-600 transition cursor-pointer px-4 py-1.5 rounded-full hover:bg-violet-50"
+                className="text-sm font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full hover:bg-violet-50"
               >
                 Fonctionnalités
               </a>
               <a
                 href="#comment-ca-marche"
-                className="text-sm font-medium text-slate-700 hover:text-violet-600 transition cursor-pointer px-4 py-1.5 rounded-full hover:bg-violet-50"
+                className="text-sm font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full hover:bg-violet-50"
               >
                 Comment ça marche
               </a>
               <a
                 href="#avis"
-                className="text-sm font-medium text-slate-700 hover:text-violet-600 transition cursor-pointer px-4 py-1.5 rounded-full hover:bg-violet-50"
+                className="text-sm font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full hover:bg-violet-50"
               >
                 Avis
               </a>
@@ -173,21 +183,21 @@ export default function LandingPage() {
                   <a
                     href="#fonctionnalites"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-slate-700 hover:text-violet-600 transition-colors duration-150 cursor-pointer px-4 py-2.5 rounded-xl hover:bg-violet-50"
+                    className="text-base font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl hover:bg-violet-50"
                   >
                     Fonctionnalités
                   </a>
                   <a
                     href="#comment-ca-marche"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-slate-700 hover:text-violet-600 transition-colors duration-150 cursor-pointer px-4 py-2.5 rounded-xl hover:bg-violet-50"
+                    className="text-base font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl hover:bg-violet-50"
                   >
                     Comment ça marche
                   </a>
                   <a
                     href="#avis"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-slate-700 hover:text-violet-600 transition-colors duration-150 cursor-pointer px-4 py-2.5 rounded-xl hover:bg-violet-50"
+                    className="text-base font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl hover:bg-violet-50"
                   >
                     Avis
                   </a>

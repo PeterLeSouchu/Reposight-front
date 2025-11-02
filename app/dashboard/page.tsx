@@ -125,6 +125,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isButtonsAnimated, setIsButtonsAnimated] = useState(false);
 
   // Debounce de 0.5 seconde
   useEffect(() => {
@@ -202,29 +203,39 @@ export default function Dashboard() {
       {/* BACKGROUND - Gradient violet dynamique */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div
-          className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2"
+          className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2 will-change-[opacity,transform]"
           animate={{ opacity: [0.6, 0.8, 0.6], scale: [1, 1.12, 1] }}
-          transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
+          transition={{
+            repeat: Infinity,
+            duration: 15,
+            ease: "easeInOut",
+            type: "tween",
+          }}
+          style={{ transformOrigin: "center center" }}
         />
         <motion.div
-          className="absolute top-1/3 right-1/4 w-[900px] h-[900px] bg-purple-500/15 rounded-full blur-[280px]"
+          className="absolute top-1/3 right-1/4 w-[900px] h-[900px] bg-purple-500/15 rounded-full blur-[280px] will-change-[opacity,transform]"
           animate={{ opacity: [0.4, 0.6, 0.4], scale: [1, 1.1, 1] }}
           transition={{
             repeat: Infinity,
             duration: 20,
             ease: "easeInOut",
             delay: 2,
+            type: "tween",
           }}
+          style={{ transformOrigin: "center center" }}
         />
         <motion.div
-          className="absolute bottom-1/4 left-1/4 w-[800px] h-[800px] bg-indigo-400/12 rounded-full blur-[220px]"
+          className="absolute bottom-1/4 left-1/4 w-[800px] h-[800px] bg-indigo-400/12 rounded-full blur-[220px] will-change-[opacity,transform]"
           animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.08, 1] }}
           transition={{
             repeat: Infinity,
             duration: 18,
             ease: "easeInOut",
             delay: 4,
+            type: "tween",
           }}
+          style={{ transformOrigin: "center center" }}
         />
       </div>
 
@@ -277,6 +288,11 @@ export default function Dashboard() {
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">
+                  <Trash2 size={14} /> Supprimer mon compte
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleLogout}
                   disabled={isLoggingOut}
@@ -296,20 +312,33 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-          className="flex items-center gap-3"
-        >
-          <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 hover:bg-slate-100 hover:border-violet-300/50 text-slate-900 rounded-lg transition-all font-medium shadow-sm flex justify-center items-center gap-2">
-            <Bookmark className="text-violet-600" size={18} />
-            Signets
-          </button>
-          <button className="px-6 py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-all font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2">
-            <Plus size={18} /> Nouveau repo
-          </button>
-        </motion.div>
+        {isButtonsAnimated ? (
+          <div className="flex items-center gap-3">
+            <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 hover:bg-slate-100 hover:border-violet-300/50 text-slate-900 rounded-lg transition-colors font-medium shadow-sm flex justify-center items-center gap-2">
+              <Bookmark className="text-violet-600" size={18} />
+              Signets
+            </button>
+            <button className="px-6 py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2">
+              <Plus size={18} /> Nouveau repo
+            </button>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+            onAnimationComplete={() => setIsButtonsAnimated(true)}
+            className="flex items-center gap-3"
+          >
+            <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 hover:bg-slate-100 hover:border-violet-300/50 text-slate-900 rounded-lg transition-colors font-medium shadow-sm flex justify-center items-center gap-2">
+              <Bookmark className="text-violet-600" size={18} />
+              Signets
+            </button>
+            <button className="px-6 py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2">
+              <Plus size={18} /> Nouveau repo
+            </button>
+          </motion.div>
+        )}
       </div>
 
       {/* Barre de recherche */}
