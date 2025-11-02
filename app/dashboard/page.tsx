@@ -11,7 +11,7 @@ import {
   MoreVertical,
   Edit,
   Trash2,
-  Bookmark,
+  ArrowUpDown,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState, useEffect, useMemo } from "react";
@@ -29,32 +29,40 @@ import Link from "next/link";
 import { useQueryUser } from "@/query/useQueryUser";
 import { useMutationLogout } from "@/mutation/useMutationLogout";
 import { useAuthStore } from "@/lib/authStore";
+import { AddRepoModal } from "@/components/AddRepoModal";
 
 // Type pour les repos
 interface Repo {
   id: string;
   name: string;
   description: string;
+  addedDate: Date; // Date d'ajout du projet
   lastCommit: {
     message: string;
     author: string;
     date: string;
     hash: string;
+    dateTime: Date; // Date réelle du commit pour le tri
   };
 }
 
+type SortType = "added" | "oldest-commit" | "newest-commit";
+
 // Fausses données de repos
+const now = new Date();
 const mockRepos: Repo[] = [
   {
     id: "1",
     name: "react-dashboard",
     description:
       "Un dashboard moderne et réactif pour la gestion de projets avec React et TypeScript",
+    addedDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), // Il y a 30 jours
     lastCommit: {
       message: "feat: ajout du système de notifications",
       author: "Jean Dupont",
       date: "Il y a 2 heures",
       hash: "a3f5b2c",
+      dateTime: new Date(now.getTime() - 2 * 60 * 60 * 1000), // Il y a 2 heures
     },
   },
   {
@@ -62,11 +70,13 @@ const mockRepos: Repo[] = [
     name: "api-backend",
     description:
       "API REST complète avec Node.js, Express et MongoDB pour la gestion des utilisateurs",
+    addedDate: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000), // Il y a 15 jours
     lastCommit: {
       message: "fix: correction du bug de synchronisation",
       author: "Marie Martin",
       date: "Il y a 5 heures",
       hash: "b7d4e1f",
+      dateTime: new Date(now.getTime() - 5 * 60 * 60 * 1000), // Il y a 5 heures
     },
   },
   {
@@ -74,11 +84,13 @@ const mockRepos: Repo[] = [
     name: "mobile-app",
     description:
       "Application mobile cross-platform développée avec React Native et Expo",
+    addedDate: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000), // Il y a 60 jours
     lastCommit: {
       message: "refactor: amélioration des performances",
       author: "Pierre Durand",
       date: "Il y a 1 jour",
       hash: "c9a2b8d",
+      dateTime: new Date(now.getTime() - 24 * 60 * 60 * 1000), // Il y a 1 jour
     },
   },
   {
@@ -86,11 +98,13 @@ const mockRepos: Repo[] = [
     name: "design-system",
     description:
       "Système de design cohérent avec des composants réutilisables et une documentation complète",
+    addedDate: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000), // Il y a 45 jours
     lastCommit: {
       message: "docs: mise à jour de la documentation",
       author: "Sophie Leroy",
       date: "Il y a 2 jours",
       hash: "d4f6c3a",
+      dateTime: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), // Il y a 2 jours
     },
   },
   {
@@ -98,11 +112,13 @@ const mockRepos: Repo[] = [
     name: "auth-service",
     description:
       "Service d'authentification sécurisé avec JWT, OAuth2 et gestion des sessions",
+    addedDate: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000), // Il y a 10 jours
     lastCommit: {
       message: "security: amélioration de la validation des tokens",
       author: "Lucas Bernard",
       date: "Il y a 3 jours",
       hash: "e8b5d2c",
+      dateTime: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), // Il y a 3 jours
     },
   },
   {
@@ -110,11 +126,13 @@ const mockRepos: Repo[] = [
     name: "data-analytics",
     description:
       "Plateforme d'analyse de données en temps réel avec visualisations interactives",
+    addedDate: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000), // Il y a 5 jours
     lastCommit: {
       message: "feat: ajout des graphiques en temps réel",
       author: "Emma Rousseau",
       date: "Il y a 4 jours",
       hash: "f2a7e4b",
+      dateTime: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000), // Il y a 4 jours
     },
   },
 ];
@@ -125,7 +143,8 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isButtonsAnimated, setIsButtonsAnimated] = useState(false);
+  const [sortType, setSortType] = useState<SortType>("added");
+  const [isAddRepoModalOpen, setIsAddRepoModalOpen] = useState(false);
 
   // Debounce de 0.5 seconde
   useEffect(() => {
@@ -136,18 +155,44 @@ export default function Dashboard() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Filtrage des repos
+  // Filtrage et tri des repos
   const filteredRepos = useMemo(() => {
-    if (!debouncedSearch.trim()) return mockRepos;
+    let repos = mockRepos;
 
-    const query = debouncedSearch.toLowerCase();
-    return mockRepos.filter(
-      (repo) =>
-        repo.name.toLowerCase().includes(query) ||
-        repo.description.toLowerCase().includes(query) ||
-        repo.lastCommit.message.toLowerCase().includes(query)
-    );
-  }, [debouncedSearch]);
+    // Filtrage par recherche
+    if (debouncedSearch.trim()) {
+      const query = debouncedSearch.toLowerCase();
+      repos = repos.filter(
+        (repo) =>
+          repo.name.toLowerCase().includes(query) ||
+          repo.description.toLowerCase().includes(query) ||
+          repo.lastCommit.message.toLowerCase().includes(query)
+      );
+    }
+
+    // Tri par date
+    const sortedRepos = [...repos].sort((a, b) => {
+      switch (sortType) {
+        case "added":
+          // Par date d'ajout (du plus récent au plus ancien)
+          return b.addedDate.getTime() - a.addedDate.getTime();
+        case "newest-commit":
+          // Par commit le plus récent
+          return (
+            b.lastCommit.dateTime.getTime() - a.lastCommit.dateTime.getTime()
+          );
+        case "oldest-commit":
+          // Par commit le plus ancien
+          return (
+            a.lastCommit.dateTime.getTime() - b.lastCommit.dateTime.getTime()
+          );
+        default:
+          return 0;
+      }
+    });
+
+    return sortedRepos;
+  }, [debouncedSearch, sortType]);
 
   const handleClientSideLogout = () => {
     // Nettoyer le token d'accès du store
@@ -241,7 +286,7 @@ export default function Dashboard() {
 
       <div className="absolute inset-0 z-0 dot-pattern" />
 
-      <div className="relative z-10 flex justify-between items-center mb-8">
+      <div className="relative z-10 flex justify-between items-center gap-4 mb-8">
         {isLoading && (
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -304,49 +349,32 @@ export default function Dashboard() {
               </DropdownMenuContent>
             </DropdownMenu>
             <div>
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
                 {data.username}
               </h2>
-              <p className="text-sm text-violet-600">{data.email}</p>
+              <p className="text-xs sm:text-sm text-violet-600">{data.email}</p>
             </div>
           </motion.div>
         )}
 
-        {isButtonsAnimated ? (
-          <div className="flex items-center gap-3">
-            <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 hover:bg-slate-100 hover:border-violet-300/50 text-slate-900 rounded-lg transition-colors font-medium shadow-sm flex justify-center items-center gap-2">
-              <Bookmark className="text-violet-600" size={18} />
-              Signets
-            </button>
-            <button className="px-6 py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2">
-              <Plus size={18} /> Nouveau repo
-            </button>
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            onAnimationComplete={() => setIsButtonsAnimated(true)}
-            className="flex items-center gap-3"
-          >
-            <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 hover:bg-slate-100 hover:border-violet-300/50 text-slate-900 rounded-lg transition-colors font-medium shadow-sm flex justify-center items-center gap-2">
-              <Bookmark className="text-violet-600" size={18} />
-              Signets
-            </button>
-            <button className="px-6 py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2">
-              <Plus size={18} /> Nouveau repo
-            </button>
-          </motion.div>
-        )}
+        <motion.button
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+          onClick={() => setIsAddRepoModalOpen(true)}
+          className="w-10 h-10 sm:w-auto sm:px-6 sm:py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2"
+        >
+          <Plus size={20} />
+          <span className="hidden sm:inline">Nouveau repo</span>
+        </motion.button>
       </div>
 
-      {/* Barre de recherche */}
+      {/* Barre de recherche et filtre */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-        className="relative z-10 mb-8 flex items-center gap-3"
+        className="relative z-10 mb-8 flex flex-col md:flex-row items-stretch md:items-center gap-3"
       >
         <div className="relative flex-1">
           <Search
@@ -358,19 +386,72 @@ export default function Dashboard() {
             placeholder="Rechercher un repository..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all shadow-sm"
+            className="w-full pl-12 pr-4 py-2  bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all shadow-sm"
           />
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="px-4 py-4 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-        >
-          <RefreshCw
-            className={`text-violet-600 ${isRefreshing ? "animate-spin" : ""}`}
-            size={20}
-          />
-        </button>
+        <div className="flex items-center gap-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="w-full md:w-auto px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-colors shadow-sm flex items-center justify-center gap-2">
+              <ArrowUpDown className="text-violet-600" size={18} />
+              <span className="text-sm font-medium">
+                {sortType === "added"
+                  ? "Date d'ajout"
+                  : sortType === "newest-commit"
+                  ? "Commit récent"
+                  : "Commit ancien"}
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[180px]">
+              <DropdownMenuLabel>Trier par</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setSortType("added")}
+                className="cursor-pointer"
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span>Date d'ajout</span>
+                  {sortType === "added" && (
+                    <span className="text-violet-600">✓</span>
+                  )}
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setSortType("newest-commit")}
+                className="cursor-pointer"
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span>Commit le plus récent</span>
+                  {sortType === "newest-commit" && (
+                    <span className="text-violet-600">✓</span>
+                  )}
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setSortType("oldest-commit")}
+                className="cursor-pointer"
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span>Commit le plus ancien</span>
+                  {sortType === "oldest-commit" && (
+                    <span className="text-violet-600">✓</span>
+                  )}
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          >
+            <RefreshCw
+              className={`text-violet-600 ${
+                isRefreshing ? "animate-spin" : ""
+              }`}
+              size={20}
+            />
+          </button>
+        </div>
       </motion.div>
 
       {/* Liste des repos */}
@@ -413,17 +494,6 @@ export default function Dashboard() {
                     />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // handleBookmark(repo.id);
-                      }}
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <Bookmark size={14} />
-                      Ajouté aux signets
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
@@ -474,6 +544,12 @@ export default function Dashboard() {
           ))}
         </div>
       )}
+
+      {/* Modal d'ajout de repos */}
+      <AddRepoModal
+        open={isAddRepoModalOpen}
+        onOpenChange={setIsAddRepoModalOpen}
+      />
     </div>
   );
 }
