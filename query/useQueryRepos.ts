@@ -1,13 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-
-interface Repo {
-  repoId: string;
-  name: string;
-  description: string;
-  selectedAt?: string; // ISO string
-  updatedAt: string;
-}
+import { Repo } from "@/types/repo";
 
 export function useQueryRepos() {
   return useQuery({

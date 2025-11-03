@@ -8,8 +8,6 @@ import {
   GitBranch,
   Clock,
   RefreshCw,
-  MoreVertical,
-  Edit,
   Trash2,
   ArrowUpDown,
 } from "lucide-react";
@@ -56,11 +54,13 @@ export default function Dashboard() {
   const filteredRepos = useMemo(() => {
     if (!reposData) return [];
 
-    let repos = reposData.map((repo) => ({
-      ...repo,
-      selectedAt: new Date(repo.selectedAt || repo.updatedAt),
-      updatedAt: new Date(repo.updatedAt),
-    }));
+    let repos = reposData
+      .filter((repo) => repo.updatedAt)
+      .map((repo) => ({
+        ...repo,
+        selectedAt: new Date(repo.selectedAt || repo.updatedAt!),
+        updatedAt: new Date(repo.updatedAt!),
+      }));
 
     // Filtrage par recherche
     if (debouncedSearch.trim()) {
@@ -103,10 +103,6 @@ export default function Dashboard() {
         handleClientSideLogout();
       },
     });
-  };
-
-  const handleEdit = (repoId: string) => {
-    // À implémenter
   };
 
   const handleDelete = (repoId: string) => {
@@ -347,77 +343,74 @@ export default function Dashboard() {
         </motion.div>
       ) : (
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRepos.map((repo, index) => (
-            <motion.div
-              key={repo.repoId}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-violet-300/50 transition-all duration-300 cursor-pointer group"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-                    <GitBranch className="text-white" size={18} />
+          {filteredRepos
+            .filter(
+              (repo): repo is typeof repo & { repoId: string } => !!repo.repoId
+            )
+            .map((repo, index) => (
+              <motion.div
+                key={repo.repoId}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-sm sm:hover:shadow-xl sm:hover:border-violet-300/50 transition-all duration-300 cursor-pointer group"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
+                      <GitBranch className="text-white" size={18} />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-violet-600 transition-colors">
+                      {repo.name}
+                    </h3>
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 group-hover:text-violet-600 transition-colors">
-                    {repo.name}
-                  </h3>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-1 rounded-lg cursor-pointer hover:bg-violet-50 transition-colors"
-                  >
-                    <MoreVertical
-                      className="text-slate-400  hover:text-violet-600"
-                      size={18}
-                    />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={repo.html_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-2 rounded-lg cursor-pointer sm:hover:bg-violet-50 transition-colors group/link"
+                      aria-label="Ouvrir le repository sur GitHub"
+                    >
+                      <ExternalLink
+                        className="text-slate-400 sm:group-hover/link:text-violet-600 transition-colors"
+                        size={18}
+                      />
+                    </a>
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleEdit(repo.repoId);
+                        if (repo.repoId) handleDelete(repo.repoId);
                       }}
-                      className="flex items-center gap-2 cursor-pointer"
+                      className="p-2 rounded-lg cursor-pointer sm:hover:bg-red-50 transition-colors group/trash"
+                      aria-label="Supprimer le repository"
                     >
-                      <Edit size={14} />
-                      Modifier
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(repo.repoId);
-                      }}
-                      className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-500"
-                    >
-                      <Trash2 size={14} />
-                      Supprimer
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              <p className="text-slate-600 text-sm mb-5 line-clamp-2">
-                {repo.description}
-              </p>
-
-              <div className="pt-4 border-t border-violet-200/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="text-violet-500" size={14} />
-                  <span className="text-xs text-slate-500 font-medium">
-                    Mis à jour
-                  </span>
+                      <Trash2
+                        className="text-slate-400 sm:group-hover/trash:text-red-600 transition-colors"
+                        size={18}
+                      />
+                    </button>
+                  </div>
                 </div>
-                <div className="mt-2">
-                  <span className="text-xs text-slate-500">
-                    {repo.updatedAt.toLocaleDateString("fr-FR")}
-                  </span>
+
+                <p className="text-slate-600 text-sm mb-5 line-clamp-2">
+                  {repo.description}
+                </p>
+
+                <div className="pt-4 border-t border-violet-200/30">
+                  <div className="flex items-center gap-2">
+                    <Clock className="text-violet-500" size={14} />
+                    <span className="text-xs text-slate-500 font-medium">
+                      Mis à jour
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      {repo.updatedAt.toLocaleDateString("fr-FR")}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
         </div>
       )}
 

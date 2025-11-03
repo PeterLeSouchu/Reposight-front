@@ -16,6 +16,7 @@ import { useMutationSelectRepos } from "@/mutation/useMutationSelectRepos";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/utils";
+import { Repo } from "@/types/repo";
 
 interface AddRepoModalProps {
   open: boolean;
@@ -109,61 +110,69 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
               variant="inline"
             />
           ) : filteredRepos && filteredRepos.length > 0 ? (
-            filteredRepos.map((repo) => (
-              <div
-                key={repo.id}
-                onClick={() => toggleRepo(repo.id)}
-                className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                  selectedRepos.includes(repo.id)
-                    ? "bg-violet-50 border-violet-300"
-                    : "bg-slate-50 border-violet-200/50 hover:border-violet-300/50"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div
-                    className={`w-5 h-5 rounded border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${
-                      selectedRepos.includes(repo.id)
-                        ? "bg-violet-600 border-violet-600"
-                        : "border-slate-300"
-                    }`}
-                  >
-                    {selectedRepos.includes(repo.id) && (
-                      <Check className="text-white" size={12} />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <GitBranch className="text-violet-600" size={16} />
-                      <h3 className="font-semibold text-slate-900 truncate">
-                        {repo.name}
-                      </h3>
-                      {repo.private && (
-                        <span className="text-xs px-2 py-0.5 bg-slate-200 text-slate-600 rounded-full">
-                          Privé
-                        </span>
+            filteredRepos
+              .filter(
+                (repo): repo is Repo & { id: number } => repo.id !== undefined
+              )
+              .map((repo) => (
+                <div
+                  key={repo.id}
+                  onClick={() => toggleRepo(repo.id)}
+                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                    selectedRepos.includes(repo.id)
+                      ? "bg-violet-50 border-violet-300"
+                      : "bg-slate-50 border-violet-200/50 hover:border-violet-300/50"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${
+                        selectedRepos.includes(repo.id)
+                          ? "bg-violet-600 border-violet-600"
+                          : "border-slate-300"
+                      }`}
+                    >
+                      {selectedRepos.includes(repo.id) && (
+                        <Check className="text-white" size={12} />
                       )}
                     </div>
-                    {repo.description && (
-                      <p className="text-sm text-slate-600 line-clamp-2 mb-2">
-                        {repo.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 text-xs text-slate-500">
-                      {repo.language && (
-                        <span className="flex items-center gap-1">
-                          <span className="w-3 h-3 rounded-full bg-violet-500"></span>
-                          {repo.language}
-                        </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <GitBranch className="text-violet-600" size={16} />
+                        <h3 className="font-semibold text-slate-900 truncate">
+                          {repo.name}
+                        </h3>
+                        {repo.private && (
+                          <span className="text-xs px-2 py-0.5 bg-slate-200 text-slate-600 rounded-full">
+                            Privé
+                          </span>
+                        )}
+                      </div>
+                      {repo.description && (
+                        <p className="text-sm text-slate-600 line-clamp-2 mb-2">
+                          {repo.description}
+                        </p>
                       )}
-                      <span>
-                        Mis à jour{" "}
-                        {new Date(repo.updated_at).toLocaleDateString("fr-FR")}
-                      </span>
+                      <div className="flex items-center gap-4 text-xs text-slate-500">
+                        {repo.language && (
+                          <span className="flex items-center gap-1">
+                            <span className="w-3 h-3 rounded-full bg-violet-500"></span>
+                            {repo.language}
+                          </span>
+                        )}
+                        {repo.updated_at && (
+                          <span>
+                            Mis à jour{" "}
+                            {new Date(repo.updated_at).toLocaleDateString(
+                              "fr-FR"
+                            )}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))
           ) : (
             <div className="text-center py-8 text-slate-500">
               Aucun repo trouvé

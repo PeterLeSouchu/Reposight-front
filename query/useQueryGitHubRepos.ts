@@ -1,21 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-
-interface GitHubRepo {
-  id: number;
-  name: string;
-  description: string | null;
-  private: boolean;
-  language: string | null;
-  updated_at: string;
-  html_url: string;
-}
+import { Repo } from "@/types/repo";
 
 export function useQueryGitHubRepos(enabled: boolean = true) {
   return useQuery({
     queryKey: ["repos", "github"],
     queryFn: async () => {
-      const response = await api.get<GitHubRepo[]>("/repos/github");
+      const response = await api.get<Repo[]>("/repos/github");
       return response.data;
     },
     enabled: enabled,
