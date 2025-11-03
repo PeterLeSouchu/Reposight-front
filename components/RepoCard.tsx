@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { ExternalLink, GitBranch, Clock, Trash2 } from "lucide-react";
 import { Repo } from "@/types/repo";
+import { formatRelativeDate } from "@/lib/utils";
 
 interface RepoCardProps {
   repo: Omit<Repo, "selectedAt" | "pushed_at"> & { pushed_atDate: Date };
@@ -15,7 +16,7 @@ export function RepoCard({ repo, onDelete }: RepoCardProps) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-sm sm:hover:shadow-xl sm:hover:border-violet-300/50 transition-all duration-300 cursor-pointer group"
+      className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-sm sm:hover:shadow-xl sm:hover:border-violet-300/50 transition-all duration-300 cursor-pointer group flex flex-col h-full"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3 flex-1">
@@ -56,27 +57,26 @@ export function RepoCard({ repo, onDelete }: RepoCardProps) {
         </div>
       </div>
 
-      <p className="text-slate-600 text-sm mb-3 line-clamp-2">
-        {repo.description}
-      </p>
+      <div className="flex-1 flex flex-col">
+        <p className="text-slate-600 text-sm mb-3 line-clamp-2">
+          {repo.description || "Aucune description"}
+        </p>
 
-      {repo.language && (
-        <div className="flex items-center gap-2 mb-4">
-          <span className="w-3 h-3 rounded-full bg-violet-500"></span>
-          <span className="text-xs text-slate-600 font-medium">
-            {repo.language}
-          </span>
-        </div>
-      )}
+        {repo.language && (
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-3 h-3 rounded-full bg-violet-500"></span>
+            <span className="text-xs text-slate-600 font-medium">
+              {repo.language}
+            </span>
+          </div>
+        )}
+      </div>
 
-      <div className="pt-4 border-t border-violet-200/30">
+      <div className="pt-4 border-t border-violet-200/30 mt-auto">
         <div className="flex items-center gap-2 flex-wrap">
           <Clock className="text-violet-500" size={14} />
           <span className="text-xs text-slate-500 font-medium">
-            Mis à jour le
-          </span>
-          <span className="text-xs text-slate-500">
-            {repo.pushed_atDate.toLocaleDateString("fr-FR")}
+            Mis à jour {formatRelativeDate(repo.pushed_atDate)}
           </span>
           <span
             className={`text-xs px-2 py-0.5 rounded-full ${

@@ -330,8 +330,8 @@ export default function Dashboard() {
                   {sortType === "added"
                     ? "Date d'ajout"
                     : sortType === "newest-commit"
-                    ? "Commit récent"
-                    : "Commit ancien"}
+                    ? "Push récent"
+                    : "Push ancien"}
                 </span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[180px]">
@@ -353,7 +353,7 @@ export default function Dashboard() {
                   className="cursor-pointer"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span>Commit le plus récent</span>
+                    <span>Push le plus récent</span>
                     {sortType === "newest-commit" && (
                       <span className="text-violet-600">✓</span>
                     )}
@@ -364,7 +364,7 @@ export default function Dashboard() {
                   className="cursor-pointer"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span>Commit le plus ancien</span>
+                    <span>Push le plus ancien</span>
                     {sortType === "oldest-commit" && (
                       <span className="text-violet-600">✓</span>
                     )}
@@ -449,7 +449,7 @@ export default function Dashboard() {
             if (!open) setRepoToDelete(null);
           }}
           title="Supprimer le repo"
-          description="Êtes-vous sûr de vouloir supprimer ce repo ? Cette action est irréversible."
+          description="Êtes-vous sûr de vouloir supprimer ce repo ?"
           confirmText="Supprimer"
           cancelText="Annuler"
           onConfirm={handleDeleteConfirm}
@@ -460,7 +460,7 @@ export default function Dashboard() {
           open={showDeleteAccountModal}
           onOpenChange={setShowDeleteAccountModal}
           title="Supprimer mon compte"
-          description="Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible et toutes vos données seront définitivement supprimées."
+          description="Êtes-vous sûr de vouloir supprimer votre compte ? Toutes vos données seront définitivement supprimées."
           confirmText="Supprimer"
           cancelText="Annuler"
           onConfirm={handleDeleteAccountConfirm}

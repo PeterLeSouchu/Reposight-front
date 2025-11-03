@@ -84,19 +84,19 @@ export default function LandingPage() {
             <nav className="hidden md:flex items-center gap-2 rounded-full px-4 py-2">
               <a
                 href="#fonctionnalites"
-                className="text-sm font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full hover:bg-violet-50"
+                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-50 hover:bg-violet-100"
               >
                 Fonctionnalités
               </a>
               <a
                 href="#comment-ca-marche"
-                className="text-sm font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full hover:bg-violet-50"
+                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-50 hover:bg-violet-100"
               >
                 Comment ça marche
               </a>
               <a
                 href="#avis"
-                className="text-sm font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full hover:bg-violet-50"
+                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-50 hover:bg-violet-100"
               >
                 Avis
               </a>
@@ -146,21 +146,21 @@ export default function LandingPage() {
                   <a
                     href="#fonctionnalites"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl hover:bg-violet-50"
+                    className="text-base font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100"
                   >
                     Fonctionnalités
                   </a>
                   <a
                     href="#comment-ca-marche"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl hover:bg-violet-50"
+                    className="text-base font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100"
                   >
                     Comment ça marche
                   </a>
                   <a
                     href="#avis"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-slate-700 hover:text-violet-600 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl hover:bg-violet-50"
+                    className="text-base font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100"
                   >
                     Avis
                   </a>
@@ -421,7 +421,7 @@ export default function LandingPage() {
 
       <section
         id="avis"
-        className="relative z-10 py-24 pb-32 px-6 scroll-mt-24 bg-gradient-to-b from-transparent via-violet-50/5 to-transparent"
+        className="relative z-10 py-24 pb-32  scroll-mt-24 bg-gradient-to-b from-transparent via-violet-50/5 to-transparent"
       >
         <div className="w-full">
           <motion.div

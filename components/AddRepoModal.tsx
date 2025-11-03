@@ -15,7 +15,7 @@ import { ErrorMessage } from "@/components/ErrorMessage";
 import { useMutationSelectRepos } from "@/mutation/useMutationSelectRepos";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getErrorMessage } from "@/lib/utils";
+import { getErrorMessage, formatRelativeDate } from "@/lib/utils";
 import { Repo } from "@/types/repo";
 
 interface AddRepoModalProps {
@@ -167,10 +167,7 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
                         )}
                         {repo.pushed_at && (
                           <span>
-                            Mis à jour le{" "}
-                            {new Date(repo.pushed_at).toLocaleDateString(
-                              "fr-FR"
-                            )}
+                            Mis à jour {formatRelativeDate(repo.pushed_at)}
                           </span>
                         )}
                       </div>
