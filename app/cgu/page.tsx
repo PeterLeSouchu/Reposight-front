@@ -8,13 +8,7 @@ export default function CGUPage() {
   const router = useRouter();
 
   const handleBack = () => {
-    const referrer = document.referrer;
-
-    if (referrer && referrer.includes("/login")) {
-      router.push("/login");
-    } else {
-      router.push("/");
-    }
+    router.push("/");
   };
 
   return (
