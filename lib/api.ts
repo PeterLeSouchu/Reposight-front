@@ -49,7 +49,6 @@ api.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
-    console.log("error dans l'interceptor", error);
 
     // Vérifier si c'est une erreur 401 avec message "jwt access token expired"
     const errorData = error.response?.data;

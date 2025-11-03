@@ -11,17 +11,11 @@ import {
 import { useQueryGitHubRepos } from "@/query/useQueryGitHubRepos";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, GitBranch, Check } from "lucide-react";
-
-interface GitHubRepo {
-  id: number;
-  name: string;
-  full_name: string;
-  description: string | null;
-  private: boolean;
-  language: string | null;
-  updated_at: string;
-  html_url: string;
-}
+import { ErrorMessage } from "@/components/ErrorMessage";
+import { useMutationSelectRepos } from "@/mutation/useMutationSelectRepos";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/utils";
 
 interface AddRepoModalProps {
   open: boolean;
@@ -32,13 +26,14 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
   const { data: repos, isLoading, error } = useQueryGitHubRepos(open);
   const [selectedRepos, setSelectedRepos] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
+  const { mutate: selectRepos, isPending: isAdding } = useMutationSelectRepos();
 
   const filteredRepos = repos?.filter(
     (repo) =>
       repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       repo.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  console.log("repos", repos);
 
   const toggleRepo = (repoId: number) => {
     setSelectedRepos((prev) =>
@@ -49,12 +44,28 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
   };
 
   const handleAdd = () => {
-    // TODO: Appeler l'API pour ajouter les repos sélectionnés
-    console.log("Repos sélectionnés:", selectedRepos);
-    // Fermer la modal et reset
-    onOpenChange(false);
-    setSelectedRepos([]);
-    setSearchQuery("");
+    selectRepos(selectedRepos, {
+      onSuccess: () => {
+        // Invalider la query des repos pour rafraîchir la liste
+        queryClient.invalidateQueries({ queryKey: ["repos"] });
+        // Afficher un toast de succès
+        toast.success(
+          `${selectedRepos.length} repo${
+            selectedRepos.length > 1 ? "s" : ""
+          } ajouté${selectedRepos.length > 1 ? "s" : ""} avec succès`
+        );
+        // Fermer la modal et reset
+        onOpenChange(false);
+        setSelectedRepos([]);
+        setSearchQuery("");
+      },
+      onError: (error) => {
+        const message = getErrorMessage(error);
+        toast.error("Erreur lors de l'ajout des repos", {
+          description: message,
+        });
+      },
+    });
   };
 
   return (
@@ -76,7 +87,7 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
           />
           <input
             type="text"
-            placeholder="Rechercher un repository..."
+            placeholder="Rechercher un repo..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-violet-200/50 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
@@ -92,9 +103,11 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
               ))}
             </div>
           ) : error ? (
-            <div className="text-center py-8 text-red-600">
-              Erreur lors du chargement des repositories
-            </div>
+            <ErrorMessage
+              error={error}
+              title="Erreur lors du chargement des repos"
+              variant="inline"
+            />
           ) : filteredRepos && filteredRepos.length > 0 ? (
             filteredRepos.map((repo) => (
               <div
@@ -153,7 +166,7 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
             ))
           ) : (
             <div className="text-center py-8 text-slate-500">
-              Aucun repository trouvé
+              Aucun repo trouvé
             </div>
           )}
         </div>
@@ -162,10 +175,10 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
         <div className="flex items-center justify-between pt-4 border-t border-violet-200/50">
           <span className="text-sm text-slate-600">
             {selectedRepos.length > 0
-              ? `${selectedRepos.length} repository${
+              ? `${selectedRepos.length} repo${
                   selectedRepos.length > 1 ? "s" : ""
                 } sélectionné${selectedRepos.length > 1 ? "s" : ""}`
-              : "Sélectionnez au moins un repository"}
+              : "Sélectionnez au moins un repo"}
           </span>
           <div className="flex items-center gap-3">
             <button
@@ -174,16 +187,16 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
                 setSelectedRepos([]);
                 setSearchQuery("");
               }}
-              className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              className="px-4 py-2 cursor-pointer text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
             >
               Annuler
             </button>
             <button
               onClick={handleAdd}
-              disabled={selectedRepos.length === 0}
-              className="px-6 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={selectedRepos.length === 0 || isAdding}
+              className="px-6 py-2 bg-violet-600 cursor-pointer hover:bg-violet-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Ajouter
+              {isAdding ? "Ajout en cours..." : "Ajouter"}
             </button>
           </div>
         </div>

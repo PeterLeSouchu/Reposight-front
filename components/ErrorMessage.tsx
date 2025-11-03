@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { AlertCircle } from "lucide-react";
-import { AxiosError } from "axios";
+import { getErrorMessage } from "@/lib/utils";
 
 interface ErrorMessageProps {
   error: unknown;
@@ -12,21 +12,6 @@ interface ErrorMessageProps {
   className?: string;
   variant?: "full" | "inline";
 }
-
-const getErrorMessage = (error: unknown): string => {
-  if (error && typeof error === "object") {
-    if (error instanceof AxiosError && error.response?.data) {
-      const data = error.response.data;
-      if (typeof data === "object" && "message" in data) {
-        return String(data.message);
-      }
-      if (typeof data === "string") {
-        return data;
-      }
-    }
-  }
-  return "Une erreur est survenue. Veuillez réessayer plus tard.";
-};
 
 export function ErrorMessage({
   error,

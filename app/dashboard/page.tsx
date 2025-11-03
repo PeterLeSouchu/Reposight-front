@@ -45,6 +45,8 @@ export default function Dashboard() {
   } = useQueryRepos();
   const { mutate: logoutMutate, isPending: isLoggingOut } = useMutationLogout();
 
+  console.log("reposData", reposData);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch] = useDebounce(searchQuery, 500);
   const [sortType, setSortType] = useState<SortType>("added");
@@ -56,11 +58,8 @@ export default function Dashboard() {
 
     let repos = reposData.map((repo) => ({
       ...repo,
-      addedDate: new Date(repo.addedDate),
-      lastCommit: {
-        ...repo.lastCommit,
-        dateTime: new Date(repo.lastCommit.dateTime),
-      },
+      selectedAt: new Date(repo.selectedAt || repo.updatedAt),
+      updatedAt: new Date(repo.updatedAt),
     }));
 
     // Filtrage par recherche
@@ -73,15 +72,11 @@ export default function Dashboard() {
     const sortedRepos = [...repos].sort((a, b) => {
       switch (sortType) {
         case "added":
-          return b.addedDate.getTime() - a.addedDate.getTime();
+          return b.selectedAt.getTime() - a.selectedAt.getTime();
         case "newest-commit":
-          return (
-            b.lastCommit.dateTime.getTime() - a.lastCommit.dateTime.getTime()
-          );
+          return b.updatedAt.getTime() - a.updatedAt.getTime();
         case "oldest-commit":
-          return (
-            a.lastCommit.dateTime.getTime() - b.lastCommit.dateTime.getTime()
-          );
+          return a.updatedAt.getTime() - b.updatedAt.getTime();
         default:
           return 0;
       }
@@ -91,11 +86,10 @@ export default function Dashboard() {
   }, [reposData, debouncedSearch, sortType]);
 
   const handleClientSideLogout = () => {
-    // Nettoyer le token d'accès du store
     useAuthStore.getState().clearAccessToken();
-    // Effacer le localStorage
+
     localStorage.clear();
-    // Rediriger vers la page d'accueil
+
     window.location.href = "/";
   };
 
@@ -112,12 +106,10 @@ export default function Dashboard() {
   };
 
   const handleEdit = (repoId: string) => {
-    console.log("Modifier le repo:", repoId);
     // À implémenter
   };
 
   const handleDelete = (repoId: string) => {
-    console.log("Supprimer le repo:", repoId);
     // À implémenter
   };
 
@@ -126,7 +118,6 @@ export default function Dashboard() {
       <ErrorMessage
         error={userError || reposError}
         title="Erreur de chargement des données"
-        subtitle="Veuillez réessayer plus tard."
         // onRetry={() => window.location.reload()}
       />
     );
@@ -358,11 +349,11 @@ export default function Dashboard() {
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRepos.map((repo, index) => (
             <motion.div
-              key={repo.id}
+              key={repo.repoId}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 hover:shadow-xl hover:border-violet-300/50 transition-all duration-300 cursor-pointer group"
+              className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-violet-300/50 transition-all duration-300 cursor-pointer group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3 flex-1">
@@ -387,7 +378,7 @@ export default function Dashboard() {
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleEdit(repo.id);
+                        handleEdit(repo.repoId);
                       }}
                       className="flex items-center gap-2 cursor-pointer"
                     >
@@ -397,7 +388,7 @@ export default function Dashboard() {
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(repo.id);
+                        handleDelete(repo.repoId);
                       }}
                       className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-500"
                     >
@@ -416,15 +407,12 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2 mb-2">
                   <Clock className="text-violet-500" size={14} />
                   <span className="text-xs text-slate-500 font-medium">
-                    Dernier commit
+                    Mis à jour
                   </span>
                 </div>
-                <p className="text-sm text-slate-900 font-medium mb-1 line-clamp-1">
-                  {repo.lastCommit.message}
-                </p>
                 <div className="mt-2">
                   <span className="text-xs text-slate-500">
-                    {repo.lastCommit.author} • {repo.lastCommit.date}
+                    {repo.updatedAt.toLocaleDateString("fr-FR")}
                   </span>
                 </div>
               </div>

@@ -4,7 +4,6 @@ import api from "@/lib/api";
 interface GitHubRepo {
   id: number;
   name: string;
-  full_name: string;
   description: string | null;
   private: boolean;
   language: string | null;
