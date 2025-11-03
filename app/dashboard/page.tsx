@@ -31,6 +31,11 @@ import { useAuthStore } from "@/lib/authStore";
 import { AddRepoModal } from "@/components/AddRepoModal";
 import { useQueryRepos } from "@/query/useQueryRepos";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { useMutationDeleteRepo } from "@/mutation/useMutationDeleteRepo";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 type SortType = "added" | "oldest-commit" | "newest-commit";
 
@@ -42,25 +47,25 @@ export default function Dashboard() {
     error: reposError,
   } = useQueryRepos();
   const { mutate: logoutMutate, isPending: isLoggingOut } = useMutationLogout();
-
+  const { mutate: deleteRepo, isPending: isDeleting } = useMutationDeleteRepo();
+  const queryClient = useQueryClient();
   console.log("reposData", reposData);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch] = useDebounce(searchQuery, 500);
   const [sortType, setSortType] = useState<SortType>("added");
   const [isAddRepoModalOpen, setIsAddRepoModalOpen] = useState(false);
+  const [repoToDelete, setRepoToDelete] = useState<number | null>(null);
 
   // Étant donné qu'il ne va pas y avoir des centaines ou des milliers de repo, j'ai opté pour une recherche (searchbar + filtre) en front uniquement.
   const filteredRepos = useMemo(() => {
     if (!reposData) return [];
 
-    let repos = reposData
-      .filter((repo) => repo.updatedAt)
-      .map((repo) => ({
-        ...repo,
-        selectedAt: new Date(repo.selectedAt || repo.updatedAt!),
-        updatedAt: new Date(repo.updatedAt!),
-      }));
+    let repos = reposData.map((repo) => ({
+      ...repo,
+      selectedAt: new Date(repo.selectedAt || repo.pushed_at),
+      pushed_at: new Date(repo.pushed_at),
+    }));
 
     // Filtrage par recherche
     if (debouncedSearch.trim()) {
@@ -74,9 +79,9 @@ export default function Dashboard() {
         case "added":
           return b.selectedAt.getTime() - a.selectedAt.getTime();
         case "newest-commit":
-          return b.updatedAt.getTime() - a.updatedAt.getTime();
+          return b.pushed_at.getTime() - a.pushed_at.getTime();
         case "oldest-commit":
-          return a.updatedAt.getTime() - b.updatedAt.getTime();
+          return a.pushed_at.getTime() - b.pushed_at.getTime();
         default:
           return 0;
       }
@@ -105,8 +110,27 @@ export default function Dashboard() {
     });
   };
 
-  const handleDelete = (repoId: string) => {
-    // À implémenter
+  const handleDeleteClick = (id: number) => {
+    setRepoToDelete(id);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (repoToDelete === null) return;
+
+    deleteRepo(repoToDelete, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["repos"] });
+        toast.success("Repository supprimé avec succès");
+        setRepoToDelete(null);
+      },
+      onError: (error) => {
+        const message = getErrorMessage(error);
+        toast.error("Erreur lors de la suppression", {
+          description: message,
+        });
+        setRepoToDelete(null);
+      },
+    });
   };
 
   if (userError || reposError) {
@@ -120,7 +144,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="relative min-h-screen p-8 text-slate-900 overflow-hidden bg-[#fafafa]">
+    <div className="relative min-h-screen text-slate-900 overflow-hidden bg-[#fafafa]">
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2 will-change-[opacity,transform]"
@@ -161,198 +185,199 @@ export default function Dashboard() {
 
       <div className="absolute inset-0 z-0 dot-pattern" />
 
-      <div className="relative z-10 flex justify-between items-center gap-4 mb-8">
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex items-center gap-4"
-          >
-            <Skeleton className="h-12 w-12 rounded-full bg-slate-200" />
-            <div className="flex flex-col gap-2">
-              <Skeleton className="h-7 w-32 rounded-md bg-slate-200" />
-              <Skeleton className="h-5 w-48 rounded-md bg-slate-200" />
-            </div>
-          </motion.div>
-        )}
-        {data && (
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex items-center gap-4"
-          >
-            <DropdownMenu>
-              <DropdownMenuTrigger className="cursor-pointer border-none outline-none hover:opacity-90 transition-opacity">
-                <img
-                  src={data.avatar}
-                  alt={`Avatar de ${data.username}`}
-                  className="w-12 h-12 rounded-full border-2 border-violet-600/50 hover:border-violet-700/70 transition-all"
-                />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel className="flex flex-col gap-1">
-                  <span className="font-semibold text-sm">{data.username}</span>
-                  <span className="text-xs text-slate-600">{data.email}</span>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
-                  <Link
-                    className="flex items-center gap-2 "
-                    href={`https://github.com/${data.username}`}
-                    target="_blank"
+      <div className="relative z-10 max-w-7xl mx-auto p-8">
+        <div className="flex justify-between items-center gap-4 mb-8">
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="flex items-center gap-4"
+            >
+              <Skeleton className="h-12 w-12 rounded-full bg-slate-200" />
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-7 w-32 rounded-md bg-slate-200" />
+                <Skeleton className="h-5 w-48 rounded-md bg-slate-200" />
+              </div>
+            </motion.div>
+          )}
+          {data && (
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="flex items-center gap-4"
+            >
+              <DropdownMenu>
+                <DropdownMenuTrigger className="cursor-pointer border-none outline-none hover:opacity-90 transition-opacity">
+                  <img
+                    src={data.avatar}
+                    alt={`Avatar de ${data.username}`}
+                    className="w-12 h-12 rounded-full border-2 border-violet-600/50 hover:border-violet-700/70 transition-all"
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel className="flex flex-col gap-1">
+                    <span className="font-semibold text-sm">
+                      {data.username}
+                    </span>
+                    <span className="text-xs text-slate-600">{data.email}</span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Link
+                      className="flex items-center gap-2 "
+                      href={`https://github.com/${data.username}`}
+                      target="_blank"
+                    >
+                      <ExternalLink size={14} /> Profil Github
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Trash2 size={14} /> Supprimer mon compte
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="flex items-center gap-2 cursor-pointer text-red-600  focus:text-red-500"
                   >
-                    <ExternalLink size={14} /> Profil Github
-                  </Link>
-                </DropdownMenuItem>
+                    <LogOut className="text-red-600" size={16} />
+                    {isLoggingOut ? "Déconnexion..." : "Déconnexion"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+                  {data.username}
+                </h2>
+                <p className="text-xs sm:text-sm text-violet-600">
+                  {data.email}
+                </p>
+              </div>
+            </motion.div>
+          )}
 
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
-                  <Trash2 size={14} /> Supprimer mon compte
-                </DropdownMenuItem>
+          <motion.button
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+            onClick={() => setIsAddRepoModalOpen(true)}
+            className="w-10 h-10 sm:w-auto sm:px-6 sm:py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2"
+          >
+            <Plus size={20} />
+            <span className="hidden sm:inline">Nouveau repo</span>
+          </motion.button>
+        </div>
 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+          className="relative z-10 mb-8 flex flex-col md:flex-row items-stretch md:items-center gap-3"
+        >
+          <div className="relative flex-1">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              size={20}
+            />
+            <input
+              type="text"
+              placeholder="Rechercher un repository..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-2  bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all shadow-sm"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger className="w-full md:w-auto px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-colors shadow-sm flex items-center justify-center gap-2">
+                <ArrowUpDown className="text-violet-600" size={18} />
+                <span className="text-sm font-medium">
+                  {sortType === "added"
+                    ? "Date d'ajout"
+                    : sortType === "newest-commit"
+                    ? "Commit récent"
+                    : "Commit ancien"}
+                </span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[180px]">
+                <DropdownMenuLabel>Trier par</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="flex items-center gap-2 cursor-pointer text-red-600  focus:text-red-500"
+                  onClick={() => setSortType("added")}
+                  className="cursor-pointer"
                 >
-                  <LogOut className="text-red-600" size={16} />
-                  {isLoggingOut ? "Déconnexion..." : "Déconnexion"}
+                  <div className="flex items-center justify-between w-full">
+                    <span>Date d'ajout</span>
+                    {sortType === "added" && (
+                      <span className="text-violet-600">✓</span>
+                    )}
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSortType("newest-commit")}
+                  className="cursor-pointer"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span>Commit le plus récent</span>
+                    {sortType === "newest-commit" && (
+                      <span className="text-violet-600">✓</span>
+                    )}
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSortType("oldest-commit")}
+                  className="cursor-pointer"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span>Commit le plus ancien</span>
+                    {sortType === "oldest-commit" && (
+                      <span className="text-violet-600">✓</span>
+                    )}
+                  </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                {data.username}
-              </h2>
-              <p className="text-xs sm:text-sm text-violet-600">{data.email}</p>
-            </div>
-          </motion.div>
-        )}
-
-        <motion.button
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-          onClick={() => setIsAddRepoModalOpen(true)}
-          className="w-10 h-10 sm:w-auto sm:px-6 sm:py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2"
-        >
-          <Plus size={20} />
-          <span className="hidden sm:inline">Nouveau repo</span>
-        </motion.button>
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-        className="relative z-10 mb-8 flex flex-col md:flex-row items-stretch md:items-center gap-3"
-      >
-        <div className="relative flex-1">
-          <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            size={20}
-          />
-          <input
-            type="text"
-            placeholder="Rechercher un repository..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-2  bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all shadow-sm"
-          />
-        </div>
-        <div className="flex items-center gap-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="w-full md:w-auto px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-colors shadow-sm flex items-center justify-center gap-2">
-              <ArrowUpDown className="text-violet-600" size={18} />
-              <span className="text-sm font-medium">
-                {sortType === "added"
-                  ? "Date d'ajout"
-                  : sortType === "newest-commit"
-                  ? "Commit récent"
-                  : "Commit ancien"}
-              </span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[180px]">
-              <DropdownMenuLabel>Trier par</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => setSortType("added")}
-                className="cursor-pointer"
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span>Date d'ajout</span>
-                  {sortType === "added" && (
-                    <span className="text-violet-600">✓</span>
-                  )}
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSortType("newest-commit")}
-                className="cursor-pointer"
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span>Commit le plus récent</span>
-                  {sortType === "newest-commit" && (
-                    <span className="text-violet-600">✓</span>
-                  )}
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSortType("oldest-commit")}
-                className="cursor-pointer"
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span>Commit le plus ancien</span>
-                  {sortType === "oldest-commit" && (
-                    <span className="text-violet-600">✓</span>
-                  )}
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-            <RefreshCw
-              // className={`text-violet-600 ${"animate-spin"}`}
-              className={`text-violet-600 `}
-              size={20}
-            />
-          </button>
-        </div>
-      </motion.div>
-
-      {isReposLoading ? (
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-48 rounded-2xl bg-slate-200" />
-          ))}
-        </div>
-      ) : filteredRepos.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="relative z-10 text-center py-16"
-        >
-          <p className="text-slate-600 text-lg">
-            {reposData && reposData.length === 0
-              ? "Aucun repository ajouté. Cliquez sur + pour en ajouter."
-              : "Aucun repository trouvé"}
-          </p>
+            <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+              <RefreshCw
+                // className={`text-violet-600 ${"animate-spin"}`}
+                className={`text-violet-600 `}
+                size={20}
+              />
+            </button>
+          </div>
         </motion.div>
-      ) : (
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRepos
-            .filter(
-              (repo): repo is typeof repo & { repoId: string } => !!repo.repoId
-            )
-            .map((repo, index) => (
+
+        {isReposLoading ? (
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-48 rounded-2xl bg-slate-200" />
+            ))}
+          </div>
+        ) : filteredRepos.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="relative z-10 text-center py-16"
+          >
+            <p className="text-slate-600 text-lg">
+              {reposData && reposData.length === 0
+                ? "Aucun repository ajouté. Cliquez sur + pour en ajouter."
+                : "Aucun repository trouvé"}
+            </p>
+          </motion.div>
+        ) : (
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredRepos.map((repo, index) => (
               <motion.div
-                key={repo.repoId}
-                initial={{ opacity: 0, y: 20 }}
+                key={repo.id}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.4 }}
                 className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-sm sm:hover:shadow-xl sm:hover:border-violet-300/50 transition-all duration-300 cursor-pointer group"
               >
                 <div className="flex items-start justify-between mb-4">
@@ -381,7 +406,7 @@ export default function Dashboard() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (repo.repoId) handleDelete(repo.repoId);
+                        handleDeleteClick(repo.id);
                       }}
                       className="p-2 rounded-lg cursor-pointer sm:hover:bg-red-50 transition-colors group/trash"
                       aria-label="Supprimer le repository"
@@ -399,25 +424,48 @@ export default function Dashboard() {
                 </p>
 
                 <div className="pt-4 border-t border-violet-200/30">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Clock className="text-violet-500" size={14} />
                     <span className="text-xs text-slate-500 font-medium">
                       Mis à jour
                     </span>
                     <span className="text-xs text-slate-500">
-                      {repo.updatedAt.toLocaleDateString("fr-FR")}
+                      {repo.pushed_at.toLocaleDateString("fr-FR")}
+                    </span>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${
+                        repo.private
+                          ? "bg-orange-100 text-orange-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {repo.private ? "Privé" : "Public"}
                     </span>
                   </div>
                 </div>
               </motion.div>
             ))}
-        </div>
-      )}
+          </div>
+        )}
 
-      <AddRepoModal
-        open={isAddRepoModalOpen}
-        onOpenChange={setIsAddRepoModalOpen}
-      />
+        <AddRepoModal
+          open={isAddRepoModalOpen}
+          onOpenChange={setIsAddRepoModalOpen}
+        />
+
+        <ConfirmDialog
+          open={repoToDelete !== null}
+          onOpenChange={(open) => {
+            if (!open) setRepoToDelete(null);
+          }}
+          title="Supprimer le repository"
+          description="Êtes-vous sûr de vouloir supprimer ce repository ? Cette action est irréversible."
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          onConfirm={handleDeleteConfirm}
+          variant="destructive"
+        />
+      </div>
     </div>
   );
 }

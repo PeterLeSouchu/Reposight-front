@@ -30,6 +30,7 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
   const queryClient = useQueryClient();
   const { mutate: selectRepos, isPending: isAdding } = useMutationSelectRepos();
 
+  console.log("repos", repos);
   const filteredRepos = repos?.filter(
     (repo) =>
       repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -160,10 +161,10 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
                             {repo.language}
                           </span>
                         )}
-                        {repo.updated_at && (
+                        {repo.pushed_at && (
                           <span>
                             Mis à jour{" "}
-                            {new Date(repo.updated_at).toLocaleDateString(
+                            {new Date(repo.pushed_at).toLocaleDateString(
                               "fr-FR"
                             )}
                           </span>
