@@ -51,13 +51,19 @@ api.interceptors.response.use(
     };
     console.log("error dans l'interceptor", error);
 
-    // Vérifier si c'est une erreur 401 avec code REFRESH_TOKEN
+    // Vérifier si c'est une erreur 401 avec message "jwt access token expired"
+    const errorData = error.response?.data;
+    const errorMessage =
+      errorData &&
+      typeof errorData === "object" &&
+      "message" in errorData &&
+      typeof errorData.message === "string"
+        ? errorData.message
+        : null;
+
     if (
       error.response?.status === 401 &&
-      error.response?.data &&
-      typeof error.response.data === "object" &&
-      "code" in error.response.data &&
-      error.response.data.code === "REFRESH_TOKEN" &&
+      errorMessage === "jwt access token expired" &&
       !originalRequest._retry
     ) {
       // Si on est déjà en train de refresh, mettre la requête en queue
@@ -113,13 +119,41 @@ api.interceptors.response.use(
           useAuthStore.getState().clearAccessToken();
         } catch {}
 
-        // Rediriger vers /login si le refresh_token est invalide
+        // Vérifier si l'erreur de refresh contient "jwt refresh token expired"
+        const refreshErrorData = (refreshError as AxiosError).response?.data;
+        const refreshErrorMessage =
+          refreshErrorData &&
+          typeof refreshErrorData === "object" &&
+          "message" in refreshErrorData &&
+          typeof refreshErrorData.message === "string"
+            ? refreshErrorData.message
+            : null;
+
+        // Rediriger vers /login si le refresh_token est expiré ou invalide
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
 
         return Promise.reject(refreshError);
       }
+    }
+
+    // Si c'est une erreur 401 avec message "jwt refresh token expired", rediriger vers /login
+    if (
+      error.response?.status === 401 &&
+      errorMessage === "jwt refresh token expired"
+    ) {
+      // Nettoyer le token en mémoire
+      try {
+        useAuthStore.getState().clearAccessToken();
+      } catch {}
+
+      // Rediriger vers /login
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+
+      return Promise.reject(error);
     }
 
     return Promise.reject(error);
