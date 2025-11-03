@@ -8,12 +8,17 @@ export default function CGUPage() {
   const router = useRouter();
 
   const handleBack = () => {
-    router.back();
+    const referrer = document.referrer;
+
+    if (referrer && referrer.includes("/login")) {
+      router.push("/login");
+    } else {
+      router.push("/");
+    }
   };
 
   return (
     <div className="relative min-h-screen flex flex-col text-slate-900 overflow-hidden bg-[#fafafa]">
-      {/* BACKGROUND - Gradient violet dynamique */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2"
@@ -42,7 +47,6 @@ export default function CGUPage() {
         />
       </div>
 
-      {/* HEADER */}
       <header className="flex items-center justify-between px-8 py-6 max-w-6xl mx-auto w-full relative z-10">
         <motion.button
           onClick={handleBack}
@@ -69,10 +73,9 @@ export default function CGUPage() {
             eposight
           </h1>
         </motion.div>
-        <div className="w-20"></div> {/* Spacer pour centrer le titre */}
+        <div className="w-20"></div>
       </header>
 
-      {/* CONTENT */}
       <main className="flex-1 px-6 py-8 max-w-4xl mx-auto w-full relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -184,7 +187,6 @@ export default function CGUPage() {
         </motion.div>
       </main>
 
-      {/* FOOTER */}
       <footer className="text-center py-8 text-sm text-slate-600">
         Reposight © 2025
       </footer>

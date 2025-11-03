@@ -14,44 +14,13 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Empêcher le scroll du body quand le menu est ouvert
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isMobileMenuOpen]);
-
-  const scrollToSection = (id: string) => {
-    setTimeout(() => {
-      const element = document.getElementById(id);
-      if (!element) {
-        console.error(`Section with id "${id}" not found`);
-        return;
-      }
-
-      const headerHeight = 90;
-      const elementTop = element.offsetTop;
-      const offsetPosition = elementTop - headerHeight;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
-    }, 50);
-  };
   return (
     <div className="relative min-h-screen flex flex-col text-slate-900 overflow-hidden bg-[#fafafa]">
-      {/* BACKGROUND - Gradient violet dynamique */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2 will-change-[opacity,transform]"
@@ -90,14 +59,13 @@ export default function LandingPage() {
         />
       </div>
 
-      {/* HEADER */}
       <header className="sticky top-0 z-50 py-4">
         <div className="max-w-7xl mx-auto px-4 ">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-white/90 backdrop-blur-lg rounded-full border border-slate-200 shadow-sm px-6 py-3 flex items-center justify-between"
+            className="bg-white/90 backdrop-blur-xs rounded-full border border-slate-200 shadow-sm px-6 py-3 flex items-center justify-between"
           >
             <div
               className="flex items-center gap-3 "
@@ -113,7 +81,6 @@ export default function LandingPage() {
               </span>
             </div>
 
-            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-2 rounded-full px-4 py-2">
               <a
                 href="#fonctionnalites"
@@ -135,7 +102,6 @@ export default function LandingPage() {
               </a>
             </nav>
 
-            {/* Desktop CTA Button */}
             <div className="hidden md:flex items-center gap-4">
               <Link
                 href="/login"
@@ -146,7 +112,6 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 rounded-full hover:bg-slate-100 transition-colors"
@@ -160,18 +125,16 @@ export default function LandingPage() {
             </button>
           </motion.div>
 
-          {/* Mobile Menu Overlay */}
           {isMobileMenuOpen && (
             <>
-              {/* Backdrop flouté */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+                className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm  md:hidden"
               />
-              {/* Menu */}
+
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -216,9 +179,18 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* HERO SECTION */}
       <section className="relative z-10 pt-16 pb-36 px-6">
-        <div className="max-w-6xl mx-auto text-center">
+        {/* Brume violette légère centrée sur la section hero */}
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          style={{ zIndex: 0 }}
+        >
+          <div
+            className="w-[900px] h-[900px] rounded-full blur-[250px]"
+            style={{ backgroundColor: "rgba(139, 92, 246, 0.35)" }}
+          ></div>
+        </div>
+        <div className="relative max-w-6xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -301,12 +273,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SEPARATOR */}
       <div className="relative z-10 border-t border-gradient-to-r from-transparent via-slate-200 to-transparent">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-200/30 to-transparent h-px"></div>
       </div>
 
-      {/* FEATURES SECTION */}
       <section
         id="fonctionnalites"
         className="relative z-10 py-24 px-6 scroll-mt-24 bg-gradient-to-b from-transparent via-violet-50/5 to-transparent"
@@ -375,12 +345,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SEPARATOR */}
       <div className="relative z-10 border-t border-gradient-to-r from-transparent via-slate-200 to-transparent">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-200/40 to-transparent h-px"></div>
       </div>
 
-      {/* HOW IT WORKS */}
       <section
         id="comment-ca-marche"
         className="relative z-10 py-24 px-6 scroll-mt-24 bg-gradient-to-b from-transparent via-violet-50/5 to-transparent"
@@ -447,12 +415,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SEPARATOR */}
       <div className="relative z-10 border-t border-gradient-to-r from-transparent via-slate-200 to-transparent">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-fuchsia-200/40 to-transparent h-px"></div>
       </div>
 
-      {/* TESTIMONIALS */}
       <section
         id="avis"
         className="relative z-10 py-24 pb-32 px-6 scroll-mt-24 bg-gradient-to-b from-transparent via-violet-50/5 to-transparent"
@@ -531,7 +497,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="relative z-10 py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col items-center justify-between gap-4">

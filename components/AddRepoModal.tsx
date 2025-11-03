@@ -38,6 +38,7 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
       repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       repo.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  console.log("repos", repos);
 
   const toggleRepo = (repoId: number) => {
     setSelectedRepos((prev) =>

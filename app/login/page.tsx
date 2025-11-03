@@ -16,12 +16,11 @@ export default function LoginPage() {
   };
 
   const handleBack = () => {
-    router.back();
+    router.push("/");
   };
 
   return (
     <div className="relative min-h-screen flex flex-col text-slate-900 overflow-hidden bg-[#fafafa]">
-      {/* BACKGROUND - Gradient violet dynamique */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2"
@@ -50,7 +49,6 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* HEADER */}
       <header className="flex items-center justify-between px-8 py-6 max-w-6xl mx-auto w-full relative z-10">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -80,12 +78,10 @@ export default function LoginPage() {
             eposight
           </h1>
         </motion.div>
-        <div className="w-20"></div> {/* Spacer pour centrer le titre */}
+        <div className="w-20"></div>
       </header>
 
-      {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 relative z-10">
-        {/* LOGIN CARD */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -142,7 +138,6 @@ export default function LoginPage() {
         </motion.div>
       </main>
 
-      {/* FOOTER */}
       <footer className="text-center py-8 text-sm text-slate-600">
         Reposight © 2025
       </footer>

@@ -14,7 +14,8 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
+import { useDebounce } from "use-debounce";
 
 import {
   DropdownMenu,
@@ -30,159 +31,54 @@ import { useQueryUser } from "@/query/useQueryUser";
 import { useMutationLogout } from "@/mutation/useMutationLogout";
 import { useAuthStore } from "@/lib/authStore";
 import { AddRepoModal } from "@/components/AddRepoModal";
-
-// Type pour les repos
-interface Repo {
-  id: string;
-  name: string;
-  description: string;
-  addedDate: Date; // Date d'ajout du projet
-  lastCommit: {
-    message: string;
-    author: string;
-    date: string;
-    hash: string;
-    dateTime: Date; // Date réelle du commit pour le tri
-  };
-}
+import { useQueryRepos } from "@/query/useQueryRepos";
+import { ErrorMessage } from "@/components/ErrorMessage";
 
 type SortType = "added" | "oldest-commit" | "newest-commit";
 
-// Fausses données de repos
-const now = new Date();
-const mockRepos: Repo[] = [
-  {
-    id: "1",
-    name: "react-dashboard",
-    description:
-      "Un dashboard moderne et réactif pour la gestion de projets avec React et TypeScript",
-    addedDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), // Il y a 30 jours
-    lastCommit: {
-      message: "feat: ajout du système de notifications",
-      author: "Jean Dupont",
-      date: "Il y a 2 heures",
-      hash: "a3f5b2c",
-      dateTime: new Date(now.getTime() - 2 * 60 * 60 * 1000), // Il y a 2 heures
-    },
-  },
-  {
-    id: "2",
-    name: "api-backend",
-    description:
-      "API REST complète avec Node.js, Express et MongoDB pour la gestion des utilisateurs",
-    addedDate: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000), // Il y a 15 jours
-    lastCommit: {
-      message: "fix: correction du bug de synchronisation",
-      author: "Marie Martin",
-      date: "Il y a 5 heures",
-      hash: "b7d4e1f",
-      dateTime: new Date(now.getTime() - 5 * 60 * 60 * 1000), // Il y a 5 heures
-    },
-  },
-  {
-    id: "3",
-    name: "mobile-app",
-    description:
-      "Application mobile cross-platform développée avec React Native et Expo",
-    addedDate: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000), // Il y a 60 jours
-    lastCommit: {
-      message: "refactor: amélioration des performances",
-      author: "Pierre Durand",
-      date: "Il y a 1 jour",
-      hash: "c9a2b8d",
-      dateTime: new Date(now.getTime() - 24 * 60 * 60 * 1000), // Il y a 1 jour
-    },
-  },
-  {
-    id: "4",
-    name: "design-system",
-    description:
-      "Système de design cohérent avec des composants réutilisables et une documentation complète",
-    addedDate: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000), // Il y a 45 jours
-    lastCommit: {
-      message: "docs: mise à jour de la documentation",
-      author: "Sophie Leroy",
-      date: "Il y a 2 jours",
-      hash: "d4f6c3a",
-      dateTime: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), // Il y a 2 jours
-    },
-  },
-  {
-    id: "5",
-    name: "auth-service",
-    description:
-      "Service d'authentification sécurisé avec JWT, OAuth2 et gestion des sessions",
-    addedDate: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000), // Il y a 10 jours
-    lastCommit: {
-      message: "security: amélioration de la validation des tokens",
-      author: "Lucas Bernard",
-      date: "Il y a 3 jours",
-      hash: "e8b5d2c",
-      dateTime: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), // Il y a 3 jours
-    },
-  },
-  {
-    id: "6",
-    name: "data-analytics",
-    description:
-      "Plateforme d'analyse de données en temps réel avec visualisations interactives",
-    addedDate: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000), // Il y a 5 jours
-    lastCommit: {
-      message: "feat: ajout des graphiques en temps réel",
-      author: "Emma Rousseau",
-      date: "Il y a 4 jours",
-      hash: "f2a7e4b",
-      dateTime: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000), // Il y a 4 jours
-    },
-  },
-];
-
 export default function Dashboard() {
-  const { data, isLoading, error } = useQueryUser();
+  const { data, isLoading, error: userError } = useQueryUser();
+  const {
+    data: reposData,
+    isLoading: isReposLoading,
+    error: reposError,
+  } = useQueryRepos();
   const { mutate: logoutMutate, isPending: isLoggingOut } = useMutationLogout();
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [debouncedSearch] = useDebounce(searchQuery, 500);
   const [sortType, setSortType] = useState<SortType>("added");
   const [isAddRepoModalOpen, setIsAddRepoModalOpen] = useState(false);
 
-  // Debounce de 0.5 seconde
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Filtrage et tri des repos
+  // Étant donné qu'il ne va pas y avoir des centaines ou des milliers de repo, j'ai opté pour une recherche (searchbar + filtre) en front uniquement.
   const filteredRepos = useMemo(() => {
-    let repos = mockRepos;
+    if (!reposData) return [];
+
+    let repos = reposData.map((repo) => ({
+      ...repo,
+      addedDate: new Date(repo.addedDate),
+      lastCommit: {
+        ...repo.lastCommit,
+        dateTime: new Date(repo.lastCommit.dateTime),
+      },
+    }));
 
     // Filtrage par recherche
     if (debouncedSearch.trim()) {
       const query = debouncedSearch.toLowerCase();
-      repos = repos.filter(
-        (repo) =>
-          repo.name.toLowerCase().includes(query) ||
-          repo.description.toLowerCase().includes(query) ||
-          repo.lastCommit.message.toLowerCase().includes(query)
-      );
+      repos = repos.filter((repo) => repo.name.toLowerCase().includes(query));
     }
 
     // Tri par date
     const sortedRepos = [...repos].sort((a, b) => {
       switch (sortType) {
         case "added":
-          // Par date d'ajout (du plus récent au plus ancien)
           return b.addedDate.getTime() - a.addedDate.getTime();
         case "newest-commit":
-          // Par commit le plus récent
           return (
             b.lastCommit.dateTime.getTime() - a.lastCommit.dateTime.getTime()
           );
         case "oldest-commit":
-          // Par commit le plus ancien
           return (
             a.lastCommit.dateTime.getTime() - b.lastCommit.dateTime.getTime()
           );
@@ -192,7 +88,7 @@ export default function Dashboard() {
     });
 
     return sortedRepos;
-  }, [debouncedSearch, sortType]);
+  }, [reposData, debouncedSearch, sortType]);
 
   const handleClientSideLogout = () => {
     // Nettoyer le token d'accès du store
@@ -215,14 +111,6 @@ export default function Dashboard() {
     });
   };
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    // Simulation d'un refresh
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1000);
-  };
-
   const handleEdit = (repoId: string) => {
     console.log("Modifier le repo:", repoId);
     // À implémenter
@@ -233,19 +121,19 @@ export default function Dashboard() {
     // À implémenter
   };
 
-  if (error) {
+  if (userError || reposError) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-slate-900">
-        <div className="text-xl text-red-600">
-          Erreur lors du chargement des données
-        </div>
-      </div>
+      <ErrorMessage
+        error={userError || reposError}
+        title="Erreur de chargement des données"
+        subtitle="Veuillez réessayer plus tard."
+        // onRetry={() => window.location.reload()}
+      />
     );
   }
 
   return (
     <div className="relative min-h-screen p-8 text-slate-900 overflow-hidden bg-[#fafafa]">
-      {/* BACKGROUND - Gradient violet dynamique */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2 will-change-[opacity,transform]"
@@ -369,7 +257,6 @@ export default function Dashboard() {
         </motion.button>
       </div>
 
-      {/* Barre de recherche et filtre */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -439,29 +326,33 @@ export default function Dashboard() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          >
+          <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
             <RefreshCw
-              className={`text-violet-600 ${
-                isRefreshing ? "animate-spin" : ""
-              }`}
+              // className={`text-violet-600 ${"animate-spin"}`}
+              className={`text-violet-600 `}
               size={20}
             />
           </button>
         </div>
       </motion.div>
 
-      {/* Liste des repos */}
-      {filteredRepos.length === 0 ? (
+      {isReposLoading ? (
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-48 rounded-2xl bg-slate-200" />
+          ))}
+        </div>
+      ) : filteredRepos.length === 0 ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="relative z-10 text-center py-16"
         >
-          <p className="text-slate-600 text-lg">Aucun repository trouvé</p>
+          <p className="text-slate-600 text-lg">
+            {reposData && reposData.length === 0
+              ? "Aucun repository ajouté. Cliquez sur + pour en ajouter."
+              : "Aucun repository trouvé"}
+          </p>
         </motion.div>
       ) : (
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -473,7 +364,6 @@ export default function Dashboard() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 hover:shadow-xl hover:border-violet-300/50 transition-all duration-300 cursor-pointer group"
             >
-              {/* En-tête du repo */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3 flex-1">
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
@@ -518,12 +408,10 @@ export default function Dashboard() {
                 </DropdownMenu>
               </div>
 
-              {/* Description */}
               <p className="text-slate-600 text-sm mb-5 line-clamp-2">
                 {repo.description}
               </p>
 
-              {/* Dernier commit */}
               <div className="pt-4 border-t border-violet-200/30">
                 <div className="flex items-center gap-2 mb-2">
                   <Clock className="text-violet-500" size={14} />
@@ -545,7 +433,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Modal d'ajout de repos */}
       <AddRepoModal
         open={isAddRepoModalOpen}
         onOpenChange={setIsAddRepoModalOpen}
