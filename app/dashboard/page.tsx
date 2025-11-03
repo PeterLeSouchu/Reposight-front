@@ -32,10 +32,12 @@ import { AddRepoModal } from "@/components/AddRepoModal";
 import { useQueryRepos } from "@/query/useQueryRepos";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { useMutationDeleteRepo } from "@/mutation/useMutationDeleteRepo";
+import { useMutationDeleteAccount } from "@/mutation/useMutationDeleteAccount";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { RepoCard } from "@/components/RepoCard";
 
 type SortType = "added" | "oldest-commit" | "newest-commit";
 
@@ -48,6 +50,8 @@ export default function Dashboard() {
   } = useQueryRepos();
   const { mutate: logoutMutate, isPending: isLoggingOut } = useMutationLogout();
   const { mutate: deleteRepo, isPending: isDeleting } = useMutationDeleteRepo();
+  const { mutate: deleteAccount, isPending: isDeletingAccount } =
+    useMutationDeleteAccount();
   const queryClient = useQueryClient();
   console.log("reposData", reposData);
 
@@ -56,16 +60,21 @@ export default function Dashboard() {
   const [sortType, setSortType] = useState<SortType>("added");
   const [isAddRepoModalOpen, setIsAddRepoModalOpen] = useState(false);
   const [repoToDelete, setRepoToDelete] = useState<number | null>(null);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
 
   // Étant donné qu'il ne va pas y avoir des centaines ou des milliers de repo, j'ai opté pour une recherche (searchbar + filtre) en front uniquement.
   const filteredRepos = useMemo(() => {
     if (!reposData) return [];
 
-    let repos = reposData.map((repo) => ({
-      ...repo,
-      selectedAt: new Date(repo.selectedAt || repo.pushed_at),
-      pushed_at: new Date(repo.pushed_at),
-    }));
+    let repos = reposData.map((repo) => {
+      const selectedAt = new Date(repo.selectedAt || repo.pushed_at);
+      const pushed_atDate = new Date(repo.pushed_at);
+      return {
+        ...repo,
+        selectedAt,
+        pushed_atDate,
+      };
+    });
 
     // Filtrage par recherche
     if (debouncedSearch.trim()) {
@@ -79,9 +88,9 @@ export default function Dashboard() {
         case "added":
           return b.selectedAt.getTime() - a.selectedAt.getTime();
         case "newest-commit":
-          return b.pushed_at.getTime() - a.pushed_at.getTime();
+          return b.pushed_atDate.getTime() - a.pushed_atDate.getTime();
         case "oldest-commit":
-          return a.pushed_at.getTime() - b.pushed_at.getTime();
+          return a.pushed_atDate.getTime() - b.pushed_atDate.getTime();
         default:
           return 0;
       }
@@ -129,6 +138,24 @@ export default function Dashboard() {
           description: message,
         });
         setRepoToDelete(null);
+      },
+    });
+  };
+
+  const handleDeleteAccountConfirm = () => {
+    deleteAccount(undefined, {
+      onSuccess: () => {
+        // toast.success("Compte supprimé avec succès");
+        useAuthStore.getState().clearAccessToken();
+        localStorage.clear();
+        window.location.href = "/";
+      },
+      onError: (error) => {
+        const message = getErrorMessage(error);
+        toast.error("Erreur lors de la suppression du compte", {
+          description: message,
+        });
+        setShowDeleteAccountModal(false);
       },
     });
   };
@@ -235,7 +262,10 @@ export default function Dashboard() {
                   </DropdownMenuItem>
 
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => setShowDeleteAccountModal(true)}
+                  >
                     <Trash2 size={14} /> Supprimer mon compte
                   </DropdownMenuItem>
 
@@ -359,91 +389,51 @@ export default function Dashboard() {
             ))}
           </div>
         ) : filteredRepos.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="relative z-10 text-center py-16"
-          >
-            <p className="text-slate-600 text-lg">
-              {reposData && reposData.length === 0
-                ? "Aucun repository ajouté. Cliquez sur + pour en ajouter."
-                : "Aucun repository trouvé"}
-            </p>
-          </motion.div>
+          reposData && reposData.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="relative z-10 flex flex-col items-center justify-center py-20 px-6"
+            >
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-violet-100 rounded-full blur-2xl opacity-50 animate-pulse" />
+                <div className="relative w-32 h-32 bg-gradient-to-br from-violet-100 to-indigo-100 rounded-full flex items-center justify-center border-4 border-violet-200">
+                  <GitBranch className="text-violet-600" size={64} />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                Aucun repo pour le moment
+              </h3>
+              <p className="text-slate-600 text-center max-w-md mb-8">
+                Commencez par ajouter vos premiers repos GitHub pour bénéficier
+                d'analyses détaillées et de rapports personnalisés.
+              </p>
+              <button
+                onClick={() => setIsAddRepoModalOpen(true)}
+                className="px-8 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors font-medium shadow-lg cursor-pointer shadow-violet-900/20 border border-violet-500/30 flex items-center gap-2"
+              >
+                <Plus size={20} />
+                Ajouter mon premier repo
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="relative z-10 text-center py-16"
+            >
+              <p className="text-slate-600 text-lg">Aucun repository trouvé</p>
+            </motion.div>
+          )
         ) : (
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredRepos.map((repo, index) => (
-              <motion.div
+            {filteredRepos.map((repo) => (
+              <RepoCard
                 key={repo.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-sm sm:hover:shadow-xl sm:hover:border-violet-300/50 transition-all duration-300 cursor-pointer group"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-                      <GitBranch className="text-white" size={18} />
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-violet-600 transition-colors">
-                      {repo.name}
-                    </h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <a
-                      href={repo.html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-2 rounded-lg cursor-pointer sm:hover:bg-violet-50 transition-colors group/link"
-                      aria-label="Ouvrir le repository sur GitHub"
-                    >
-                      <ExternalLink
-                        className="text-slate-400 sm:group-hover/link:text-violet-600 transition-colors"
-                        size={18}
-                      />
-                    </a>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(repo.id);
-                      }}
-                      className="p-2 rounded-lg cursor-pointer sm:hover:bg-red-50 transition-colors group/trash"
-                      aria-label="Supprimer le repository"
-                    >
-                      <Trash2
-                        className="text-slate-400 sm:group-hover/trash:text-red-600 transition-colors"
-                        size={18}
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                <p className="text-slate-600 text-sm mb-5 line-clamp-2">
-                  {repo.description}
-                </p>
-
-                <div className="pt-4 border-t border-violet-200/30">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Clock className="text-violet-500" size={14} />
-                    <span className="text-xs text-slate-500 font-medium">
-                      Mis à jour
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      {repo.pushed_at.toLocaleDateString("fr-FR")}
-                    </span>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${
-                        repo.private
-                          ? "bg-orange-100 text-orange-700"
-                          : "bg-green-100 text-green-700"
-                      }`}
-                    >
-                      {repo.private ? "Privé" : "Public"}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
+                repo={repo}
+                onDelete={handleDeleteClick}
+              />
             ))}
           </div>
         )}
@@ -458,11 +448,22 @@ export default function Dashboard() {
           onOpenChange={(open) => {
             if (!open) setRepoToDelete(null);
           }}
-          title="Supprimer le repository"
-          description="Êtes-vous sûr de vouloir supprimer ce repository ? Cette action est irréversible."
+          title="Supprimer le repo"
+          description="Êtes-vous sûr de vouloir supprimer ce repo ? Cette action est irréversible."
           confirmText="Supprimer"
           cancelText="Annuler"
           onConfirm={handleDeleteConfirm}
+          variant="destructive"
+        />
+
+        <ConfirmDialog
+          open={showDeleteAccountModal}
+          onOpenChange={setShowDeleteAccountModal}
+          title="Supprimer mon compte"
+          description="Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible et toutes vos données seront définitivement supprimées."
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          onConfirm={handleDeleteAccountConfirm}
           variant="destructive"
         />
       </div>

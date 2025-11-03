@@ -49,6 +49,17 @@ export default function LoginPage() {
         />
       </div>
 
+      {/* Brume violette légère centrée sur la section */}
+      <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        style={{ zIndex: 0 }}
+      >
+        <div
+          className="w-[900px] h-[900px] rounded-full blur-[250px]"
+          style={{ backgroundColor: "rgba(139, 92, 246, 0.35)" }}
+        ></div>
+      </div>
+
       <header className="flex items-center justify-between px-8 py-6 max-w-6xl mx-auto w-full relative z-10">
         <motion.div
           initial={{ opacity: 0, x: -20 }}

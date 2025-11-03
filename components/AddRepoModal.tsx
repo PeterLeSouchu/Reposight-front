@@ -143,11 +143,15 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
                         <h3 className="font-semibold text-slate-900 truncate">
                           {repo.name}
                         </h3>
-                        {repo.private && (
-                          <span className="text-xs px-2 py-0.5 bg-slate-200 text-slate-600 rounded-full">
-                            Privé
-                          </span>
-                        )}
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            repo.private
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-green-100 text-green-700"
+                          }`}
+                        >
+                          {repo.private ? "Privé" : "Public"}
+                        </span>
                       </div>
                       {repo.description && (
                         <p className="text-sm text-slate-600 line-clamp-2 mb-2">
@@ -163,7 +167,7 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
                         )}
                         {repo.pushed_at && (
                           <span>
-                            Mis à jour{" "}
+                            Mis à jour le{" "}
                             {new Date(repo.pushed_at).toLocaleDateString(
                               "fr-FR"
                             )}
