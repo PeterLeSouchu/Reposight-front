@@ -65,6 +65,8 @@ export default function Dashboard() {
   const [repoToDelete, setRepoToDelete] = useState<number | null>(null);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
 
+  console.log("reposData", reposData?.repos);
+
   // Notifier les dépôts supprimés de GitHub
   useNotifyDeletedRepos(reposData?.reposDeletedFromGithub);
 

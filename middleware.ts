@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Routes qui nécessitent une authentification
-  const protectedRoutes = ["/dashboard"];
+  const protectedRoutes = ["/dashboard", "/repository"];
 
   // Routes interdites si l'utilisateur est déjà connecté
   const authRoutes = ["/", "/login"];

@@ -138,7 +138,6 @@ export function NextStepWrapper({ children }: { children: React.ReactNode }) {
     (state) => state.setOnTourComplete
   );
 
-  // Fonction pour marquer l'onboarding comme vu
   const handleOnboardingComplete = useCallback(() => {
     markOnboardingAsSeen(undefined, {
       onSuccess: () => {
@@ -147,7 +146,6 @@ export function NextStepWrapper({ children }: { children: React.ReactNode }) {
     });
   }, [markOnboardingAsSeen, queryClient]);
 
-  // Configurer le callback dans le store
   useEffect(() => {
     setOnTourComplete(handleOnboardingComplete);
     return () => {
@@ -159,7 +157,6 @@ export function NextStepWrapper({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && isNextStepVisible) {
-        // Appeler la mutation avant de fermer
         handleOnboardingComplete();
         closeNextStep();
       }

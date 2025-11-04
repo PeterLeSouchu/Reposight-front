@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { ExternalLink, GitBranch, Clock, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Repo } from "@/types/repo";
 import { formatRelativeDate } from "@/lib/utils";
 
@@ -11,11 +12,18 @@ interface RepoCardProps {
 }
 
 export function RepoCard({ repo, onDelete }: RepoCardProps) {
+  const router = useRouter();
+
+  const handleCardClick = () => {
+    router.push(`/repository/${repo.id}`);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
+      onClick={handleCardClick}
       className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-sm sm:hover:shadow-xl sm:hover:border-violet-300/50 transition-all duration-300 cursor-pointer group flex flex-col h-full"
     >
       <div className="flex items-start justify-between mb-4">
