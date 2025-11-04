@@ -74,10 +74,9 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Ajouter des repositories</DialogTitle>
+          <DialogTitle>Ajouter des repos</DialogTitle>
           <DialogDescription>
-            Sélectionnez un ou plusieurs repositories à ajouter à votre
-            dashboard
+            Sélectionnez un ou plusieurs repos à ajouter à votre dashboard
           </DialogDescription>
         </DialogHeader>
 

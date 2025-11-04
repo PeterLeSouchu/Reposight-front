@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { RepoCard } from "@/components/RepoCard";
+import { useNotifyDeletedRepos } from "@/hooks/useNotifyDeletedRepos";
 
 type SortType = "added" | "oldest-commit" | "newest-commit";
 
@@ -62,11 +63,14 @@ export default function Dashboard() {
   const [repoToDelete, setRepoToDelete] = useState<number | null>(null);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
 
+  // Notifier les repos supprimés de GitHub
+  useNotifyDeletedRepos(reposData?.reposDeletedFromGithub);
+
   // Étant donné qu'il ne va pas y avoir des centaines ou des milliers de repo, j'ai opté pour une recherche (searchbar + filtre) en front uniquement.
   const filteredRepos = useMemo(() => {
     if (!reposData) return [];
 
-    let repos = reposData.map((repo) => {
+    let repos = reposData.repos.map((repo) => {
       const selectedAt = new Date(repo.selectedAt || repo.pushed_at);
       const pushed_atDate = new Date(repo.pushed_at);
       return {
@@ -372,13 +376,13 @@ export default function Dashboard() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            {/* <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
               <RefreshCw
                 // className={`text-violet-600 ${"animate-spin"}`}
                 className={`text-violet-600 `}
                 size={20}
               />
-            </button>
+            </button> */}
           </div>
         </motion.div>
 
@@ -389,7 +393,7 @@ export default function Dashboard() {
             ))}
           </div>
         ) : filteredRepos.length === 0 ? (
-          reposData && reposData.length === 0 ? (
+          reposData && reposData.repos.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
