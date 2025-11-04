@@ -48,11 +48,11 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
   const handleAdd = () => {
     selectRepos(selectedRepos, {
       onSuccess: () => {
-        // Invalider la query des repos pour rafraîchir la liste
+        // Invalider la query des dépôts pour rafraîchir la liste
         queryClient.invalidateQueries({ queryKey: ["repos"] });
         // Afficher un toast de succès
         toast.success(
-          `${selectedRepos.length} repo${
+          `${selectedRepos.length} dépôt${
             selectedRepos.length > 1 ? "s" : ""
           } ajouté${selectedRepos.length > 1 ? "s" : ""} avec succès`
         );
@@ -63,7 +63,7 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
       },
       onError: (error) => {
         const message = getErrorMessage(error);
-        toast.error("Erreur lors de l'ajout des repos", {
+        toast.error("Erreur lors de l'ajout des dépôts", {
           description: message,
         });
       },
@@ -74,9 +74,9 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Ajouter des repos</DialogTitle>
+          <DialogTitle>Ajouter des dépôts</DialogTitle>
           <DialogDescription>
-            Sélectionnez un ou plusieurs repos à ajouter à votre dashboard
+            Sélectionnez un ou plusieurs dépôts à ajouter à votre dashboard
           </DialogDescription>
         </DialogHeader>
 
@@ -88,14 +88,14 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
           />
           <input
             type="text"
-            placeholder="Rechercher un repo..."
+            placeholder="Rechercher un dépôt..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-violet-200/50 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
           />
         </div>
 
-        {/* Liste des repos */}
+        {/* Liste des dépôts */}
         <div className="flex-1 overflow-y-auto space-y-2 pr-2">
           {isLoading ? (
             <div className="space-y-3">
@@ -106,7 +106,7 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
           ) : error ? (
             <ErrorMessage
               error={error}
-              title="Erreur lors du chargement des repos"
+              title="Erreur lors du chargement des dépôts"
               variant="inline"
             />
           ) : filteredRepos && filteredRepos.length > 0 ? (
@@ -176,7 +176,7 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
               ))
           ) : (
             <div className="text-center py-8 text-slate-500">
-              Aucun repo trouvé
+              Aucun dépôt trouvé
             </div>
           )}
         </div>
@@ -185,10 +185,10 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
         <div className="flex items-center justify-between pt-4 border-t border-violet-200/50">
           <span className="text-sm text-slate-600">
             {selectedRepos.length > 0
-              ? `${selectedRepos.length} repo${
+              ? `${selectedRepos.length} dépôt${
                   selectedRepos.length > 1 ? "s" : ""
                 } sélectionné${selectedRepos.length > 1 ? "s" : ""}`
-              : "Sélectionnez au moins un repo"}
+              : "Sélectionnez au moins un dépôt"}
           </span>
           <div className="flex items-center gap-3">
             <button

@@ -38,6 +38,9 @@ importers:
       next:
         specifier: 15.5.5
         version: 15.5.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      nextstepjs:
+        specifier: ^2.1.2
+        version: 2.1.2(motion@12.23.24(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(next@15.5.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -968,6 +971,23 @@ packages:
       sass:
         optional: true
 
+  nextstepjs@2.1.2:
+    resolution: {integrity: sha512-m9WnoeSFJaA9804vZo78GJZT9emmCfmmlR7Mewnd4OGcYSZv8PGt2uNeJRG3KedWt/sPov+rlMLA+kA3NWzXoQ==}
+    peerDependencies:
+      '@remix-run/react': '>=1.0.0'
+      motion: '>=11'
+      next: '>=13.0.0'
+      react: '>=18'
+      react-dom: '>=18'
+      react-router: '>=7.0.0'
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      next:
+        optional: true
+      react-router:
+        optional: true
+
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -1890,6 +1910,14 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
+
+  nextstepjs@2.1.2(motion@12.23.24(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(next@15.5.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      motion: 12.23.24(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+    optionalDependencies:
+      next: 15.5.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
 
   picocolors@1.1.1: {}
 

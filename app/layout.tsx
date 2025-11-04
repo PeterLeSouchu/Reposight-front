@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReactQueryProvider } from "../components/ReactQueryProvider";
+import { NextStepProvider } from "nextstepjs";
+import { NextStepWrapper } from "../components/NextStepWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +31,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased `}
         suppressHydrationWarning={true}
       >
-        <ReactQueryProvider>{children}</ReactQueryProvider>
+        <ReactQueryProvider>
+          <NextStepProvider>
+            <NextStepWrapper>{children}</NextStepWrapper>
+          </NextStepProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

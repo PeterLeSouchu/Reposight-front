@@ -12,8 +12,9 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useDebounce } from "use-debounce";
+import { useNextStep } from "nextstepjs";
 
 import {
   DropdownMenu,
@@ -54,6 +55,7 @@ export default function Dashboard() {
   const { mutate: deleteAccount, isPending: isDeletingAccount } =
     useMutationDeleteAccount();
   const queryClient = useQueryClient();
+  const { startNextStep } = useNextStep();
   console.log("reposData", reposData);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,10 +65,17 @@ export default function Dashboard() {
   const [repoToDelete, setRepoToDelete] = useState<number | null>(null);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
 
-  // Notifier les repos supprimés de GitHub
+  // Notifier les dépôts supprimés de GitHub
   useNotifyDeletedRepos(reposData?.reposDeletedFromGithub);
 
-  // Étant donné qu'il ne va pas y avoir des centaines ou des milliers de repo, j'ai opté pour une recherche (searchbar + filtre) en front uniquement.
+  // Démarrer le tour si l'utilisateur est nouveau
+  useEffect(() => {
+    if (!isLoading && !isReposLoading && data && reposData && data.isNewUser) {
+      startNextStep("dashboardTour");
+    }
+  }, [isLoading, isReposLoading, data, reposData, startNextStep]);
+
+  // Étant donné qu'il ne va pas y avoir des centaines ou des milliers de dépôts, j'ai opté pour une recherche (searchbar + filtre) en front uniquement.
   const filteredRepos = useMemo(() => {
     if (!reposData) return [];
 
@@ -133,7 +142,7 @@ export default function Dashboard() {
     deleteRepo(repoToDelete, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["repos"] });
-        toast.success("Repository supprimé avec succès");
+        toast.success("Dépôt supprimé avec succès");
         setRepoToDelete(null);
       },
       onError: (error) => {
@@ -240,7 +249,10 @@ export default function Dashboard() {
               className="flex items-center gap-4"
             >
               <DropdownMenu>
-                <DropdownMenuTrigger className="cursor-pointer border-none outline-none hover:opacity-90 transition-opacity">
+                <DropdownMenuTrigger
+                  id="avatar-dropdown"
+                  className="cursor-pointer border-none outline-none hover:opacity-90 transition-opacity"
+                >
                   <img
                     src={data.avatar}
                     alt={`Avatar de ${data.username}`}
@@ -296,6 +308,7 @@ export default function Dashboard() {
           )}
 
           <motion.button
+            id="add-repo-button"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
@@ -303,7 +316,7 @@ export default function Dashboard() {
             className="w-10 h-10 sm:w-auto sm:px-6 sm:py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2"
           >
             <Plus size={20} />
-            <span className="hidden sm:inline">Nouveau repo</span>
+            <span className="hidden sm:inline">Nouveau dépôt</span>
           </motion.button>
         </div>
 
@@ -319,8 +332,9 @@ export default function Dashboard() {
               size={20}
             />
             <input
+              id="searchbar-input"
               type="text"
-              placeholder="Rechercher un repository..."
+              placeholder="Rechercher un dépôt..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-2  bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all shadow-sm"
@@ -328,7 +342,10 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-3">
             <DropdownMenu>
-              <DropdownMenuTrigger className="w-full md:w-auto px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-colors shadow-sm flex items-center justify-center gap-2">
+              <DropdownMenuTrigger
+                id="sort-dropdown"
+                className="w-full md:w-auto px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-colors shadow-sm flex items-center justify-center gap-2"
+              >
                 <ArrowUpDown className="text-violet-600" size={18} />
                 <span className="text-sm font-medium">
                   {sortType === "added"
@@ -407,10 +424,10 @@ export default function Dashboard() {
                 </div>
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                Aucun repo pour le moment
+                Aucun dépôt pour le moment
               </h3>
               <p className="text-slate-600 text-center max-w-md mb-8">
-                Commencez par ajouter vos premiers repos GitHub pour bénéficier
+                Commencez par ajouter vos premiers dépôts GitHub pour bénéficier
                 d'analyses détaillées et de rapports personnalisés.
               </p>
               <button
@@ -418,7 +435,7 @@ export default function Dashboard() {
                 className="px-8 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors font-medium shadow-lg cursor-pointer shadow-violet-900/20 border border-violet-500/30 flex items-center gap-2"
               >
                 <Plus size={20} />
-                Ajouter mon premier repo
+                Ajouter mon premier dépôt
               </button>
             </motion.div>
           ) : (
@@ -427,7 +444,7 @@ export default function Dashboard() {
               animate={{ opacity: 1 }}
               className="relative z-10 text-center py-16"
             >
-              <p className="text-slate-600 text-lg">Aucun repository trouvé</p>
+              <p className="text-slate-600 text-lg">Aucun dépôt trouvé</p>
             </motion.div>
           )
         ) : (
@@ -452,8 +469,8 @@ export default function Dashboard() {
           onOpenChange={(open) => {
             if (!open) setRepoToDelete(null);
           }}
-          title="Supprimer le repo"
-          description="Êtes-vous sûr de vouloir supprimer ce repo ?"
+          title="Supprimer le dépôt"
+          description="Êtes-vous sûr de vouloir supprimer ce dépôt ?"
           confirmText="Supprimer"
           cancelText="Annuler"
           onConfirm={handleDeleteConfirm}
