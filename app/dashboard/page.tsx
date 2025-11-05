@@ -228,28 +228,23 @@ export default function Dashboard() {
       <div className="absolute inset-0 z-0 dot-pattern" />
 
       <div className="relative z-10 max-w-7xl mx-auto p-8">
-        <div className="flex justify-between items-center gap-4 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="flex justify-between items-center gap-4 mb-8"
+        >
           {isLoading && (
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="flex items-center gap-4"
-            >
+            <div className="flex items-center gap-4">
               <Skeleton className="h-12 w-12 rounded-full bg-slate-200" />
               <div className="flex flex-col gap-2">
                 <Skeleton className="h-7 w-32 rounded-md bg-slate-200" />
                 <Skeleton className="h-5 w-48 rounded-md bg-slate-200" />
               </div>
-            </motion.div>
+            </div>
           )}
           {data && (
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="flex items-center gap-4"
-            >
+            <div className="flex items-center gap-4">
               <DropdownMenu>
                 <DropdownMenuTrigger
                   id="avatar-dropdown"
@@ -306,26 +301,23 @@ export default function Dashboard() {
                   {data.email}
                 </p>
               </div>
-            </motion.div>
+            </div>
           )}
 
-          <motion.button
+          <button
             id="add-repo-button"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
             onClick={() => setIsAddRepoModalOpen(true)}
             className="w-10 h-10 sm:w-auto sm:px-6 sm:py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2"
           >
             <Plus size={20} />
             <span className="hidden sm:inline">Nouveau dépôt</span>
-          </motion.button>
-        </div>
+          </button>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="relative z-10 mb-8 flex flex-col md:flex-row items-stretch md:items-center gap-3"
         >
           <div className="relative flex-1">
@@ -450,15 +442,27 @@ export default function Dashboard() {
             </motion.div>
           )
         ) : (
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredRepos.map((repo) => (
-              <RepoCard
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {filteredRepos.map((repo, index) => (
+              <motion.div
                 key={repo.id}
-                repo={repo}
-                onDelete={handleDeleteClick}
-              />
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.4 + index * 0.06,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+              >
+                <RepoCard repo={repo} onDelete={handleDeleteClick} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
 
         <AddRepoModal
