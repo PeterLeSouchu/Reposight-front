@@ -76,7 +76,7 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
         <DialogHeader>
           <DialogTitle>Ajouter des dépôts</DialogTitle>
           <DialogDescription>
-            Sélectionnez un ou plusieurs dépôts à ajouter à votre dashboard
+            Sélectionnez un ou plusieurs dépôts à ajouter à vos repos
           </DialogDescription>
         </DialogHeader>
 

@@ -43,6 +43,13 @@ import {
   TrendingDown,
   AlertTriangle,
   Info,
+  PlayCircle,
+  Timer,
+  Target,
+  MessageSquare,
+  Trash2,
+  HardDrive,
+  Scale,
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { Repo } from "@/types/repo";
@@ -138,7 +145,41 @@ export default function RepositoryPage() {
     forks: 38,
     watchers: 89,
     contributors: 12,
+    size: 45.2, // Mo
+    license: "MIT",
   };
+
+  // Métriques d'activité
+  const activityMetrics = {
+    avgCommitsPerDay: 2.3,
+    avgCommitsPerWeek: 16.1,
+    activeContributors: 8,
+  };
+
+  // Historique des rapports PDF
+  const reportHistory = [
+    {
+      id: 1,
+      name: "Rapport complet - Janvier 2024",
+      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      size: "2.3 MB",
+      url: "#",
+    },
+    {
+      id: 2,
+      name: "Rapport complet - Décembre 2023",
+      date: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
+      size: "2.1 MB",
+      url: "#",
+    },
+    {
+      id: 3,
+      name: "Rapport complet - Novembre 2023",
+      date: new Date(Date.now() - 65 * 24 * 60 * 60 * 1000).toISOString(),
+      size: "2.0 MB",
+      url: "#",
+    },
+  ];
 
   const recentActivity: ActivityEvent[] = [
     {
@@ -338,6 +379,40 @@ export default function RepositoryPage() {
     techDebt: 3.2,
   };
 
+  // Métriques de performance CI/CD
+  const cicdMetrics = {
+    avgBuildTime: 4.2, // minutes
+    testSuccessRate: 94.5, // %
+    lastBuildStatus: "success" as "success" | "failure" | "pending",
+    lastBuildDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    avgMergeTime: 2.3, // jours
+    avgIssueResolution: 5.8, // jours
+  };
+
+  // Métriques de sécurité
+  const securityMetrics = {
+    vulnerabilities: {
+      critical: 0,
+      high: 0,
+      medium: 2,
+      low: 1,
+    },
+    dependabotAlerts: 3,
+    lastSecurityScan: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+  };
+
+  // Métriques d'engagement
+  const engagementMetrics = {
+    avgIssueResponseTime: 4.2, // heures
+    issueCloseRate: 78.5, // %
+    prMergeRate: 85.2, // %
+    contributorActivity: {
+      active: 8,
+      occasional: 4,
+      inactive: 2,
+    },
+  };
+
   const contributors = [
     {
       name: "Jean Dupont",
@@ -462,7 +537,7 @@ export default function RepositoryPage() {
   };
 
   const handleBack = () => {
-    router.push("/dashboard");
+    router.push("/repositories");
   };
 
   const getActivityIcon = (type: string) => {
@@ -543,7 +618,7 @@ export default function RepositoryPage() {
           className="flex items-center gap-2 text-slate-600 hover:text-violet-600 transition-colors mb-6 cursor-pointer"
         >
           <ArrowLeft size={20} />
-          <span>Retour au dashboard</span>
+          <span>Retour aux repositories</span>
         </motion.button>
 
         {/* 1️⃣ Header du dépôt */}
@@ -575,18 +650,6 @@ export default function RepositoryPage() {
                       {repo.description}
                     </p>
                   </div>
-                </div>
-
-                {/* Dernier commit */}
-                <div className="flex items-center gap-3 mb-4 text-sm">
-                  <GitCommit className="text-violet-600" size={16} />
-                  <span className="text-slate-600">
-                    <span className="font-medium">
-                      {lastCommit.author.name}
-                    </span>{" "}
-                    • {lastCommit.message} •{" "}
-                    {formatRelativeDate(new Date(lastCommit.date))}
-                  </span>
                 </div>
 
                 {/* Langages */}
@@ -626,6 +689,30 @@ export default function RepositoryPage() {
                       {stats.contributors}
                     </span>
                   </div>
+                  <div className="flex items-center gap-1.5 text-slate-600">
+                    <HardDrive className="text-slate-500" size={16} />
+                    <span className="text-sm font-medium">{stats.size} Mo</span>
+                  </div>
+                  {stats.license && (
+                    <div className="flex items-center gap-1.5 text-slate-600">
+                      <Scale className="text-slate-500" size={16} />
+                      <span className="text-sm font-medium">
+                        {stats.license}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dernier commit */}
+                <div className="mt-4 flex items-center gap-3 text-sm">
+                  <GitCommit className="text-violet-600" size={16} />
+                  <span className="text-slate-600">
+                    <span className="font-medium">
+                      {lastCommit.author.name}
+                    </span>{" "}
+                    • {lastCommit.message} •{" "}
+                    {formatRelativeDate(new Date(lastCommit.date))}
+                  </span>
                 </div>
 
                 {/* Résumé IA */}
@@ -659,417 +746,23 @@ export default function RepositoryPage() {
                   <RefreshCw size={16} />
                   Actualiser
                 </Button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 🔔 Alertes importantes */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="mb-6 space-y-2"
-        >
-          {alerts.map((alert, index) => {
-            const Icon = alert.icon;
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className={`p-4 rounded-xl border ${
-                  alert.type === "warning"
-                    ? "bg-orange-50 border-orange-200/50 text-orange-900"
-                    : alert.type === "info"
-                    ? "bg-blue-50 border-blue-200/50 text-blue-900"
-                    : "bg-green-50 border-green-200/50 text-green-900"
-                } flex items-center justify-between`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon size={20} />
-                  <span className="text-sm font-medium">{alert.message}</span>
-                </div>
-                {alert.action && (
-                  <Button variant="ghost" size="sm" className="text-xs">
-                    {alert.action}
-                  </Button>
-                )}
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
-        {/* 📊 Métriques de code & Comparaison */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.08 }}
-          className="grid md:grid-cols-2 gap-6 mb-6"
-        >
-          {/* Métriques de code */}
-          <div className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg">
-            <div className="flex items-center gap-2 mb-4">
-              <Code className="text-violet-600" size={20} />
-              <h2 className="text-xl font-bold text-slate-900">
-                Métriques de code
-              </h2>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white p-4 rounded-xl border border-violet-100">
-                <div className="text-sm text-slate-600 mb-1">
-                  Lignes de code
-                </div>
-                <div className="text-2xl font-bold text-slate-900">
-                  {codeMetrics.totalLines.toLocaleString()}
-                </div>
-              </div>
-              <div className="bg-white p-4 rounded-xl border border-violet-100">
-                <div className="text-sm text-slate-600 mb-1">Fichiers</div>
-                <div className="text-2xl font-bold text-slate-900">
-                  {codeMetrics.totalFiles}
-                </div>
-              </div>
-              <div className="bg-white p-4 rounded-xl border border-violet-100">
-                <div className="text-sm text-slate-600 mb-1">
-                  Complexité moyenne
-                </div>
-                <div className="text-2xl font-bold text-slate-900">
-                  {codeMetrics.avgComplexity}
-                </div>
-              </div>
-              <div className="bg-white p-4 rounded-xl border border-violet-100">
-                <div className="text-sm text-slate-600 mb-1">
-                  Couverture tests
-                </div>
-                <div className="text-2xl font-bold text-violet-600">
-                  {codeMetrics.testCoverage}%
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 p-3 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200/50 rounded-lg">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-700">Tech Debt</span>
-                <span className="font-medium text-slate-900">
-                  {codeMetrics.techDebt}h estimées
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Comparaison temporelle */}
-          <div className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="text-violet-600" size={20} />
-              <h2 className="text-xl font-bold text-slate-900">
-                Cette semaine vs dernière
-              </h2>
-            </div>
-            <div className="space-y-3">
-              {Object.entries(comparison).map(([key, value]) => (
-                <div
-                  key={key}
-                  className="bg-white p-4 rounded-xl border border-violet-100"
+                <Button
+                  variant="outline"
+                  className="bg-white border-red-200 hover:bg-red-50 text-red-700"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-slate-700 capitalize">
-                      {key}
-                    </span>
-                    <div
-                      className={`flex items-center gap-1 text-sm font-medium ${
-                        value.change > 0
-                          ? "text-green-600"
-                          : value.change < 0
-                          ? "text-red-600"
-                          : "text-slate-600"
-                      }`}
-                    >
-                      {value.change > 0 ? (
-                        <ArrowUp size={14} />
-                      ) : value.change < 0 ? (
-                        <ArrowDown size={14} />
-                      ) : null}
-                      {Math.abs(value.change).toFixed(1)}%
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs text-slate-500">
-                    <span>
-                      Cette semaine:{" "}
-                      <span className="font-semibold text-slate-900">
-                        {value.current}
-                      </span>
-                    </span>
-                    <span>•</span>
-                    <span>
-                      Semaine dernière:{" "}
-                      <span className="font-semibold text-slate-900">
-                        {value.previous}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              ))}
+                  <Trash2 size={16} />
+                  Supprimer le repo
+                </Button>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        {/* 👥 Top contributeurs */}
+        {/* 📋 Activité récente (Timeline) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Users className="text-violet-600" size={20} />
-              <h2 className="text-xl font-bold text-slate-900">
-                Top contributeurs
-              </h2>
-            </div>
-            <Button variant="ghost" size="sm" className="text-xs">
-              Voir tout
-            </Button>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            {contributors.map((contributor, index) => (
-              <div
-                key={index}
-                className="bg-white p-4 rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <img
-                    src={contributor.avatar}
-                    alt={contributor.name}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium text-slate-900">
-                      {contributor.name}
-                    </div>
-                    <div className="text-sm text-slate-500">
-                      {contributor.commits} commits
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 text-xs text-slate-600">
-                  <div className="flex items-center gap-1">
-                    <ArrowUp className="text-green-600" size={12} />
-                    <span className="font-medium text-green-600">
-                      {contributor.additions.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ArrowDown className="text-red-600" size={12} />
-                    <span className="font-medium text-red-600">
-                      {contributor.deletions.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* 🌳 Branches actives */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.12 }}
-          className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <GitBranch className="text-violet-600" size={20} />
-              <h2 className="text-xl font-bold text-slate-900">
-                Branches actives
-              </h2>
-            </div>
-            <Button variant="ghost" size="sm" className="text-xs">
-              Voir toutes ({branches.length})
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {branches.map((branch, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <GitBranch className="text-violet-600" size={16} />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-slate-900">
-                        {branch.name}
-                      </span>
-                      {branch.protected && (
-                        <span title="Branche protégée">
-                          <Shield className="text-violet-600" size={12} />
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {branch.commits} commits •{" "}
-                      {formatRelativeDate(new Date(branch.lastCommit))}
-                    </div>
-                  </div>
-                </div>
-                <a href="#" className="text-violet-600 hover:text-violet-700">
-                  <ExternalLink size={16} />
-                </a>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* 📦 Dépendances */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.14 }}
-          className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Package className="text-violet-600" size={20} />
-              <h2 className="text-xl font-bold text-slate-900">Dépendances</h2>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <span>{dependencies.length} packages</span>
-              <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
-                {dependencies.filter((d) => d.outdated).length} obsolètes
-              </span>
-            </div>
-          </div>
-          <div className="space-y-2">
-            {dependencies.map((dep, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      dep.outdated ? "bg-orange-500" : "bg-green-500"
-                    }`}
-                  ></div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-slate-900">
-                        {dep.name}
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        {dep.version}
-                      </span>
-                      {dep.outdated && (
-                        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs">
-                          Obsolète
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs text-slate-500">{dep.type}</div>
-                  </div>
-                </div>
-                {dep.outdated && (
-                  <Button variant="ghost" size="sm" className="text-xs">
-                    Mettre à jour
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* 📈 Graphique d'activité */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.16 }}
-          className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Activity className="text-violet-600" size={20} />
-              <h2 className="text-xl font-bold text-slate-900">
-                Activité sur 30 jours
-              </h2>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-slate-600">
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-violet-500"></div>
-                <span>Commits</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-blue-500"></div>
-                <span>PRs</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-orange-500"></div>
-                <span>Issues</span>
-              </div>
-            </div>
-          </div>
-          {/* Graphique simple avec barres */}
-          <div className="bg-white p-4 rounded-xl border border-violet-100">
-            <div className="flex items-end justify-between gap-1 h-32">
-              {activityData.map((day, index) => {
-                const maxValue = Math.max(
-                  ...activityData.map((d) => d.commits + d.prs + d.issues)
-                );
-                const height =
-                  ((day.commits + day.prs + day.issues) / maxValue) * 100;
-                return (
-                  <div
-                    key={index}
-                    className="flex-1 flex flex-col items-center gap-1"
-                  >
-                    <div
-                      className="w-full flex flex-col-reverse gap-0.5 items-end"
-                      style={{ height: "100px" }}
-                    >
-                      <div
-                        className="w-full bg-violet-500 rounded-t"
-                        style={{
-                          height: `${(day.commits / maxValue) * 100}%`,
-                          minHeight: day.commits > 0 ? "2px" : "0",
-                        }}
-                        title={`${day.commits} commits`}
-                      ></div>
-                      <div
-                        className="w-full bg-blue-500 rounded-t"
-                        style={{
-                          height: `${(day.prs / maxValue) * 100}%`,
-                          minHeight: day.prs > 0 ? "2px" : "0",
-                        }}
-                        title={`${day.prs} PRs`}
-                      ></div>
-                      <div
-                        className="w-full bg-orange-500 rounded-t"
-                        style={{
-                          height: `${(day.issues / maxValue) * 100}%`,
-                          minHeight: day.issues > 0 ? "2px" : "0",
-                        }}
-                        title={`${day.issues} issues`}
-                      ></div>
-                    </div>
-                    {index % 5 === 0 && (
-                      <span className="text-[10px] text-slate-400 mt-1">
-                        {day.date.getDate()}/{day.date.getMonth() + 1}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 2️⃣ Activité récente (Timeline) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.18 }}
           className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
         >
           <div className="flex items-center justify-between mb-4">
@@ -1125,12 +818,217 @@ export default function RepositoryPage() {
           </div>
         </motion.div>
 
+        {/* 📈 Graphique d'activité sur 30 jours */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.12 }}
+          className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Activity className="text-violet-600" size={20} />
+              <h2 className="text-xl font-bold text-slate-900">
+                Activité sur 30 jours
+              </h2>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-slate-600">
+              <div className="px-2 py-1 bg-violet-100 rounded text-violet-700">
+                {activityMetrics.avgCommitsPerDay.toFixed(1)} commits/jour
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-violet-500"></div>
+                  <span>Commits</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-blue-500"></div>
+                  <span>PRs</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-orange-500"></div>
+                  <span>Issues</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Graphique simple avec barres */}
+          <div className="bg-white p-4 rounded-xl border border-violet-100">
+            <div className="flex items-end justify-between gap-1 h-32">
+              {activityData.map((day, index) => {
+                const maxValue = Math.max(
+                  ...activityData.map((d) => d.commits + d.prs + d.issues)
+                );
+                return (
+                  <div
+                    key={index}
+                    className="flex-1 flex flex-col items-center gap-1"
+                  >
+                    <div
+                      className="w-full flex flex-col-reverse gap-0.5 items-end"
+                      style={{ height: "100px" }}
+                    >
+                      <div
+                        className="w-full bg-violet-500 rounded-t"
+                        style={{
+                          height: `${(day.commits / maxValue) * 100}%`,
+                          minHeight: day.commits > 0 ? "2px" : "0",
+                        }}
+                        title={`${day.commits} commits`}
+                      ></div>
+                      <div
+                        className="w-full bg-blue-500 rounded-t"
+                        style={{
+                          height: `${(day.prs / maxValue) * 100}%`,
+                          minHeight: day.prs > 0 ? "2px" : "0",
+                        }}
+                        title={`${day.prs} PRs`}
+                      ></div>
+                      <div
+                        className="w-full bg-orange-500 rounded-t"
+                        style={{
+                          height: `${(day.issues / maxValue) * 100}%`,
+                          minHeight: day.issues > 0 ? "2px" : "0",
+                        }}
+                        title={`${day.issues} issues`}
+                      ></div>
+                    </div>
+                    {index % 5 === 0 && (
+                      <span className="text-[10px] text-slate-400 mt-1">
+                        {day.date.getDate()}/{day.date.getMonth() + 1}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* 📊 Comparaison semaine */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.14 }}
+          className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="text-violet-600" size={20} />
+            <h2 className="text-xl font-bold text-slate-900">
+              Cette semaine vs dernière
+            </h2>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {Object.entries(comparison).map(([key, value]) => (
+              <div
+                key={key}
+                className="bg-white p-4 rounded-xl border border-violet-100"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-slate-700 capitalize">
+                    {key}
+                  </span>
+                  <div
+                    className={`flex items-center gap-1 text-sm font-medium ${
+                      value.change > 0
+                        ? "text-green-600"
+                        : value.change < 0
+                        ? "text-red-600"
+                        : "text-slate-600"
+                    }`}
+                  >
+                    {value.change > 0 ? (
+                      <ArrowUp size={14} />
+                    ) : value.change < 0 ? (
+                      <ArrowDown size={14} />
+                    ) : null}
+                    {Math.abs(value.change).toFixed(1)}%
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-slate-500">
+                  <span>
+                    Cette semaine:{" "}
+                    <span className="font-semibold text-slate-900">
+                      {value.current}
+                    </span>
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Semaine dernière:{" "}
+                    <span className="font-semibold text-slate-900">
+                      {value.previous}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* 👥 Top contributeurs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.16 }}
+          className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Users className="text-violet-600" size={20} />
+              <h2 className="text-xl font-bold text-slate-900">
+                Top contributeurs
+              </h2>
+            </div>
+            <Button variant="ghost" size="sm" className="text-xs">
+              Voir tout
+            </Button>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            {contributors.map((contributor, index) => (
+              <div
+                key={index}
+                className="bg-white p-4 rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <img
+                    src={contributor.avatar}
+                    alt={contributor.name}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-slate-900">
+                      {contributor.name}
+                    </div>
+                    <div className="text-sm text-slate-500">
+                      {contributor.commits} commits
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-slate-600">
+                  <div className="flex items-center gap-1">
+                    <ArrowUp className="text-green-600" size={12} />
+                    <span className="font-medium text-green-600">
+                      {contributor.additions.toLocaleString("en-US")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <ArrowDown className="text-red-600" size={12} />
+                    <span className="font-medium text-red-600">
+                      {contributor.deletions.toLocaleString("en-US")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
         {/* 3️⃣ Activité détaillée (Onglets) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-slate-50 border border-violet-200/50 rounded-2xl shadow-lg overflow-hidden"
+          className="bg-slate-50 border border-violet-200/50 rounded-2xl shadow-lg overflow-hidden mb-6"
         >
           {/* Tabs */}
           <div className="border-b border-violet-200/50 bg-white">
@@ -1215,15 +1113,65 @@ export default function RepositoryPage() {
                   className="w-full pl-10 pr-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                 />
               </div>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>Tous les auteurs</option>
-              </select>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>Toutes les branches</option>
-              </select>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>30 derniers jours</option>
-              </select>
+
+              {/* Filtres pour Commits */}
+              {activeTab === "commits" && (
+                <>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>Tous les auteurs</option>
+                  </select>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>Toutes les branches</option>
+                  </select>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>30 derniers jours</option>
+                  </select>
+                </>
+              )}
+
+              {/* Filtres pour Pull Requests */}
+              {activeTab === "pr" && (
+                <>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>Tous les états</option>
+                    <option>Ouvert</option>
+                    <option>Fermé</option>
+                    <option>Fusionné</option>
+                  </select>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>Tous les labels</option>
+                  </select>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>Tous les auteurs</option>
+                  </select>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>Toutes les branches</option>
+                  </select>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>30 derniers jours</option>
+                  </select>
+                </>
+              )}
+
+              {/* Filtres pour Issues */}
+              {activeTab === "issues" && (
+                <>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>Tous les états</option>
+                    <option>Ouvert</option>
+                    <option>Fermé</option>
+                  </select>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>Tous les labels</option>
+                  </select>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>Tous les assignés</option>
+                  </select>
+                  <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                    <option>30 derniers jours</option>
+                  </select>
+                </>
+              )}
             </div>
 
             {/* Stats */}
@@ -1248,13 +1196,26 @@ export default function RepositoryPage() {
               </div>
               <div className="bg-white p-4 rounded-xl border border-violet-100">
                 <div className="text-sm text-slate-600 mb-1">Moyenne/jour</div>
-                <div className="text-2xl font-bold text-violet-600">2.3</div>
+                <div className="text-2xl font-bold text-violet-600">
+                  {activeTab === "commits" &&
+                    activityMetrics.avgCommitsPerDay.toFixed(1)}
+                  {activeTab === "pr" && (pullRequests.length / 30).toFixed(1)}
+                  {activeTab === "issues" && (issues.length / 30).toFixed(1)}
+                </div>
               </div>
               <div className="bg-white p-4 rounded-xl border border-violet-100">
                 <div className="text-sm text-slate-600 mb-1">
-                  Top contributeur
+                  {activeTab === "commits" && "Contributeurs actifs"}
+                  {activeTab === "pr" && "Taux de merge"}
+                  {activeTab === "issues" && "Taux de résolution"}
                 </div>
-                <div className="text-lg font-bold text-slate-900">Jean D.</div>
+                <div className="text-lg font-bold text-slate-900">
+                  {activeTab === "commits" &&
+                    activityMetrics.activeContributors}
+                  {activeTab === "pr" && `${engagementMetrics.prMergeRate}%`}
+                  {activeTab === "issues" &&
+                    `${engagementMetrics.issueCloseRate}%`}
+                </div>
               </div>
             </div>
 
@@ -1471,103 +1432,48 @@ export default function RepositoryPage() {
           </div>
         </motion.div>
 
-        {/* 4️⃣ Paramètres & actions */}
+        {/* 📊 Historique des rapports */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg"
+          transition={{ duration: 0.5, delay: 0.18 }}
+          className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
         >
-          <div className="flex items-center gap-2 mb-6">
-            <Settings className="text-violet-600" size={20} />
-            <h2 className="text-xl font-bold text-slate-900">
-              Paramètres & Actions
-            </h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <FileDown className="text-violet-600" size={20} />
+              <h2 className="text-xl font-bold text-slate-900">
+                Historique des rapports
+              </h2>
+            </div>
+            <Button variant="ghost" size="sm" className="text-xs">
+              Générer nouveau rapport
+            </Button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-violet-100">
-                <div>
-                  <div className="font-medium text-slate-900 mb-1">
-                    Synchronisation automatique
-                  </div>
-                  <div className="text-sm text-slate-500">
-                    Mise à jour toutes les 6 heures
-                  </div>
-                </div>
-                <div className="w-12 h-6 bg-violet-600 rounded-full relative cursor-pointer">
-                  <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white rounded-xl border border-violet-100">
-                <div className="font-medium text-slate-900 mb-3">
-                  Niveau d'analyse IA
-                </div>
-                <select className="w-full px-3 py-2 border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                  <option>Complet (recommandé)</option>
-                  <option>Standard</option>
-                  <option>Basique</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="p-4 bg-white rounded-xl border border-violet-100">
-                <div className="font-medium text-slate-900 mb-3">
-                  Historique des exports
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Rapport complet.pdf</span>
-                    <span className="text-slate-400">Il y a 2 jours</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Données.csv</span>
-                    <span className="text-slate-400">Il y a 1 semaine</span>
+          <div className="space-y-2">
+            {reportHistory.map((report) => (
+              <div
+                key={report.id}
+                className="bg-white p-4 rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <FileDown className="text-violet-600" size={18} />
+                  <div>
+                    <div className="font-medium text-slate-900">
+                      {report.name}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {formatRelativeDate(new Date(report.date))} •{" "}
+                      {report.size}
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant="outline"
-                  className="bg-white border-violet-200 hover:bg-violet-50 text-violet-700"
-                >
-                  <RefreshCw size={16} />
-                  Forcer la synchronisation
-                </Button>
-                <Button
-                  variant="outline"
-                  className="bg-white border-violet-200 hover:bg-violet-50 text-violet-700"
-                >
-                  <Download size={16} />
-                  Exporter PDF
-                </Button>
-                <Button
-                  variant="outline"
-                  className="bg-white border-red-200 hover:bg-red-50 text-red-700"
-                >
-                  <AlertCircle size={16} />
-                  Supprimer le repository
+                <Button variant="ghost" size="sm" className="text-xs">
+                  Télécharger
                 </Button>
               </div>
-            </div>
-          </div>
-
-          {/* Suggestion IA */}
-          <div className="mt-6 p-4 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200/50 rounded-xl">
-            <div className="flex items-start gap-3">
-              <Sparkles className="text-violet-600 mt-0.5" size={18} />
-              <div className="flex-1">
-                <p className="text-sm text-slate-700">
-                  <strong>Suggestion IA :</strong> Optimisation de la
-                  synchronisation recommandée selon votre utilisation. Résumé
-                  hebdomadaire disponible.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </motion.div>
       </div>

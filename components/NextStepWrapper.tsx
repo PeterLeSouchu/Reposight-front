@@ -84,12 +84,12 @@ const CustomCard = ({
 
 const steps: Tour[] = [
   {
-    tour: "dashboardTour",
+    tour: "repositoriesTour",
     steps: [
       {
         title: "Ajouter un dépôt",
         content:
-          "Liez ici un projet GitHub à Reposight pour l'ajouter à votre dashboard et accéder à ses détails et statistiques.",
+          "Liez ici un projet GitHub à Reposight pour l'ajouter à vos repositories et accéder à ses détails et statistiques.",
         selector: "#add-repo-button",
         icon: "➕",
         showControls: true,

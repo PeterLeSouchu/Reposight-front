@@ -43,7 +43,7 @@ import { useNotifyDeletedRepos } from "@/hooks/useNotifyDeletedRepos";
 
 type SortType = "added" | "oldest-commit" | "newest-commit";
 
-export default function Dashboard() {
+export default function Repositories() {
   const { data, isLoading, error: userError } = useQueryUser();
   const {
     data: reposData,
@@ -73,7 +73,7 @@ export default function Dashboard() {
   // Démarrer le tour si l'utilisateur est nouveau
   useEffect(() => {
     if (!isLoading && !isReposLoading && data && reposData && data.isNewUser) {
-      startNextStep("dashboardTour");
+      startNextStep("repositoriesTour");
     }
   }, [isLoading, isReposLoading, data, reposData, startNextStep]);
 
