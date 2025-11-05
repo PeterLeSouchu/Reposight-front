@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { ExternalLink, GitBranch, Clock, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Repo } from "@/types/repo";
-import { formatRelativeDate } from "@/lib/utils";
+import { formatRelativeDate, getLanguageColor } from "@/lib/utils";
 
 interface RepoCardProps {
   repo: Omit<Repo, "selectedAt" | "pushed_at"> & { pushed_atDate: Date };
@@ -72,7 +72,10 @@ export function RepoCard({ repo, onDelete }: RepoCardProps) {
 
         {repo.language && (
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-3 h-3 rounded-full bg-violet-500"></span>
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: getLanguageColor(repo.language) }}
+            ></span>
             <span className="text-xs text-slate-600 font-medium">
               {repo.language}
             </span>

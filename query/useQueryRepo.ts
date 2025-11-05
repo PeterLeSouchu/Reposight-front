@@ -23,6 +23,7 @@ export interface RepoInfo {
   contributorsCount: number;
   starsCount: number;
   lastCommit: RepoLastCommit;
+  url: string;
 }
 
 export interface DailyStat {
@@ -67,11 +68,32 @@ export interface Contributor {
   username: string;
   commits: number;
   avatar: string;
+  url: string;
+}
+
+export interface RecentActivityItem {
+  type: "commit" | "pr" | "issue";
+  title: string;
+  author: string;
+  authorAvatar: string;
+  date: string;
+  url: string;
+  sha?: string; // Pour les commits
+  number?: number; // Pour les PRs et issues
+}
+
+export interface RecentActivity {
+  stats: {
+    commits: number;
+    prs: number;
+    issues: number;
+  };
+  items: RecentActivityItem[];
 }
 
 export interface RepoDetailResponse {
   info: RepoInfo;
-  recentActivity: any[]; // À typer plus précisément si nécessaire
+  recentActivity: RecentActivity;
   dailyStats: DailyStat[];
   weeklyComparison: WeeklyComparison;
   contributors: Contributor[];

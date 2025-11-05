@@ -53,9 +53,17 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { Repo } from "@/types/repo";
-import { formatRelativeDate, getLanguageColor } from "@/lib/utils";
+import {
+  formatRelativeDate,
+  getLanguageColor,
+  getErrorMessage,
+} from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useQueryRepo, type RepoDetailResponse } from "@/query/useQueryRepo";
+import { useMutationDeleteRepo } from "@/mutation/useMutationDeleteRepo";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 // Types pour les données mockées
 interface Commit {
@@ -90,25 +98,20 @@ interface Issue {
   date: string;
 }
 
-interface ActivityEvent {
-  type: "commit" | "pr" | "issue";
-  id: string;
-  title: string;
-  author: { name: string; avatar: string };
-  date: string;
-  status: string;
-  link: string;
-}
-
 export default function RepositoryPage() {
   const router = useRouter();
-  const params = useParams();
-  const repoId = params?.id ? parseInt(params.id as string, 10) : null;
+  const params = useParams<{ id: string }>();
+  const repoId = Number(params.id);
+  const queryClient = useQueryClient();
+
   const [activeTab, setActiveTab] = useState<"commits" | "pr" | "issues">(
     "commits"
   );
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { data: repoApi, isLoading, error, refetch } = useQueryRepo(repoId);
+  const { mutate: deleteRepo, isPending: isDeleting } = useMutationDeleteRepo();
+  console.log("repoApi", repoApi);
 
   // Données pour le graphique d'activité (30 derniers jours)
   // Utilisation des données réelles de l'API au lieu de générer avec Math.random
@@ -142,12 +145,20 @@ export default function RepositoryPage() {
   const { info, recentActivity, dailyStats, weeklyComparison, contributors } =
     repoApi;
 
-  // Calcul des métriques
-  const totalCommits = dailyStats.reduce((sum, day) => sum + day.commits, 0);
-  const totalPRs = dailyStats.reduce((sum, day) => sum + day.prs, 0);
-  const totalIssues = dailyStats.reduce((sum, day) => sum + day.issues, 0);
+  // Calcul des métriques pour les 30 derniers jours
+  const totalCommits30d = dailyStats.reduce((sum, day) => sum + day.commits, 0);
+  const totalPRs30d = dailyStats.reduce((sum, day) => sum + day.prs, 0);
+  const totalIssues30d = dailyStats.reduce((sum, day) => sum + day.issues, 0);
   const avgCommitsPerDay =
-    dailyStats.length > 0 ? totalCommits / dailyStats.length : 0;
+    dailyStats.length > 0 ? totalCommits30d / dailyStats.length : 0;
+
+  // Stats des 48 dernières heures depuis recentActivity
+  const stats48h = recentActivity?.stats || {
+    commits: 0,
+    prs: 0,
+    issues: 0,
+  };
+  const recentActivityItems = recentActivity?.items || [];
 
   // Préparation des langages avec leurs couleurs
   const languages = info.languages.map((lang) => ({
@@ -196,11 +207,6 @@ export default function RepositoryPage() {
       previous: weeklyComparison.previousWeek.issues,
       change: weeklyComparison.comparison.issues.percent,
     },
-    contributors: {
-      current: contributors.length,
-      previous: contributors.length, // Pas de comparaison disponible
-      change: 0,
-    },
   };
 
   // Préparation des contributeurs pour l'affichage
@@ -208,6 +214,7 @@ export default function RepositoryPage() {
     name: contributor.username,
     avatar: contributor.avatar,
     commits: contributor.commits,
+    url: contributor.url,
     additions: 0, // Pas disponible dans l'API
     deletions: 0, // Pas disponible dans l'API
   }));
@@ -276,6 +283,27 @@ export default function RepositoryPage() {
     router.push("/repositories");
   };
 
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    deleteRepo(repoId, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["repos"] });
+        toast.success("Dépôt supprimé avec succès");
+        router.push("/repositories");
+      },
+      onError: (error) => {
+        const message = getErrorMessage(error);
+        toast.error("Erreur lors de la suppression", {
+          description: message,
+        });
+        setShowDeleteModal(false);
+      },
+    });
+  };
+
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "commit":
@@ -284,18 +312,6 @@ export default function RepositoryPage() {
         return <GitPullRequest className="text-blue-600" size={16} />;
       case "issue":
         return <AlertCircle className="text-orange-600" size={16} />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "merged":
-      case "closed":
-        return <CheckCircle2 className="text-green-600" size={14} />;
-      case "open":
-        return <Circle className="text-blue-600" size={14} />;
       default:
         return null;
     }
@@ -378,10 +394,23 @@ export default function RepositoryPage() {
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
                     <GitBranch className="text-white" size={20} />
                   </div>
-                  <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-                      {info.name}
-                    </h1>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                        {info.name}
+                      </h1>
+                      {info.url && (
+                        <a
+                          href={info.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg hover:bg-violet-100 transition-colors"
+                          aria-label="Ouvrir le repository sur GitHub"
+                        >
+                          <ExternalLink className="text-violet-600" size={18} />
+                        </a>
+                      )}
+                    </div>
                     <p className="text-slate-600 text-sm mt-1">
                       {info.description || "Aucune description"}
                     </p>
@@ -428,10 +457,7 @@ export default function RepositoryPage() {
                       {stats.contributors}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-600">
-                    <HardDrive className="text-slate-500" size={16} />
-                    <span className="text-sm font-medium">{stats.size} Mo</span>
-                  </div>
+
                   {stats.license && (
                     <div className="flex items-center gap-1.5 text-slate-600">
                       <Scale className="text-slate-500" size={16} />
@@ -455,38 +481,13 @@ export default function RepositoryPage() {
                     </span>
                   </div>
                 )}
-
-                {/* Résumé IA */}
-                {comparison.commits.change !== 0 ||
-                comparison.prs.change !== 0 ||
-                comparison.issues.change !== 0 ? (
-                  <div className="mt-4 flex items-center gap-2 text-sm bg-violet-100/50 text-violet-700 px-3 py-2 rounded-lg border border-violet-200/50">
-                    <Sparkles className="text-violet-600" size={14} />
-                    <span>
-                      {comparison.commits.change > 0
-                        ? `Commits en hausse de +${Math.abs(
-                            comparison.commits.change
-                          ).toFixed(1)}% cette semaine`
-                        : comparison.commits.change < 0
-                        ? `Commits en baisse de ${Math.abs(
-                            comparison.commits.change
-                          ).toFixed(1)}% cette semaine`
-                        : "Activité stable cette semaine"}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="mt-4 flex items-center gap-2 text-sm bg-slate-100/50 text-slate-600 px-3 py-2 rounded-lg border border-slate-200/50">
-                    <Sparkles className="text-slate-500" size={14} />
-                    <span>Aucune activité cette semaine</span>
-                  </div>
-                )}
               </div>
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row lg:flex-col gap-2">
                 <Button
                   variant="outline"
-                  className="bg-white border-violet-200 hover:bg-violet-50 text-violet-700"
+                  className="bg-white cursor-pointer border-violet-200 hover:bg-violet-50 text-violet-700"
                   onClick={() => refetch()}
                 >
                   <RefreshCw size={16} />
@@ -499,19 +500,15 @@ export default function RepositoryPage() {
                   <FileDown size={16} />
                   Exporter rapport
                 </Button>
+
                 <Button
+                  onClick={handleDeleteClick}
                   variant="outline"
-                  className="bg-white border-violet-200 hover:bg-violet-50 text-violet-700"
-                >
-                  <RefreshCw size={16} />
-                  Actualiser
-                </Button>
-                <Button
-                  variant="outline"
-                  className="bg-white border-red-200 hover:bg-red-50 text-red-700"
+                  className="bg-white cursor-pointer border-red-200 hover:bg-red-50 text-red-700"
+                  disabled={isDeleting}
                 >
                   <Trash2 size={16} />
-                  Supprimer le repo
+                  {isDeleting ? "Suppression..." : "Supprimer le dépôt"}
                 </Button>
               </div>
             </div>
@@ -532,18 +529,23 @@ export default function RepositoryPage() {
             <div className="flex items-center gap-2 text-sm bg-violet-100/50 text-violet-700 px-3 py-1 rounded-lg border border-violet-200/50">
               <Sparkles size={14} />
               <span>
-                {totalCommits > 0 || totalPRs > 0 || totalIssues > 0
-                  ? `Depuis 24h : ${totalCommits} commits, ${totalPRs} PRs, ${totalIssues} issues`
+                {stats48h.commits > 0 || stats48h.prs > 0 || stats48h.issues > 0
+                  ? `Depuis 48h : ${stats48h.commits} commits, ${stats48h.prs} PRs, ${stats48h.issues} issues`
                   : "Aucune activité récente"}
               </span>
             </div>
           </div>
 
           <div className="space-y-3">
-            {recentActivity && recentActivity.length > 0 ? (
-              recentActivity.map((activity, index) => (
-                <motion.div
-                  key={activity.id || index}
+            {recentActivityItems && recentActivityItems.length > 0 ? (
+              recentActivityItems.map((activity, index) => (
+                <motion.a
+                  key={`${activity.type}-${
+                    activity.sha || activity.number || index
+                  }`}
+                  href={activity.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -555,28 +557,24 @@ export default function RepositoryPage() {
                       <span className="font-medium text-slate-900 group-hover:text-violet-600 transition-colors">
                         {activity.title}
                       </span>
-                      {getStatusIcon(activity.status)}
                     </div>
                     <div className="flex items-center gap-3 text-sm text-slate-500">
                       <div className="flex items-center gap-1.5">
                         <img
-                          src={activity.author.avatar}
-                          alt={activity.author.name}
+                          src={activity.authorAvatar}
+                          alt={activity.author}
                           className="w-4 h-4 rounded-full"
                         />
-                        <span>{activity.author.name}</span>
+                        <span>{activity.author}</span>
                       </div>
                       <span>•</span>
                       <span>{formatRelativeDate(new Date(activity.date))}</span>
                     </div>
                   </div>
-                  <a
-                    href={activity.link}
-                    className="text-violet-600 hover:text-violet-700 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
+                  <div className="text-violet-600 group-hover:text-violet-700 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                     Voir →
-                  </a>
-                </motion.div>
+                  </div>
+                </motion.a>
               ))
             ) : (
               <div className="text-center py-8 text-slate-500">
@@ -694,7 +692,9 @@ export default function RepositoryPage() {
             </h2>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            {totalCommits === 0 && totalPRs === 0 && totalIssues === 0 ? (
+            {totalCommits30d === 0 &&
+            totalPRs30d === 0 &&
+            totalIssues30d === 0 ? (
               <div className="col-span-3 text-center py-8 text-slate-500">
                 <p>Aucune activité cette semaine ou la semaine dernière</p>
               </div>
@@ -706,7 +706,11 @@ export default function RepositoryPage() {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-slate-700 capitalize">
-                      {key}
+                      {key === "prs"
+                        ? "PRs"
+                        : key === "commits"
+                        ? "Commits"
+                        : "Issues"}
                     </span>
                     <div
                       className={`flex items-center gap-1 text-sm font-medium ${
@@ -757,19 +761,19 @@ export default function RepositoryPage() {
             <div className="flex items-center gap-2">
               <Users className="text-violet-600" size={20} />
               <h2 className="text-xl font-bold text-slate-900">
-                Top contributeurs
+                Contributeurs
               </h2>
             </div>
-            <Button variant="ghost" size="sm" className="text-xs">
-              Voir tout
-            </Button>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             {contributorsData.length > 0 ? (
               contributorsData.map((contributor, index) => (
-                <div
+                <a
                   key={index}
-                  className="bg-white p-4 rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
+                  href={contributor.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white p-4 rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all cursor-pointer group block"
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <img
@@ -778,7 +782,7 @@ export default function RepositoryPage() {
                       className="w-10 h-10 rounded-full"
                     />
                     <div className="flex-1">
-                      <div className="font-medium text-slate-900">
+                      <div className="font-medium text-slate-900 group-hover:text-violet-600 transition-colors">
                         {contributor.name}
                       </div>
                       <div className="text-sm text-slate-500">
@@ -803,7 +807,7 @@ export default function RepositoryPage() {
                         </div>
                       </div>
                     ))}
-                </div>
+                </a>
               ))
             ) : (
               <div className="col-span-2 text-center py-8 text-slate-500">
@@ -1289,6 +1293,17 @@ export default function RepositoryPage() {
           </div>
         </motion.div>
       </div>
+
+      <ConfirmDialog
+        open={showDeleteModal}
+        onOpenChange={setShowDeleteModal}
+        title="Supprimer le dépôt"
+        description="Êtes-vous sûr de vouloir supprimer ce dépôt ? Cette action est irréversible."
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        onConfirm={handleDeleteConfirm}
+        variant="destructive"
+      />
     </div>
   );
 }
