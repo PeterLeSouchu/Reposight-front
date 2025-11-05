@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   ArrowLeft,
   ExternalLink,
@@ -53,8 +53,9 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { Repo } from "@/types/repo";
-import { formatRelativeDate } from "@/lib/utils";
+import { formatRelativeDate, getLanguageColor } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useQueryRepo, type RepoDetailResponse } from "@/query/useQueryRepo";
 
 // Types pour les données mockées
 interface Commit {
@@ -107,301 +108,159 @@ export default function RepositoryPage() {
     "commits"
   );
 
-  // Données mockées pour le développement
-  const repo: Repo = {
-    id: repoId || 1,
-    name: "mon-super-repo",
-    description:
-      "Un repository de démonstration avec une description intéressante qui montre comment fonctionne l'affichage des détails.",
-    html_url: "https://github.com/username/mon-super-repo",
-    private: false,
-    language: "TypeScript",
-    pushed_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    selectedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-  };
+  const { data: repoApi, isLoading, error, refetch } = useQueryRepo(repoId);
 
-  const owner = "username";
-  const lastCommit = {
-    sha: "a1b2c3d4",
-    message: "Fix: Correction du bug de synchronisation",
-    author: {
-      name: "Jean Dupont",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jean",
-      email: "jean@example.com",
-    },
-    date: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    branch: "main",
-  };
+  // Données pour le graphique d'activité (30 derniers jours)
+  // Utilisation des données réelles de l'API au lieu de générer avec Math.random
+  // Doit être avant le retour conditionnel pour respecter les règles des hooks
+  const activityData = useMemo(() => {
+    if (!repoApi?.dailyStats) {
+      return [];
+    }
+    return repoApi.dailyStats.map((day) => ({
+      date: new Date(day.date),
+      commits: day.commits,
+      prs: day.prs,
+      issues: day.issues,
+    }));
+  }, [repoApi?.dailyStats]);
 
-  const languages = [
-    { name: "TypeScript", percentage: 65, color: "#3178c6" },
-    { name: "CSS", percentage: 20, color: "#563d7c" },
-    { name: "JavaScript", percentage: 10, color: "#f1e05a" },
-    { name: "Other", percentage: 5, color: "#6e7681" },
-  ];
+  // Si pas de données, utiliser des valeurs par défaut
+  if (!repoApi) {
+    return (
+      <div className="relative min-h-screen text-slate-900 overflow-hidden bg-[#fafafa]">
+        <div className="relative z-10 max-w-7xl mx-auto p-4 sm:p-8">
+          <div className="text-center py-16">
+            <p className="text-slate-600">Chargement des données...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
+  // Extraction des données de l'API
+  const { info, recentActivity, dailyStats, weeklyComparison, contributors } =
+    repoApi;
+
+  // Calcul des métriques
+  const totalCommits = dailyStats.reduce((sum, day) => sum + day.commits, 0);
+  const totalPRs = dailyStats.reduce((sum, day) => sum + day.prs, 0);
+  const totalIssues = dailyStats.reduce((sum, day) => sum + day.issues, 0);
+  const avgCommitsPerDay =
+    dailyStats.length > 0 ? totalCommits / dailyStats.length : 0;
+
+  // Préparation des langages avec leurs couleurs
+  const languages = info.languages.map((lang) => ({
+    name: lang.name,
+    percentage: lang.percentage,
+    color: getLanguageColor(lang.name),
+  }));
+
+  // Préparation des stats
   const stats = {
-    stars: 142,
-    forks: 38,
-    watchers: 89,
-    contributors: 12,
-    size: 45.2, // Mo
-    license: "MIT",
+    stars: info.starsCount,
+    forks: 0, // Pas disponible dans l'API
+    watchers: 0, // Pas disponible dans l'API
+    contributors: info.contributorsCount,
+    size: info.sizeMb,
+    license: null, // Pas disponible dans l'API
   };
 
-  // Métriques d'activité
-  const activityMetrics = {
-    avgCommitsPerDay: 2.3,
-    avgCommitsPerWeek: 16.1,
-    activeContributors: 8,
-  };
-
-  // Historique des rapports PDF
-  const reportHistory = [
-    {
-      id: 1,
-      name: "Rapport complet - Janvier 2024",
-      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      size: "2.3 MB",
-      url: "#",
-    },
-    {
-      id: 2,
-      name: "Rapport complet - Décembre 2023",
-      date: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
-      size: "2.1 MB",
-      url: "#",
-    },
-    {
-      id: 3,
-      name: "Rapport complet - Novembre 2023",
-      date: new Date(Date.now() - 65 * 24 * 60 * 60 * 1000).toISOString(),
-      size: "2.0 MB",
-      url: "#",
-    },
-  ];
-
-  const recentActivity: ActivityEvent[] = [
-    {
-      type: "commit",
-      id: "c1",
-      title: "Fix: Correction du bug de synchronisation",
-      author: {
-        name: "Jean Dupont",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jean",
-      },
-      date: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-      status: "merged",
-      link: "#",
-    },
-    {
-      type: "pr",
-      id: "pr1",
-      title: "feat: Ajout de la fonctionnalité de recherche",
-      author: {
-        name: "Marie Martin",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marie",
-      },
-      date: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      status: "merged",
-      link: "#",
-    },
-    {
-      type: "issue",
-      id: "i1",
-      title: "Problème de performance sur les grandes listes",
-      author: {
-        name: "Pierre Durand",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pierre",
-      },
-      date: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-      status: "open",
-      link: "#",
-    },
-    {
-      type: "commit",
-      id: "c2",
-      title: "refactor: Amélioration de la structure du code",
-      author: {
-        name: "Sophie Bernard",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie",
-      },
-      date: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-      status: "merged",
-      link: "#",
-    },
-    {
-      type: "pr",
-      id: "pr2",
-      title: "docs: Mise à jour de la documentation",
-      author: {
-        name: "Luc Moreau",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Luc",
-      },
-      date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      status: "open",
-      link: "#",
-    },
-  ];
-
-  const commits: Commit[] = [
-    {
-      id: "c1",
-      message: "Fix: Correction du bug de synchronisation",
-      author: {
-        name: "Jean Dupont",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jean",
-        email: "jean@example.com",
-      },
-      date: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-      branch: "main",
-      sha: "a1b2c3d",
-      type: "fix",
-    },
-    {
-      id: "c2",
-      message: "refactor: Amélioration de la structure du code",
-      author: {
-        name: "Sophie Bernard",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie",
-        email: "sophie@example.com",
-      },
-      date: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-      branch: "main",
-      sha: "b2c3d4e",
-      type: "refactor",
-    },
-    {
-      id: "c3",
-      message: "feat: Ajout de la fonctionnalité de recherche",
-      author: {
-        name: "Marie Martin",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marie",
-        email: "marie@example.com",
-      },
-      date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      branch: "feature/search",
-      sha: "c3d4e5f",
-      type: "feat",
-    },
-  ];
-
-  const pullRequests: PullRequest[] = [
-    {
-      id: 45,
-      title: "feat: Ajout de la fonctionnalité de recherche",
-      state: "merged",
-      author: {
-        name: "Marie Martin",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marie",
-      },
-      reviewers: [
-        {
-          name: "Jean Dupont",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jean",
-          approved: true,
+  // Préparation du dernier commit
+  const lastCommit = info.lastCommit
+    ? {
+        sha: info.lastCommit.sha,
+        message: info.lastCommit.message,
+        author: {
+          name: info.lastCommit.author,
+          avatar: info.lastCommit.authorAvatar,
         },
-        {
-          name: "Sophie Bernard",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie",
-          approved: true,
-        },
-      ],
-      labels: ["enhancement", "frontend"],
-      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      branch: "feature/search",
-      baseBranch: "main",
+        date: info.lastCommit.date,
+      }
+    : null;
+
+  // Calcul de la comparaison semaine
+  const comparison = {
+    commits: {
+      current: weeklyComparison.currentWeek.commits,
+      previous: weeklyComparison.previousWeek.commits,
+      change: weeklyComparison.comparison.commits.percent,
+    },
+    prs: {
+      current: weeklyComparison.currentWeek.prs,
+      previous: weeklyComparison.previousWeek.prs,
+      change: weeklyComparison.comparison.prs.percent,
+    },
+    issues: {
+      current: weeklyComparison.currentWeek.issues,
+      previous: weeklyComparison.previousWeek.issues,
+      change: weeklyComparison.comparison.issues.percent,
+    },
+    contributors: {
+      current: contributors.length,
+      previous: contributors.length, // Pas de comparaison disponible
+      change: 0,
+    },
+  };
+
+  // Préparation des contributeurs pour l'affichage
+  const contributorsData = contributors.map((contributor) => ({
+    name: contributor.username,
+    avatar: contributor.avatar,
+    commits: contributor.commits,
+    additions: 0, // Pas disponible dans l'API
+    deletions: 0, // Pas disponible dans l'API
+  }));
+
+  // Données mockées pour les onglets (pas encore disponibles dans l'API)
+  const commits: Commit[] = [];
+  const pullRequests: PullRequest[] = [];
+  const issues: Issue[] = [];
+
+  // Historique des rapports PDF (mocké pour l'instant)
+  const reportHistory: Array<{
+    id: number;
+    name: string;
+    date: string;
+    size: string;
+    url: string;
+  }> = [];
+
+  // Données mockées pour dépendances et autres sections
+  const dependencies = [
+    {
+      name: "react",
+      version: "^18.2.0",
+      type: "dependencies" as const,
+      outdated: false,
     },
     {
-      id: 46,
-      title: "docs: Mise à jour de la documentation",
-      state: "open",
-      author: {
-        name: "Luc Moreau",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Luc",
-      },
-      reviewers: [
-        {
-          name: "Jean Dupont",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jean",
-          approved: false,
-        },
-      ],
-      labels: ["documentation"],
-      date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      branch: "docs/update",
-      baseBranch: "main",
+      name: "typescript",
+      version: "^5.0.0",
+      type: "dependencies" as const,
+      outdated: false,
+    },
+    {
+      name: "axios",
+      version: "^1.3.0",
+      type: "dependencies" as const,
+      outdated: true,
+    },
+    {
+      name: "@tanstack/react-query",
+      version: "^4.29.0",
+      type: "dependencies" as const,
+      outdated: true,
+    },
+    {
+      name: "tailwindcss",
+      version: "^3.3.0",
+      type: "devDependencies" as const,
+      outdated: false,
     },
   ];
 
-  const issues: Issue[] = [
-    {
-      id: 123,
-      title: "Problème de performance sur les grandes listes",
-      state: "open",
-      assignee: {
-        name: "Jean Dupont",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jean",
-      },
-      labels: ["bug", "performance"],
-      comments: 5,
-      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: 124,
-      title: "Feature request: Ajouter un mode sombre",
-      state: "open",
-      assignee: null,
-      labels: ["enhancement", "ui"],
-      comments: 12,
-      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: 125,
-      title: "Bug: Le formulaire ne se soumet pas correctement",
-      state: "closed",
-      assignee: {
-        name: "Marie Martin",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marie",
-      },
-      labels: ["bug", "frontend"],
-      comments: 8,
-      date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ];
-
-  // Données supplémentaires pour les nouvelles fonctionnalités
-  const codeMetrics = {
-    totalLines: 12450,
-    totalFiles: 342,
-    avgComplexity: 12.5,
-    testCoverage: 78,
-    techDebt: 3.2,
-  };
-
-  // Métriques de performance CI/CD
-  const cicdMetrics = {
-    avgBuildTime: 4.2, // minutes
-    testSuccessRate: 94.5, // %
-    lastBuildStatus: "success" as "success" | "failure" | "pending",
-    lastBuildDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    avgMergeTime: 2.3, // jours
-    avgIssueResolution: 5.8, // jours
-  };
-
-  // Métriques de sécurité
-  const securityMetrics = {
-    vulnerabilities: {
-      critical: 0,
-      high: 0,
-      medium: 2,
-      low: 1,
-    },
-    dependabotAlerts: 3,
-    lastSecurityScan: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-  };
-
-  // Métriques d'engagement
+  // Métriques d'engagement (mockées pour l'instant)
   const engagementMetrics = {
     avgIssueResponseTime: 4.2, // heures
     issueCloseRate: 78.5, // %
@@ -411,129 +270,6 @@ export default function RepositoryPage() {
       occasional: 4,
       inactive: 2,
     },
-  };
-
-  const contributors = [
-    {
-      name: "Jean Dupont",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jean",
-      commits: 142,
-      additions: 5420,
-      deletions: 1230,
-    },
-    {
-      name: "Sophie Bernard",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie",
-      commits: 98,
-      additions: 3420,
-      deletions: 890,
-    },
-    {
-      name: "Marie Martin",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marie",
-      commits: 76,
-      additions: 2890,
-      deletions: 650,
-    },
-    {
-      name: "Luc Moreau",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Luc",
-      commits: 45,
-      additions: 1200,
-      deletions: 340,
-    },
-  ];
-
-  const branches = [
-    {
-      name: "main",
-      commits: 234,
-      lastCommit: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      protected: true,
-    },
-    {
-      name: "feature/search",
-      commits: 12,
-      lastCommit: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      protected: false,
-    },
-    {
-      name: "docs/update",
-      commits: 8,
-      lastCommit: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      protected: false,
-    },
-    {
-      name: "fix/performance",
-      commits: 5,
-      lastCommit: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      protected: false,
-    },
-  ];
-
-  const dependencies = [
-    {
-      name: "react",
-      version: "^18.2.0",
-      type: "dependencies",
-      outdated: false,
-    },
-    {
-      name: "typescript",
-      version: "^5.0.0",
-      type: "dependencies",
-      outdated: false,
-    },
-    { name: "axios", version: "^1.3.0", type: "dependencies", outdated: true },
-    {
-      name: "@tanstack/react-query",
-      version: "^4.29.0",
-      type: "dependencies",
-      outdated: true,
-    },
-    {
-      name: "tailwindcss",
-      version: "^3.3.0",
-      type: "devDependencies",
-      outdated: false,
-    },
-  ];
-
-  const alerts = [
-    {
-      type: "warning",
-      icon: AlertTriangle,
-      message: "2 dépendances obsolètes détectées",
-      action: "Mettre à jour",
-    },
-    {
-      type: "info",
-      icon: Info,
-      message: "1 issue stale (>7 jours sans activité)",
-      action: "Voir",
-    },
-    {
-      type: "success",
-      icon: Shield,
-      message: "Aucune vulnérabilité de sécurité détectée",
-      action: null,
-    },
-  ];
-
-  // Données pour le graphique d'activité (30 derniers jours)
-  const activityData = Array.from({ length: 30 }, (_, i) => ({
-    date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000),
-    commits: Math.floor(Math.random() * 15) + 1,
-    prs: Math.floor(Math.random() * 5),
-    issues: Math.floor(Math.random() * 3),
-  }));
-
-  // Comparaison temporelle
-  const comparison = {
-    commits: { current: 23, previous: 18, change: +27.8 },
-    prs: { current: 5, previous: 3, change: +66.7 },
-    issues: { current: 12, previous: 15, change: -20 },
-    contributors: { current: 8, previous: 6, change: +33.3 },
   };
 
   const handleBack = () => {
@@ -644,24 +380,27 @@ export default function RepositoryPage() {
                   </div>
                   <div>
                     <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-                      {owner}/{repo.name}
+                      {info.name}
                     </h1>
                     <p className="text-slate-600 text-sm mt-1">
-                      {repo.description}
+                      {info.description || "Aucune description"}
                     </p>
                   </div>
                 </div>
 
                 {/* Langages */}
                 <div className="flex items-center gap-3 flex-wrap mb-4">
-                  {languages.slice(0, 3).map((lang) => (
-                    <div key={lang.name} className="flex items-center gap-2">
+                  {languages.slice(0, 3).map((lang, index) => (
+                    <div
+                      key={`${lang.name}-${index}`}
+                      className="flex items-center gap-2"
+                    >
                       <span
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: lang.color }}
                       ></span>
                       <span className="text-sm text-slate-600 font-medium">
-                        {lang.name} {lang.percentage}%
+                        {lang.name} {lang.percentage.toFixed(2)}%
                       </span>
                     </div>
                   ))}
@@ -704,22 +443,43 @@ export default function RepositoryPage() {
                 </div>
 
                 {/* Dernier commit */}
-                <div className="mt-4 flex items-center gap-3 text-sm">
-                  <GitCommit className="text-violet-600" size={16} />
-                  <span className="text-slate-600">
-                    <span className="font-medium">
-                      {lastCommit.author.name}
-                    </span>{" "}
-                    • {lastCommit.message} •{" "}
-                    {formatRelativeDate(new Date(lastCommit.date))}
-                  </span>
-                </div>
+                {lastCommit && (
+                  <div className="mt-4 flex items-center gap-3 text-sm">
+                    <GitCommit className="text-violet-600" size={16} />
+                    <span className="text-slate-600">
+                      <span className="font-medium">
+                        {lastCommit.author.name}
+                      </span>{" "}
+                      • {lastCommit.message} •{" "}
+                      {formatRelativeDate(new Date(lastCommit.date))}
+                    </span>
+                  </div>
+                )}
 
                 {/* Résumé IA */}
-                <div className="mt-4 flex items-center gap-2 text-sm bg-violet-100/50 text-violet-700 px-3 py-2 rounded-lg border border-violet-200/50">
-                  <Sparkles className="text-violet-600" size={14} />
-                  <span>Activité en hausse de +18% cette semaine 👀</span>
-                </div>
+                {comparison.commits.change !== 0 ||
+                comparison.prs.change !== 0 ||
+                comparison.issues.change !== 0 ? (
+                  <div className="mt-4 flex items-center gap-2 text-sm bg-violet-100/50 text-violet-700 px-3 py-2 rounded-lg border border-violet-200/50">
+                    <Sparkles className="text-violet-600" size={14} />
+                    <span>
+                      {comparison.commits.change > 0
+                        ? `Commits en hausse de +${Math.abs(
+                            comparison.commits.change
+                          ).toFixed(1)}% cette semaine`
+                        : comparison.commits.change < 0
+                        ? `Commits en baisse de ${Math.abs(
+                            comparison.commits.change
+                          ).toFixed(1)}% cette semaine`
+                        : "Activité stable cette semaine"}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="mt-4 flex items-center gap-2 text-sm bg-slate-100/50 text-slate-600 px-3 py-2 rounded-lg border border-slate-200/50">
+                    <Sparkles className="text-slate-500" size={14} />
+                    <span>Aucune activité cette semaine</span>
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
@@ -727,10 +487,10 @@ export default function RepositoryPage() {
                 <Button
                   variant="outline"
                   className="bg-white border-violet-200 hover:bg-violet-50 text-violet-700"
-                  onClick={() => window.open(repo.html_url, "_blank")}
+                  onClick={() => refetch()}
                 >
-                  <ExternalLink size={16} />
-                  Voir sur GitHub
+                  <RefreshCw size={16} />
+                  Actualiser
                 </Button>
                 <Button
                   variant="outline"
@@ -772,49 +532,57 @@ export default function RepositoryPage() {
             <div className="flex items-center gap-2 text-sm bg-violet-100/50 text-violet-700 px-3 py-1 rounded-lg border border-violet-200/50">
               <Sparkles size={14} />
               <span>
-                Depuis 24h : 3 commits, 1 PR mergée, 2 issues ouvertes
+                {totalCommits > 0 || totalPRs > 0 || totalIssues > 0
+                  ? `Depuis 24h : ${totalCommits} commits, ${totalPRs} PRs, ${totalIssues} issues`
+                  : "Aucune activité récente"}
               </span>
             </div>
           </div>
 
           <div className="space-y-3">
-            {recentActivity.map((activity, index) => (
-              <motion.div
-                key={activity.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="flex items-start gap-4 p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all cursor-pointer group"
-              >
-                <div className="mt-1">{getActivityIcon(activity.type)}</div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-slate-900 group-hover:text-violet-600 transition-colors">
-                      {activity.title}
-                    </span>
-                    {getStatusIcon(activity.status)}
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-slate-500">
-                    <div className="flex items-center gap-1.5">
-                      <img
-                        src={activity.author.avatar}
-                        alt={activity.author.name}
-                        className="w-4 h-4 rounded-full"
-                      />
-                      <span>{activity.author.name}</span>
-                    </div>
-                    <span>•</span>
-                    <span>{formatRelativeDate(new Date(activity.date))}</span>
-                  </div>
-                </div>
-                <a
-                  href={activity.link}
-                  className="text-violet-600 hover:text-violet-700 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+            {recentActivity && recentActivity.length > 0 ? (
+              recentActivity.map((activity, index) => (
+                <motion.div
+                  key={activity.id || index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  className="flex items-start gap-4 p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all cursor-pointer group"
                 >
-                  Voir →
-                </a>
-              </motion.div>
-            ))}
+                  <div className="mt-1">{getActivityIcon(activity.type)}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-slate-900 group-hover:text-violet-600 transition-colors">
+                        {activity.title}
+                      </span>
+                      {getStatusIcon(activity.status)}
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-slate-500">
+                      <div className="flex items-center gap-1.5">
+                        <img
+                          src={activity.author.avatar}
+                          alt={activity.author.name}
+                          className="w-4 h-4 rounded-full"
+                        />
+                        <span>{activity.author.name}</span>
+                      </div>
+                      <span>•</span>
+                      <span>{formatRelativeDate(new Date(activity.date))}</span>
+                    </div>
+                  </div>
+                  <a
+                    href={activity.link}
+                    className="text-violet-600 hover:text-violet-700 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    Voir →
+                  </a>
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-slate-500">
+                <p>Aucune activité récente pour le moment</p>
+              </div>
+            )}
           </div>
         </motion.div>
 
@@ -834,7 +602,7 @@ export default function RepositoryPage() {
             </div>
             <div className="flex items-center gap-3 text-xs text-slate-600">
               <div className="px-2 py-1 bg-violet-100 rounded text-violet-700">
-                {activityMetrics.avgCommitsPerDay.toFixed(1)} commits/jour
+                {avgCommitsPerDay.toFixed(1)} commits/jour
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
@@ -854,54 +622,61 @@ export default function RepositoryPage() {
           </div>
           {/* Graphique simple avec barres */}
           <div className="bg-white p-4 rounded-xl border border-violet-100">
-            <div className="flex items-end justify-between gap-1 h-32">
-              {activityData.map((day, index) => {
-                const maxValue = Math.max(
-                  ...activityData.map((d) => d.commits + d.prs + d.issues)
-                );
-                return (
-                  <div
-                    key={index}
-                    className="flex-1 flex flex-col items-center gap-1"
-                  >
+            {activityData.length > 0 ? (
+              <div className="flex items-end justify-between gap-1 h-32">
+                {activityData.map((day, index) => {
+                  const maxValue = Math.max(
+                    1,
+                    ...activityData.map((d) => d.commits + d.prs + d.issues)
+                  );
+                  return (
                     <div
-                      className="w-full flex flex-col-reverse gap-0.5 items-end"
-                      style={{ height: "100px" }}
+                      key={index}
+                      className="flex-1 flex flex-col items-center gap-1"
                     >
                       <div
-                        className="w-full bg-violet-500 rounded-t"
-                        style={{
-                          height: `${(day.commits / maxValue) * 100}%`,
-                          minHeight: day.commits > 0 ? "2px" : "0",
-                        }}
-                        title={`${day.commits} commits`}
-                      ></div>
-                      <div
-                        className="w-full bg-blue-500 rounded-t"
-                        style={{
-                          height: `${(day.prs / maxValue) * 100}%`,
-                          minHeight: day.prs > 0 ? "2px" : "0",
-                        }}
-                        title={`${day.prs} PRs`}
-                      ></div>
-                      <div
-                        className="w-full bg-orange-500 rounded-t"
-                        style={{
-                          height: `${(day.issues / maxValue) * 100}%`,
-                          minHeight: day.issues > 0 ? "2px" : "0",
-                        }}
-                        title={`${day.issues} issues`}
-                      ></div>
+                        className="w-full flex flex-col-reverse gap-0.5 items-end"
+                        style={{ height: "100px" }}
+                      >
+                        <div
+                          className="w-full bg-violet-500 rounded-t"
+                          style={{
+                            height: `${(day.commits / maxValue) * 100}%`,
+                            minHeight: day.commits > 0 ? "2px" : "0",
+                          }}
+                          title={`${day.commits} commits`}
+                        ></div>
+                        <div
+                          className="w-full bg-blue-500 rounded-t"
+                          style={{
+                            height: `${(day.prs / maxValue) * 100}%`,
+                            minHeight: day.prs > 0 ? "2px" : "0",
+                          }}
+                          title={`${day.prs} PRs`}
+                        ></div>
+                        <div
+                          className="w-full bg-orange-500 rounded-t"
+                          style={{
+                            height: `${(day.issues / maxValue) * 100}%`,
+                            minHeight: day.issues > 0 ? "2px" : "0",
+                          }}
+                          title={`${day.issues} issues`}
+                        ></div>
+                      </div>
+                      {index % 5 === 0 && (
+                        <span className="text-[10px] text-slate-400 mt-1">
+                          {day.date.getDate()}/{day.date.getMonth() + 1}
+                        </span>
+                      )}
                     </div>
-                    {index % 5 === 0 && (
-                      <span className="text-[10px] text-slate-400 mt-1">
-                        {day.date.getDate()}/{day.date.getMonth() + 1}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-slate-500">
+                <p>Aucune activité sur les 30 derniers jours</p>
+              </div>
+            )}
           </div>
         </motion.div>
 
@@ -919,49 +694,55 @@ export default function RepositoryPage() {
             </h2>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            {Object.entries(comparison).map(([key, value]) => (
-              <div
-                key={key}
-                className="bg-white p-4 rounded-xl border border-violet-100"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-slate-700 capitalize">
-                    {key}
-                  </span>
-                  <div
-                    className={`flex items-center gap-1 text-sm font-medium ${
-                      value.change > 0
-                        ? "text-green-600"
-                        : value.change < 0
-                        ? "text-red-600"
-                        : "text-slate-600"
-                    }`}
-                  >
-                    {value.change > 0 ? (
-                      <ArrowUp size={14} />
-                    ) : value.change < 0 ? (
-                      <ArrowDown size={14} />
-                    ) : null}
-                    {Math.abs(value.change).toFixed(1)}%
+            {totalCommits === 0 && totalPRs === 0 && totalIssues === 0 ? (
+              <div className="col-span-3 text-center py-8 text-slate-500">
+                <p>Aucune activité cette semaine ou la semaine dernière</p>
+              </div>
+            ) : (
+              Object.entries(comparison).map(([key, value]) => (
+                <div
+                  key={key}
+                  className="bg-white p-4 rounded-xl border border-violet-100"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-slate-700 capitalize">
+                      {key}
+                    </span>
+                    <div
+                      className={`flex items-center gap-1 text-sm font-medium ${
+                        value.change > 0
+                          ? "text-green-600"
+                          : value.change < 0
+                          ? "text-red-600"
+                          : "text-slate-600"
+                      }`}
+                    >
+                      {value.change > 0 ? (
+                        <ArrowUp size={14} />
+                      ) : value.change < 0 ? (
+                        <ArrowDown size={14} />
+                      ) : null}
+                      {Math.abs(value.change).toFixed(1)}%
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-slate-500">
+                    <span>
+                      Cette semaine:{" "}
+                      <span className="font-semibold text-slate-900">
+                        {value.current}
+                      </span>
+                    </span>
+                    <span>•</span>
+                    <span>
+                      Semaine dernière:{" "}
+                      <span className="font-semibold text-slate-900">
+                        {value.previous}
+                      </span>
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-slate-500">
-                  <span>
-                    Cette semaine:{" "}
-                    <span className="font-semibold text-slate-900">
-                      {value.current}
-                    </span>
-                  </span>
-                  <span>•</span>
-                  <span>
-                    Semaine dernière:{" "}
-                    <span className="font-semibold text-slate-900">
-                      {value.previous}
-                    </span>
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </motion.div>
 
@@ -984,42 +765,51 @@ export default function RepositoryPage() {
             </Button>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
-            {contributors.map((contributor, index) => (
-              <div
-                key={index}
-                className="bg-white p-4 rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <img
-                    src={contributor.avatar}
-                    alt={contributor.name}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium text-slate-900">
-                      {contributor.name}
+            {contributorsData.length > 0 ? (
+              contributorsData.map((contributor, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-4 rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <img
+                      src={contributor.avatar}
+                      alt={contributor.name}
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-slate-900">
+                        {contributor.name}
+                      </div>
+                      <div className="text-sm text-slate-500">
+                        {contributor.commits} commits
+                      </div>
                     </div>
-                    <div className="text-sm text-slate-500">
-                      {contributor.commits} commits
-                    </div>
                   </div>
+                  {contributor.additions > 0 ||
+                    (contributor.deletions > 0 && (
+                      <div className="flex items-center gap-4 text-xs text-slate-600">
+                        <div className="flex items-center gap-1">
+                          <ArrowUp className="text-green-600" size={12} />
+                          <span className="font-medium text-green-600">
+                            {contributor.additions.toLocaleString("en-US")}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <ArrowDown className="text-red-600" size={12} />
+                          <span className="font-medium text-red-600">
+                            {contributor.deletions.toLocaleString("en-US")}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                 </div>
-                <div className="flex items-center gap-4 text-xs text-slate-600">
-                  <div className="flex items-center gap-1">
-                    <ArrowUp className="text-green-600" size={12} />
-                    <span className="font-medium text-green-600">
-                      {contributor.additions.toLocaleString("en-US")}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ArrowDown className="text-red-600" size={12} />
-                    <span className="font-medium text-red-600">
-                      {contributor.deletions.toLocaleString("en-US")}
-                    </span>
-                  </div>
-                </div>
+              ))
+            ) : (
+              <div className="col-span-2 text-center py-8 text-slate-500">
+                <p>Aucun contributeur disponible</p>
               </div>
-            ))}
+            )}
           </div>
         </motion.div>
 
@@ -1197,8 +987,7 @@ export default function RepositoryPage() {
               <div className="bg-white p-4 rounded-xl border border-violet-100">
                 <div className="text-sm text-slate-600 mb-1">Moyenne/jour</div>
                 <div className="text-2xl font-bold text-violet-600">
-                  {activeTab === "commits" &&
-                    activityMetrics.avgCommitsPerDay.toFixed(1)}
+                  {activeTab === "commits" && avgCommitsPerDay.toFixed(1)}
                   {activeTab === "pr" && (pullRequests.length / 30).toFixed(1)}
                   {activeTab === "issues" && (issues.length / 30).toFixed(1)}
                 </div>
@@ -1210,8 +999,7 @@ export default function RepositoryPage() {
                   {activeTab === "issues" && "Taux de résolution"}
                 </div>
                 <div className="text-lg font-bold text-slate-900">
-                  {activeTab === "commits" &&
-                    activityMetrics.activeContributors}
+                  {activeTab === "commits" && contributorsData.length}
                   {activeTab === "pr" && `${engagementMetrics.prMergeRate}%`}
                   {activeTab === "issues" &&
                     `${engagementMetrics.issueCloseRate}%`}
@@ -1223,209 +1011,227 @@ export default function RepositoryPage() {
             <div className="space-y-3">
               {/* Onglet Commits */}
               {activeTab === "commits" &&
-                commits.map((commit) => (
-                  <div
-                    key={commit.id}
-                    className="p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-medium ${
-                              commit.type === "fix"
-                                ? "bg-red-100 text-red-700"
-                                : commit.type === "feat"
-                                ? "bg-green-100 text-green-700"
-                                : commit.type === "refactor"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-slate-100 text-slate-700"
-                            }`}
-                          >
-                            {commit.type}
-                          </span>
-                          <span className="font-medium text-slate-900">
-                            {commit.message}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-slate-500">
-                          <div className="flex items-center gap-1.5">
-                            <img
-                              src={commit.author.avatar}
-                              alt={commit.author.name}
-                              className="w-5 h-5 rounded-full"
-                            />
-                            <span>{commit.author.name}</span>
+                (commits.length > 0 ? (
+                  commits.map((commit) => (
+                    <div
+                      key={commit.id}
+                      className="p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                commit.type === "fix"
+                                  ? "bg-red-100 text-red-700"
+                                  : commit.type === "feat"
+                                  ? "bg-green-100 text-green-700"
+                                  : commit.type === "refactor"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-slate-100 text-slate-700"
+                              }`}
+                            >
+                              {commit.type}
+                            </span>
+                            <span className="font-medium text-slate-900">
+                              {commit.message}
+                            </span>
                           </div>
-                          <span>•</span>
-                          <span>{commit.branch}</span>
-                          <span>•</span>
-                          <span>
-                            {formatRelativeDate(new Date(commit.date))}
-                          </span>
-                          <span>•</span>
-                          <span className="font-mono text-xs">
-                            {commit.sha.substring(0, 7)}
-                          </span>
+                          <div className="flex items-center gap-4 text-sm text-slate-500">
+                            <div className="flex items-center gap-1.5">
+                              <img
+                                src={commit.author.avatar}
+                                alt={commit.author.name}
+                                className="w-5 h-5 rounded-full"
+                              />
+                              <span>{commit.author.name}</span>
+                            </div>
+                            <span>•</span>
+                            <span>{commit.branch}</span>
+                            <span>•</span>
+                            <span>
+                              {formatRelativeDate(new Date(commit.date))}
+                            </span>
+                            <span>•</span>
+                            <span className="font-mono text-xs">
+                              {commit.sha.substring(0, 7)}
+                            </span>
+                          </div>
                         </div>
+                        <a
+                          href="#"
+                          className="text-violet-600 hover:text-violet-700 ml-4"
+                        >
+                          <ExternalLink size={16} />
+                        </a>
                       </div>
-                      <a
-                        href="#"
-                        className="text-violet-600 hover:text-violet-700 ml-4"
-                      >
-                        <ExternalLink size={16} />
-                      </a>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-slate-500">
+                    <p>Aucun commit disponible</p>
                   </div>
                 ))}
 
               {/* Onglet Pull Requests */}
               {activeTab === "pr" &&
-                pullRequests.map((pr) => (
-                  <div
-                    key={pr.id}
-                    className="p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          {pr.state === "merged" && (
-                            <CheckCircle2
-                              className="text-green-600"
-                              size={18}
-                            />
-                          )}
-                          {pr.state === "open" && (
-                            <Circle className="text-blue-600" size={18} />
-                          )}
-                          {pr.state === "closed" && (
-                            <XCircle className="text-red-600" size={18} />
-                          )}
-                          <span className="font-medium text-slate-900">
-                            {pr.title}
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            #{pr.id}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-slate-500 mb-2">
-                          <div className="flex items-center gap-1.5">
-                            <img
-                              src={pr.author.avatar}
-                              alt={pr.author.name}
-                              className="w-5 h-5 rounded-full"
-                            />
-                            <span>{pr.author.name}</span>
-                          </div>
-                          <span>•</span>
-                          <span>
-                            {pr.branch} → {pr.baseBranch}
-                          </span>
-                          <span>•</span>
-                          <span>{formatRelativeDate(new Date(pr.date))}</span>
-                        </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {pr.labels.map((label) => (
-                            <span
-                              key={label}
-                              className="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs rounded"
-                            >
-                              {label}
+                (pullRequests.length > 0 ? (
+                  pullRequests.map((pr) => (
+                    <div
+                      key={pr.id}
+                      className="p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            {pr.state === "merged" && (
+                              <CheckCircle2
+                                className="text-green-600"
+                                size={18}
+                              />
+                            )}
+                            {pr.state === "open" && (
+                              <Circle className="text-blue-600" size={18} />
+                            )}
+                            {pr.state === "closed" && (
+                              <XCircle className="text-red-600" size={18} />
+                            )}
+                            <span className="font-medium text-slate-900">
+                              {pr.title}
                             </span>
-                          ))}
-                          {pr.reviewers.length > 0 && (
-                            <div className="flex items-center gap-1 ml-2">
-                              {pr.reviewers.map((reviewer, idx) => (
-                                <img
-                                  key={idx}
-                                  src={reviewer.avatar}
-                                  alt={reviewer.name}
-                                  className={`w-5 h-5 rounded-full border-2 ${
-                                    reviewer.approved
-                                      ? "border-green-500"
-                                      : "border-slate-300"
-                                  }`}
-                                  title={reviewer.name}
-                                />
-                              ))}
+                            <span className="text-xs text-slate-500">
+                              #{pr.id}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-slate-500 mb-2">
+                            <div className="flex items-center gap-1.5">
+                              <img
+                                src={pr.author.avatar}
+                                alt={pr.author.name}
+                                className="w-5 h-5 rounded-full"
+                              />
+                              <span>{pr.author.name}</span>
                             </div>
-                          )}
+                            <span>•</span>
+                            <span>
+                              {pr.branch} → {pr.baseBranch}
+                            </span>
+                            <span>•</span>
+                            <span>{formatRelativeDate(new Date(pr.date))}</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {pr.labels.map((label) => (
+                              <span
+                                key={label}
+                                className="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs rounded"
+                              >
+                                {label}
+                              </span>
+                            ))}
+                            {pr.reviewers.length > 0 && (
+                              <div className="flex items-center gap-1 ml-2">
+                                {pr.reviewers.map((reviewer, idx) => (
+                                  <img
+                                    key={idx}
+                                    src={reviewer.avatar}
+                                    alt={reviewer.name}
+                                    className={`w-5 h-5 rounded-full border-2 ${
+                                      reviewer.approved
+                                        ? "border-green-500"
+                                        : "border-slate-300"
+                                    }`}
+                                    title={reviewer.name}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        <a
+                          href="#"
+                          className="text-violet-600 hover:text-violet-700 ml-4"
+                        >
+                          <ExternalLink size={16} />
+                        </a>
                       </div>
-                      <a
-                        href="#"
-                        className="text-violet-600 hover:text-violet-700 ml-4"
-                      >
-                        <ExternalLink size={16} />
-                      </a>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-slate-500">
+                    <p>Aucune pull request disponible</p>
                   </div>
                 ))}
 
               {/* Onglet Issues */}
               {activeTab === "issues" &&
-                issues.map((issue) => (
-                  <div
-                    key={issue.id}
-                    className="p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          {issue.state === "open" && (
-                            <Circle className="text-green-600" size={18} />
-                          )}
-                          {issue.state === "closed" && (
-                            <CheckCircle2
-                              className="text-purple-600"
-                              size={18}
-                            />
-                          )}
-                          <span className="font-medium text-slate-900">
-                            {issue.title}
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            #{issue.id}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-slate-500 mb-2">
-                          {issue.assignee && (
-                            <>
-                              <div className="flex items-center gap-1.5">
-                                <img
-                                  src={issue.assignee.avatar}
-                                  alt={issue.assignee.name}
-                                  className="w-5 h-5 rounded-full"
-                                />
-                                <span>{issue.assignee.name}</span>
-                              </div>
-                              <span>•</span>
-                            </>
-                          )}
-                          <span>
-                            {formatRelativeDate(new Date(issue.date))}
-                          </span>
-                          <span>•</span>
-                          <span>{issue.comments} commentaires</span>
-                        </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {issue.labels.map((label) => (
-                            <span
-                              key={label}
-                              className="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs rounded"
-                            >
-                              {label}
+                (issues.length > 0 ? (
+                  issues.map((issue) => (
+                    <div
+                      key={issue.id}
+                      className="p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            {issue.state === "open" && (
+                              <Circle className="text-green-600" size={18} />
+                            )}
+                            {issue.state === "closed" && (
+                              <CheckCircle2
+                                className="text-purple-600"
+                                size={18}
+                              />
+                            )}
+                            <span className="font-medium text-slate-900">
+                              {issue.title}
                             </span>
-                          ))}
+                            <span className="text-xs text-slate-500">
+                              #{issue.id}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-slate-500 mb-2">
+                            {issue.assignee && (
+                              <>
+                                <div className="flex items-center gap-1.5">
+                                  <img
+                                    src={issue.assignee.avatar}
+                                    alt={issue.assignee.name}
+                                    className="w-5 h-5 rounded-full"
+                                  />
+                                  <span>{issue.assignee.name}</span>
+                                </div>
+                                <span>•</span>
+                              </>
+                            )}
+                            <span>
+                              {formatRelativeDate(new Date(issue.date))}
+                            </span>
+                            <span>•</span>
+                            <span>{issue.comments} commentaires</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {issue.labels.map((label) => (
+                              <span
+                                key={label}
+                                className="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs rounded"
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
                         </div>
+                        <a
+                          href="#"
+                          className="text-violet-600 hover:text-violet-700 ml-4"
+                        >
+                          <ExternalLink size={16} />
+                        </a>
                       </div>
-                      <a
-                        href="#"
-                        className="text-violet-600 hover:text-violet-700 ml-4"
-                      >
-                        <ExternalLink size={16} />
-                      </a>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-slate-500">
+                    <p>Aucune issue disponible</p>
                   </div>
                 ))}
             </div>
@@ -1452,28 +1258,34 @@ export default function RepositoryPage() {
           </div>
 
           <div className="space-y-2">
-            {reportHistory.map((report) => (
-              <div
-                key={report.id}
-                className="bg-white p-4 rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <FileDown className="text-violet-600" size={18} />
-                  <div>
-                    <div className="font-medium text-slate-900">
-                      {report.name}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {formatRelativeDate(new Date(report.date))} •{" "}
-                      {report.size}
+            {reportHistory.length > 0 ? (
+              reportHistory.map((report) => (
+                <div
+                  key={report.id}
+                  className="bg-white p-4 rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileDown className="text-violet-600" size={18} />
+                    <div>
+                      <div className="font-medium text-slate-900">
+                        {report.name}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {formatRelativeDate(new Date(report.date))} •{" "}
+                        {report.size}
+                      </div>
                     </div>
                   </div>
+                  <Button variant="ghost" size="sm" className="text-xs">
+                    Télécharger
+                  </Button>
                 </div>
-                <Button variant="ghost" size="sm" className="text-xs">
-                  Télécharger
-                </Button>
+              ))
+            ) : (
+              <div className="text-center py-8 text-slate-500">
+                <p>Aucun rapport disponible</p>
               </div>
-            ))}
+            )}
           </div>
         </motion.div>
       </div>

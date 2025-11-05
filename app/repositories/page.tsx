@@ -56,7 +56,6 @@ export default function Repositories() {
     useMutationDeleteAccount();
   const queryClient = useQueryClient();
   const { startNextStep } = useNextStep();
-  console.log("reposData", reposData);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch] = useDebounce(searchQuery, 500);
@@ -64,8 +63,6 @@ export default function Repositories() {
   const [isAddRepoModalOpen, setIsAddRepoModalOpen] = useState(false);
   const [repoToDelete, setRepoToDelete] = useState<number | null>(null);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
-
-  console.log("reposData", reposData?.repos);
 
   // Notifier les dépôts supprimés de GitHub
   useNotifyDeletedRepos(reposData?.reposDeletedFromGithub);

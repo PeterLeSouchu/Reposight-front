@@ -30,7 +30,6 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
   const queryClient = useQueryClient();
   const { mutate: selectRepos, isPending: isAdding } = useMutationSelectRepos();
 
-  console.log("repos", repos);
   const filteredRepos = repos?.filter(
     (repo) =>
       repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
