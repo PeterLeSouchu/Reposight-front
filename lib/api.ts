@@ -9,8 +9,6 @@ interface RefreshTokenResponse {
   accessToken: string;
 }
 
-// Instance principale sans credentials par défaut
-// On peut activer withCredentials: true dans les options des requêtes spécifiques
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
   withCredentials: false, // Pas de cookies par défaut
