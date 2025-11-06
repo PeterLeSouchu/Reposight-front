@@ -47,15 +47,14 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
   const handleAdd = () => {
     selectRepos(selectedRepos, {
       onSuccess: () => {
-        // Invalider la query des dépôts pour rafraîchir la liste
         queryClient.invalidateQueries({ queryKey: ["repos"] });
-        // Afficher un toast de succès
+
         toast.success(
           `${selectedRepos.length} dépôt${
             selectedRepos.length > 1 ? "s" : ""
           } ajouté${selectedRepos.length > 1 ? "s" : ""} avec succès`
         );
-        // Fermer la modal et reset
+
         onOpenChange(false);
         setSelectedRepos([]);
         setSearchQuery("");
@@ -94,7 +93,6 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
           />
         </div>
 
-        {/* Liste des dépôts */}
         <div className="flex-1 overflow-y-auto space-y-2 pr-2">
           {isLoading ? (
             <div className="space-y-3">

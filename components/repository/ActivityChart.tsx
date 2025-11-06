@@ -18,8 +18,7 @@ interface ActivityChartProps {
 }
 
 export function ActivityChart({ activityData }: ActivityChartProps) {
-  // Formatage des données pour Recharts (inverser l'ordre : ancien à gauche, récent à droite)
-  const chartData = [...activityData].reverse().map((day) => ({
+  const chartData = activityData.map((day) => ({
     date: `${day.date.getDate()}/${day.date.getMonth() + 1}`,
     fullDate: day.date,
     commits: day.commits,

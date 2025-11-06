@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ExternalLink,
@@ -18,7 +17,6 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   formatRelativeDate,
   getLanguageColor,
@@ -27,6 +25,7 @@ import {
 import { useMutationDeleteRepo } from "@/mutation/useMutationDeleteRepo";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 import type { RepoInfo } from "@/query/useQueryRepo";
 
 interface RepositoryHeaderProps {
@@ -42,28 +41,34 @@ export function RepositoryHeader({
 }: RepositoryHeaderProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { mutate: deleteRepo, isPending: isDeleting } = useMutationDeleteRepo();
+  const { openConfirmDialog, closeConfirmDialog } = useConfirmDialog();
 
   const handleDeleteClick = () => {
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    deleteRepo(info.id, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["repos"] });
-        toast.success("Dépôt supprimé avec succès");
-        setShowDeleteModal(false);
-        router.push("/repositories");
-      },
-      onError: (error) => {
-        const message = getErrorMessage(error);
-        toast.error("Erreur lors de la suppression", {
-          description: message,
+    openConfirmDialog({
+      title: "Supprimer le dépôt",
+      description:
+        "Êtes-vous sûr de vouloir supprimer ce dépôt ? Cette action est irréversible.",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteRepo(info.id, {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["repos"] });
+            toast.success("Dépôt supprimé avec succès");
+            closeConfirmDialog();
+            router.push("/repositories");
+          },
+          onError: (error) => {
+            const message = getErrorMessage(error);
+            toast.error("Erreur lors de la suppression", {
+              description: message,
+            });
+          },
         });
-        // Le modal reste ouvert en cas d'erreur
       },
+      closeOnConfirm: false,
     });
   };
   const languages = info.languages.map((lang) => ({
@@ -99,7 +104,6 @@ export function RepositoryHeader({
 
   return (
     <>
-      {/* Bouton retour */}
       <motion.button
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -153,7 +157,6 @@ export function RepositoryHeader({
                 </div>
               </div>
 
-              {/* Langages */}
               <div className="flex items-center gap-3 flex-wrap mb-4">
                 {languages.slice(0, 3).map((lang, index) => (
                   <div
@@ -171,7 +174,6 @@ export function RepositoryHeader({
                 ))}
               </div>
 
-              {/* Stats globales */}
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-1.5 text-slate-600">
                   <Star className="text-yellow-500" size={16} />
@@ -200,7 +202,6 @@ export function RepositoryHeader({
                 )}
               </div>
 
-              {/* Dernier commit */}
               {lastCommit && (
                 <div className="mt-4 flex items-center gap-3 text-sm">
                   <GitCommit className="text-violet-600" size={16} />
@@ -215,7 +216,6 @@ export function RepositoryHeader({
               )}
             </div>
 
-            {/* Actions */}
             <div className="flex flex-col sm:flex-row lg:flex-col gap-2">
               <Button
                 variant="outline"
@@ -245,18 +245,6 @@ export function RepositoryHeader({
             </div>
           </div>
         </div>
-
-        <ConfirmDialog
-          open={showDeleteModal}
-          onOpenChange={setShowDeleteModal}
-          title="Supprimer le dépôt"
-          description="Êtes-vous sûr de vouloir supprimer ce dépôt ? Cette action est irréversible."
-          confirmText="Supprimer"
-          cancelText="Annuler"
-          onConfirm={handleDeleteConfirm}
-          variant="destructive"
-          closeOnConfirm={false}
-        />
       </motion.div>
     </>
   );

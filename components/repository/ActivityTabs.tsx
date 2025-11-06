@@ -93,9 +93,7 @@ export function ActivityTabs({
         </div>
       </div>
 
-      {/* Contenu des onglets */}
       <div className="p-6">
-        {/* Résumé IA */}
         <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200/50 rounded-xl">
           <div className="flex items-start gap-3">
             <Sparkles className="text-violet-600 mt-0.5" size={18} />
@@ -112,7 +110,6 @@ export function ActivityTabs({
           </div>
         </div>
 
-        {/* Filtres */}
         <div className="mb-6 flex flex-wrap gap-3">
           <div className="relative flex-1 min-w-[200px]">
             <Search
@@ -126,7 +123,6 @@ export function ActivityTabs({
             />
           </div>
 
-          {/* Filtres pour Commits */}
           {activeTab === "commits" && (
             <>
               <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
@@ -141,7 +137,6 @@ export function ActivityTabs({
             </>
           )}
 
-          {/* Filtres pour Pull Requests */}
           {activeTab === "pr" && (
             <>
               <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
@@ -165,7 +160,6 @@ export function ActivityTabs({
             </>
           )}
 
-          {/* Filtres pour Issues */}
           {activeTab === "issues" && (
             <>
               <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
@@ -228,9 +222,7 @@ export function ActivityTabs({
           </div>
         </div>
 
-        {/* Liste */}
         <div className="space-y-3">
-          {/* Onglet Commits */}
           {activeTab === "commits" &&
             (commits.length > 0 ? (
               commits.map((commit) => (
@@ -292,7 +284,6 @@ export function ActivityTabs({
               </div>
             ))}
 
-          {/* Onglet Pull Requests */}
           {activeTab === "pr" &&
             (pullRequests.length > 0 ? (
               pullRequests.map((pr) => (
@@ -376,7 +367,6 @@ export function ActivityTabs({
               </div>
             ))}
 
-          {/* Onglet Issues */}
           {activeTab === "issues" &&
             (issues.length > 0 ? (
               issues.map((issue) => (

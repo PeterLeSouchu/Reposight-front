@@ -27,7 +27,7 @@ export function WeeklyComparison({ comparison }: WeeklyComparisonProps) {
       <div className="flex items-center gap-2 mb-4">
         <TrendingUp className="text-violet-600" size={20} />
         <h2 className="text-xl font-bold text-slate-900">
-          Cette semaine vs dernière
+          Cette semaine vs semaine dernière
         </h2>
       </div>
       <div className="grid grid-cols-3 gap-4">

@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReactQueryProvider } from "../components/ReactQueryProvider";
 import { NextStepProvider } from "nextstepjs";
-import { NextStepWrapper } from "../components/NextStepWrapper";
+import { NextStepWrapper } from "@/components/repositories/NextStepWrapper";
+import { ConfirmDialogProvider } from "@/contexts/ConfirmDialogProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,9 @@ export default function RootLayout({
       >
         <ReactQueryProvider>
           <NextStepProvider>
-            <NextStepWrapper>{children}</NextStepWrapper>
+            <ConfirmDialogProvider>
+              <NextStepWrapper>{children}</NextStepWrapper>
+            </ConfirmDialogProvider>
           </NextStepProvider>
         </ReactQueryProvider>
       </body>

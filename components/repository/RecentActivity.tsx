@@ -1,7 +1,13 @@
 "use client";
 
 import { motion } from "motion/react";
-import { GitCommit, GitPullRequest, AlertCircle, Sparkles } from "lucide-react";
+import {
+  GitCommit,
+  GitPullRequest,
+  AlertCircle,
+  Sparkles,
+  Clock,
+} from "lucide-react";
 import { formatRelativeDate } from "@/lib/utils";
 import type { RecentActivity as RecentActivityType } from "@/query/useQueryRepo";
 
@@ -39,7 +45,10 @@ export function RecentActivity({ recentActivity }: RecentActivityProps) {
       className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-slate-900">Activité récente</h2>
+        <div className="flex items-center gap-2">
+          <Clock className="text-violet-600" size={20} />
+          <h2 className="text-xl font-bold text-slate-900">Activité récente</h2>
+        </div>
         <div className="flex items-center gap-2 text-sm bg-violet-100/50 text-violet-700 px-3 py-1 rounded-lg border border-violet-200/50">
           <Sparkles size={14} />
           <span>

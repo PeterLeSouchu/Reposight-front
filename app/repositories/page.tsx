@@ -1,48 +1,24 @@
 "use client";
 
-import {
-  LogOut,
-  Plus,
-  ExternalLink,
-  Search,
-  GitBranch,
-  Clock,
-  RefreshCw,
-  Trash2,
-  ArrowUpDown,
-} from "lucide-react";
-import { motion } from "motion/react";
 import { useState, useMemo, useEffect } from "react";
 import { useDebounce } from "use-debounce";
 import { useNextStep } from "nextstepjs";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
-import Link from "next/link";
 import { useQueryUser } from "@/query/useQueryUser";
 import { useMutationLogout } from "@/mutation/useMutationLogout";
 import { useAuthStore } from "@/lib/authStore";
-import { AddRepoModal } from "@/components/AddRepoModal";
+import { AddRepoModal } from "@/components/repositories/AddRepoModal";
 import { useQueryRepos } from "@/query/useQueryRepos";
 import { ErrorMessage } from "@/components/ErrorMessage";
-import { useMutationDeleteRepo } from "@/mutation/useMutationDeleteRepo";
-import { useMutationDeleteAccount } from "@/mutation/useMutationDeleteAccount";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { getErrorMessage } from "@/lib/utils";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { RepoCard } from "@/components/RepoCard";
 import { useNotifyDeletedRepos } from "@/hooks/useNotifyDeletedRepos";
 import { BackgroundDots } from "@/components/BackgroundDots";
-
-type SortType = "added" | "oldest-commit" | "newest-commit";
+import { UserHeader } from "@/components/repositories/UserHeader";
+import {
+  RepositoriesSearchBar,
+  type SortType,
+} from "@/components/repositories/RepositoriesSearchBar";
+import { EmptyRepositoriesState } from "@/components/repositories/EmptyRepositoriesState";
+import { RepositoriesSkeleton } from "@/components/repositories/RepositoriesSkeleton";
+import { RepositoriesGrid } from "@/components/repositories/RepositoriesGrid";
 
 export default function Repositories() {
   const { data, isLoading, error: userError } = useQueryUser();
@@ -52,18 +28,12 @@ export default function Repositories() {
     error: reposError,
   } = useQueryRepos();
   const { mutate: logoutMutate, isPending: isLoggingOut } = useMutationLogout();
-  const { mutate: deleteRepo, isPending: isDeleting } = useMutationDeleteRepo();
-  const { mutate: deleteAccount, isPending: isDeletingAccount } =
-    useMutationDeleteAccount();
-  const queryClient = useQueryClient();
   const { startNextStep } = useNextStep();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch] = useDebounce(searchQuery, 500);
   const [sortType, setSortType] = useState<SortType>("added");
   const [isAddRepoModalOpen, setIsAddRepoModalOpen] = useState(false);
-  const [repoToDelete, setRepoToDelete] = useState<number | null>(null);
-  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
 
   // Notifier les dépôts supprimés de GitHub
   useNotifyDeletedRepos(reposData?.reposDeletedFromGithub);
@@ -75,7 +45,7 @@ export default function Repositories() {
     }
   }, [isLoading, isReposLoading, data, reposData, startNextStep]);
 
-  // Étant donné qu'il ne va pas y avoir des centaines ou des milliers de dépôts, j'ai opté pour une recherche (searchbar + filtre) en front uniquement.
+  // Étant donné qu'il ne va pas y avoir des centaines ou des milliers de dépôts, j'ai opté pour une recherche (searchbar + filtre) en front uniquement. Mais, à plus grande échelle, l'appli devra utiliser une pagination.
   const filteredRepos = useMemo(() => {
     if (!reposData) return [];
 
@@ -89,13 +59,11 @@ export default function Repositories() {
       };
     });
 
-    // Filtrage par recherche
     if (debouncedSearch.trim()) {
       const query = debouncedSearch.toLowerCase();
       repos = repos.filter((repo) => repo.name.toLowerCase().includes(query));
     }
 
-    // Tri par date
     const sortedRepos = [...repos].sort((a, b) => {
       switch (sortType) {
         case "added":
@@ -132,53 +100,11 @@ export default function Repositories() {
     });
   };
 
-  const handleDeleteClick = (id: number) => {
-    setRepoToDelete(id);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (repoToDelete === null) return;
-
-    deleteRepo(repoToDelete, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["repos"] });
-        toast.success("Dépôt supprimé avec succès");
-        setRepoToDelete(null);
-      },
-      onError: (error) => {
-        const message = getErrorMessage(error);
-        toast.error("Erreur lors de la suppression", {
-          description: message,
-        });
-        setRepoToDelete(null);
-      },
-    });
-  };
-
-  const handleDeleteAccountConfirm = () => {
-    deleteAccount(undefined, {
-      onSuccess: () => {
-        // toast.success("Compte supprimé avec succès");
-        useAuthStore.getState().clearAccessToken();
-        localStorage.clear();
-        window.location.href = "/";
-      },
-      onError: (error) => {
-        const message = getErrorMessage(error);
-        toast.error("Erreur lors de la suppression du compte", {
-          description: message,
-        });
-        setShowDeleteAccountModal(false);
-      },
-    });
-  };
-
   if (userError || reposError) {
     return (
       <ErrorMessage
         error={userError || reposError}
         title="Erreur de chargement des données"
-        // onRetry={() => window.location.reload()}
       />
     );
   }
@@ -188,270 +114,35 @@ export default function Repositories() {
       <BackgroundDots />
 
       <div className="relative z-10 max-w-7xl mx-auto p-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="flex justify-between items-center gap-4 mb-8"
-        >
-          {isLoading && (
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-12 w-12 rounded-full bg-slate-200" />
-              <div className="flex flex-col gap-2">
-                <Skeleton className="h-7 w-32 rounded-md bg-slate-200" />
-                <Skeleton className="h-5 w-48 rounded-md bg-slate-200" />
-              </div>
-            </div>
-          )}
-          {data && (
-            <div className="flex items-center gap-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  id="avatar-dropdown"
-                  className="cursor-pointer border-none outline-none hover:opacity-90 transition-opacity"
-                >
-                  <img
-                    src={data.avatar}
-                    alt={`Avatar de ${data.username}`}
-                    className="w-12 h-12 rounded-full border-2 border-violet-600/50 hover:border-violet-700/70 transition-all"
-                  />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuLabel className="flex flex-col gap-1">
-                    <span className="font-semibold text-sm">
-                      {data.username}
-                    </span>
-                    <span className="text-xs text-slate-600">{data.email}</span>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Link
-                      className="flex items-center gap-2 "
-                      href={`https://github.com/${data.username}`}
-                      target="_blank"
-                    >
-                      <ExternalLink size={14} /> Profil Github
-                    </Link>
-                  </DropdownMenuItem>
+        <UserHeader
+          user={data}
+          isLoading={isLoading}
+          isLoggingOut={isLoggingOut}
+          onAddRepo={() => setIsAddRepoModalOpen(true)}
+          onLogout={handleLogout}
+        />
 
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={() => setShowDeleteAccountModal(true)}
-                  >
-                    <Trash2 size={14} /> Supprimer mon compte
-                  </DropdownMenuItem>
-
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="flex items-center gap-2 cursor-pointer text-red-600  focus:text-red-500"
-                  >
-                    <LogOut className="text-red-600" size={16} />
-                    {isLoggingOut ? "Déconnexion..." : "Déconnexion"}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                  {data.username}
-                </h2>
-                <p className="text-xs sm:text-sm text-violet-600">
-                  {data.email}
-                </p>
-              </div>
-            </div>
-          )}
-
-          <button
-            id="add-repo-button"
-            onClick={() => setIsAddRepoModalOpen(true)}
-            className="w-10 h-10 sm:w-auto sm:px-6 sm:py-2 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-violet-900/20 border border-violet-500/30 flex justify-center items-center gap-2"
-          >
-            <Plus size={20} />
-            <span className="hidden sm:inline">Nouveau dépôt</span>
-          </button>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 mb-8 flex flex-col md:flex-row items-stretch md:items-center gap-3"
-        >
-          <div className="relative flex-1">
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              size={20}
-            />
-            <input
-              id="searchbar-input"
-              type="text"
-              placeholder="Rechercher un dépôt..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-2  bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all shadow-sm"
-            />
-          </div>
-          <div className="flex items-center gap-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                id="sort-dropdown"
-                className="w-full md:w-auto px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-colors shadow-sm flex items-center justify-center gap-2"
-              >
-                <ArrowUpDown className="text-violet-600" size={18} />
-                <span className="text-sm font-medium">
-                  {sortType === "added"
-                    ? "Date d'ajout"
-                    : sortType === "newest-commit"
-                    ? "Push récent"
-                    : "Push ancien"}
-                </span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[180px]">
-                <DropdownMenuLabel>Trier par</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => setSortType("added")}
-                  className="cursor-pointer"
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span>Date d'ajout</span>
-                    {sortType === "added" && (
-                      <span className="text-violet-600">✓</span>
-                    )}
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setSortType("newest-commit")}
-                  className="cursor-pointer"
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span>Push le plus récent</span>
-                    {sortType === "newest-commit" && (
-                      <span className="text-violet-600">✓</span>
-                    )}
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setSortType("oldest-commit")}
-                  className="cursor-pointer"
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span>Push le plus ancien</span>
-                    {sortType === "oldest-commit" && (
-                      <span className="text-violet-600">✓</span>
-                    )}
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {/* <button className="px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-              <RefreshCw
-                // className={`text-violet-600 ${"animate-spin"}`}
-                className={`text-violet-600 `}
-                size={20}
-              />
-            </button> */}
-          </div>
-        </motion.div>
+        <RepositoriesSearchBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          sortType={sortType}
+          onSortChange={setSortType}
+        />
 
         {isReposLoading ? (
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-48 rounded-2xl bg-slate-200" />
-            ))}
-          </div>
+          <RepositoriesSkeleton />
         ) : filteredRepos.length === 0 ? (
-          reposData && reposData.repos.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="relative z-10 flex flex-col items-center justify-center py-20 px-6"
-            >
-              <div className="relative mb-8">
-                <div className="absolute inset-0 bg-violet-100 rounded-full blur-2xl opacity-50 animate-pulse" />
-                <div className="relative w-32 h-32 bg-gradient-to-br from-violet-100 to-indigo-100 rounded-full flex items-center justify-center border-4 border-violet-200">
-                  <GitBranch className="text-violet-600" size={64} />
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                Aucun dépôt pour le moment
-              </h3>
-              <p className="text-slate-600 text-center max-w-md mb-8">
-                Commencez par ajouter vos premiers dépôts GitHub pour bénéficier
-                d'analyses détaillées et de rapports personnalisés.
-              </p>
-              <button
-                onClick={() => setIsAddRepoModalOpen(true)}
-                className="px-8 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors font-medium shadow-lg cursor-pointer shadow-violet-900/20 border border-violet-500/30 flex items-center gap-2"
-              >
-                <Plus size={20} />
-                Ajouter mon premier dépôt
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="relative z-10 text-center py-16"
-            >
-              <p className="text-slate-600 text-lg">Aucun dépôt trouvé</p>
-            </motion.div>
-          )
+          <EmptyRepositoriesState
+            isEmpty={reposData?.repos.length === 0}
+            onAddRepo={() => setIsAddRepoModalOpen(true)}
+          />
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {filteredRepos.map((repo, index) => (
-              <motion.div
-                key={repo.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.4 + index * 0.06,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                <RepoCard repo={repo} onDelete={handleDeleteClick} />
-              </motion.div>
-            ))}
-          </motion.div>
+          <RepositoriesGrid repos={filteredRepos} />
         )}
 
         <AddRepoModal
           open={isAddRepoModalOpen}
           onOpenChange={setIsAddRepoModalOpen}
-        />
-
-        <ConfirmDialog
-          open={repoToDelete !== null}
-          onOpenChange={(open) => {
-            if (!open) setRepoToDelete(null);
-          }}
-          title="Supprimer le dépôt"
-          description="Êtes-vous sûr de vouloir supprimer ce dépôt ?"
-          confirmText="Supprimer"
-          cancelText="Annuler"
-          onConfirm={handleDeleteConfirm}
-          variant="destructive"
-        />
-
-        <ConfirmDialog
-          open={showDeleteAccountModal}
-          onOpenChange={setShowDeleteAccountModal}
-          title="Supprimer mon compte"
-          description="Êtes-vous sûr de vouloir supprimer votre compte ? Toutes vos données seront définitivement supprimées."
-          confirmText="Supprimer"
-          cancelText="Annuler"
-          onConfirm={handleDeleteAccountConfirm}
-          variant="destructive"
         />
       </div>
     </div>

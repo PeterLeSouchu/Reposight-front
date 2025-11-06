@@ -28,7 +28,13 @@ export default function RepositoryPage() {
   const params = useParams<{ id: string }>();
   const repoId = Number(params.id);
 
-  const { data: repoApi, isLoading, error, refetch } = useQueryRepo(repoId);
+  const {
+    data: repoApi,
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useQueryRepo(repoId);
 
   console.log("repoApi", repoApi);
 
@@ -46,7 +52,7 @@ export default function RepositoryPage() {
     }));
   }, [repoApi?.dailyStats]);
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return <RepositorySkeleton />;
   }
 

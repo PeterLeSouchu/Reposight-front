@@ -4,18 +4,55 @@ import { motion } from "motion/react";
 import { ExternalLink, GitBranch, Clock, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Repo } from "@/types/repo";
-import { formatRelativeDate, getLanguageColor } from "@/lib/utils";
+import {
+  formatRelativeDate,
+  getLanguageColor,
+  getErrorMessage,
+} from "@/lib/utils";
+import { useMutationDeleteRepo } from "@/mutation/useMutationDeleteRepo";
+import { useQueryClient } from "@tanstack/react-query";
+import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
+import { toast } from "sonner";
 
 interface RepoCardProps {
   repo: Omit<Repo, "selectedAt" | "pushed_at"> & { pushed_atDate: Date };
-  onDelete: (id: number) => void;
 }
 
-export function RepoCard({ repo, onDelete }: RepoCardProps) {
+export function RepoCard({ repo }: RepoCardProps) {
   const router = useRouter();
+  const { mutate: deleteRepo } = useMutationDeleteRepo();
+  const queryClient = useQueryClient();
+  const { openConfirmDialog, closeConfirmDialog } = useConfirmDialog();
 
   const handleCardClick = () => {
     router.push(`/repository/${repo.id}`);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    openConfirmDialog({
+      title: "Supprimer le dépôt",
+      description: "Êtes-vous sûr de vouloir supprimer ce dépôt ?",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteRepo(repo.id, {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["repos"] });
+            toast.success("Dépôt supprimé avec succès");
+            closeConfirmDialog();
+          },
+          onError: (error) => {
+            const message = getErrorMessage(error);
+            toast.error("Erreur lors de la suppression", {
+              description: message,
+            });
+          },
+        });
+      },
+      closeOnConfirm: false,
+    });
   };
 
   return (
@@ -50,10 +87,7 @@ export function RepoCard({ repo, onDelete }: RepoCardProps) {
             />
           </a>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(repo.id);
-            }}
+            onClick={handleDeleteClick}
             className="p-2 rounded-lg cursor-pointer sm:hover:bg-red-50 transition-colors group/trash"
             aria-label="Supprimer le repository"
           >
