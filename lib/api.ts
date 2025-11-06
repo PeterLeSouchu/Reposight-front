@@ -1,5 +1,13 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, {
+  AxiosError,
+  InternalAxiosRequestConfig,
+  AxiosRequestHeaders,
+} from "axios";
 import { useAuthStore } from "./authStore";
+
+interface RefreshTokenResponse {
+  accessToken: string;
+}
 
 // Instance principale sans credentials par défaut
 // On peut activer withCredentials: true dans les options des requêtes spécifiques
@@ -15,8 +23,8 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken;
   if (token) {
-    config.headers = config.headers ?? {};
-    (config.headers as any).Authorization = `Bearer ${token}`;
+    config.headers = (config.headers ?? {}) as AxiosRequestHeaders;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
@@ -24,8 +32,8 @@ api.interceptors.request.use((config) => {
 // Flag pour éviter les boucles infinies et les refresh multiples simultanés
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (value?: any) => void;
-  reject: (error?: any) => void;
+  resolve: (value?: unknown) => void;
+  reject: (error?: unknown) => void;
 }> = [];
 
 const processQueue = (
@@ -50,7 +58,7 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // Vérifier si c'est une erreur 401 avec message "jwt access token expired"
+    // Vérifier si c'est une erreur 401 avec message "Token d'accès JWT expiré"
     const errorData = error.response?.data;
     const errorMessage =
       errorData &&
@@ -62,7 +70,7 @@ api.interceptors.response.use(
 
     if (
       error.response?.status === 401 &&
-      errorMessage === "jwt access token expired" &&
+      errorMessage === "Token d'accès JWT expiré" &&
       !originalRequest._retry
     ) {
       // Si on est déjà en train de refresh, mettre la requête en queue
@@ -82,7 +90,6 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Appeler la route de refresh avec withCredentials: true pour recevoir/envoyer les cookies
         const response = await api.post(
           "/auth/refresh",
           {},
@@ -92,14 +99,15 @@ api.interceptors.response.use(
         );
 
         // Sauvegarder le nouvel accessToken en mémoire
-        const { accessToken } = (response.data as any) ?? {};
+        const refreshData = response.data as RefreshTokenResponse;
+        const accessToken = refreshData?.accessToken;
         if (accessToken) {
           useAuthStore.getState().setAccessToken(accessToken);
           // Mettre à jour l'en-tête de la requête originale pour éviter une 2e 401
           originalRequest.headers = {
             ...(originalRequest.headers || {}),
             Authorization: `Bearer ${accessToken}`,
-          } as any;
+          } as AxiosRequestHeaders;
         }
 
         // Traiter la queue avec succès
@@ -113,22 +121,8 @@ api.interceptors.response.use(
         processQueue(refreshError as AxiosError, null);
         isRefreshing = false;
 
-        // Nettoyer le token en mémoire
-        try {
-          useAuthStore.getState().clearAccessToken();
-        } catch {}
+        useAuthStore.getState().clearAccessToken();
 
-        // Vérifier si l'erreur de refresh contient "jwt refresh token expired"
-        const refreshErrorData = (refreshError as AxiosError).response?.data;
-        const refreshErrorMessage =
-          refreshErrorData &&
-          typeof refreshErrorData === "object" &&
-          "message" in refreshErrorData &&
-          typeof refreshErrorData.message === "string"
-            ? refreshErrorData.message
-            : null;
-
-        // Rediriger vers /login si le refresh_token est expiré ou invalide
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
@@ -137,22 +131,16 @@ api.interceptors.response.use(
       }
     }
 
-    // Si c'est une erreur 401 avec message "jwt refresh token expired", rediriger vers /login
+    // Si c'est une erreur 401 avec message "Refresh token JWT expiré", rediriger vers /login
     if (
       error.response?.status === 401 &&
-      errorMessage === "jwt refresh token expired"
+      errorMessage === "Refresh token JWT expiré"
     ) {
-      // Nettoyer le token en mémoire
-      try {
-        useAuthStore.getState().clearAccessToken();
-      } catch {}
+      useAuthStore.getState().clearAccessToken();
 
-      // Rediriger vers /login
       if (typeof window !== "undefined") {
         window.location.href = "/login";
       }
-
-      return Promise.reject(error);
     }
 
     return Promise.reject(error);

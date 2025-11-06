@@ -49,15 +49,7 @@ export default function Repositories() {
   const filteredRepos = useMemo(() => {
     if (!reposData) return [];
 
-    let repos = reposData.repos.map((repo) => {
-      const selectedAt = new Date(repo.selectedAt || repo.pushed_at);
-      const pushed_atDate = new Date(repo.pushed_at);
-      return {
-        ...repo,
-        selectedAt,
-        pushed_atDate,
-      };
-    });
+    let repos = [...reposData.repos];
 
     if (debouncedSearch.trim()) {
       const query = debouncedSearch.toLowerCase();
@@ -67,11 +59,18 @@ export default function Repositories() {
     const sortedRepos = [...repos].sort((a, b) => {
       switch (sortType) {
         case "added":
-          return b.selectedAt.getTime() - a.selectedAt.getTime();
+          return (
+            new Date(b.createdAt || b.pushedAt).getTime() -
+            new Date(a.createdAt || a.pushedAt).getTime()
+          );
         case "newest-commit":
-          return b.pushed_atDate.getTime() - a.pushed_atDate.getTime();
+          return (
+            new Date(b.pushedAt).getTime() - new Date(a.pushedAt).getTime()
+          );
         case "oldest-commit":
-          return a.pushed_atDate.getTime() - b.pushed_atDate.getTime();
+          return (
+            new Date(a.pushedAt).getTime() - new Date(b.pushedAt).getTime()
+          );
         default:
           return 0;
       }

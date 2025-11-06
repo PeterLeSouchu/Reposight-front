@@ -15,7 +15,7 @@ import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 import { toast } from "sonner";
 
 interface RepoCardProps {
-  repo: Omit<Repo, "selectedAt" | "pushed_at"> & { pushed_atDate: Date };
+  repo: Repo;
 }
 
 export function RepoCard({ repo }: RepoCardProps) {
@@ -74,7 +74,7 @@ export function RepoCard({ repo }: RepoCardProps) {
         </div>
         <div className="flex items-center gap-2">
           <a
-            href={repo.html_url}
+            href={repo.htmlUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
@@ -121,7 +121,7 @@ export function RepoCard({ repo }: RepoCardProps) {
         <div className="flex items-center gap-2 flex-wrap">
           <Clock className="text-violet-500" size={14} />
           <span className="text-xs text-slate-500 font-medium">
-            Mis à jour {formatRelativeDate(repo.pushed_atDate)}
+            Mis à jour {formatRelativeDate(new Date(repo.pushedAt))}
           </span>
           <span
             className={`text-xs px-2 py-0.5 rounded-full ${

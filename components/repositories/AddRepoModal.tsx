@@ -161,9 +161,9 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
                             {repo.language}
                           </span>
                         )}
-                        {repo.pushed_at && (
+                        {repo.pushedAt && (
                           <span>
-                            Mis à jour {formatRelativeDate(repo.pushed_at)}
+                            Mis à jour {formatRelativeDate(repo.pushedAt)}
                           </span>
                         )}
                       </div>

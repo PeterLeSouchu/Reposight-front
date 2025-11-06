@@ -5,7 +5,7 @@ import { RepoCard } from "./RepoCard";
 import type { Repo } from "@/types/repo";
 
 interface RepositoriesGridProps {
-  repos: (Omit<Repo, "selectedAt" | "pushed_at"> & { pushed_atDate: Date })[];
+  repos: Repo[];
 }
 
 export function RepositoriesGrid({ repos }: RepositoriesGridProps) {
