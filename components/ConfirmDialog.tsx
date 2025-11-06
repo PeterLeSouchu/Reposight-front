@@ -19,6 +19,7 @@ interface ConfirmDialogProps {
   cancelText?: string;
   onConfirm: () => void;
   variant?: "default" | "destructive";
+  closeOnConfirm?: boolean;
 }
 
 export function ConfirmDialog({
@@ -30,10 +31,13 @@ export function ConfirmDialog({
   cancelText = "Annuler",
   onConfirm,
   variant = "default",
+  closeOnConfirm = true,
 }: ConfirmDialogProps) {
   const handleConfirm = () => {
     onConfirm();
-    onOpenChange(false);
+    if (closeOnConfirm) {
+      onOpenChange(false);
+    }
   };
 
   return (

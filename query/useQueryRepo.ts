@@ -24,6 +24,7 @@ export interface RepoInfo {
   starsCount: number;
   lastCommit: RepoLastCommit;
   url: string;
+  id: number;
 }
 
 export interface DailyStat {
@@ -34,33 +35,20 @@ export interface DailyStat {
 }
 
 export interface WeeklyComparison {
-  currentWeek: {
-    start: string;
-    end: string;
-    commits: number;
-    prs: number;
-    issues: number;
+  commits: {
+    currentWeek: number;
+    lastWeek: number;
+    percentage: number;
   };
-  previousWeek: {
-    start: string;
-    end: string;
-    commits: number;
-    prs: number;
-    issues: number;
+  prs: {
+    currentWeek: number;
+    lastWeek: number;
+    percentage: number;
   };
-  comparison: {
-    commits: {
-      change: number;
-      percent: number;
-    };
-    prs: {
-      change: number;
-      percent: number;
-    };
-    issues: {
-      change: number;
-      percent: number;
-    };
+  issues: {
+    currentWeek: number;
+    lastWeek: number;
+    percentage: number;
   };
 }
 
