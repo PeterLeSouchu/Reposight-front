@@ -6,39 +6,79 @@ import {
   GitCommit,
   GitPullRequest,
   AlertCircle,
-  Sparkles,
-  Search,
   CheckCircle2,
   XCircle,
   Circle,
   ExternalLink,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { formatRelativeDate } from "@/lib/utils";
 import type { Commit, PullRequest, Issue, TabType } from "@/types/repository";
+import { useQueryCommitsMetadata } from "@/query/useQueryCommitsMetadata";
+import { useQueryCommits } from "@/query/useQueryCommits";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface ActivityTabsProps {
-  commits: Commit[];
   pullRequests: PullRequest[];
   issues: Issue[];
   avgCommitsPerDay: number;
   contributorsCount: number;
+  repoId: number;
 }
 
 export function ActivityTabs({
-  commits,
+  repoId,
   pullRequests,
   issues,
   avgCommitsPerDay,
   contributorsCount,
 }: ActivityTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("commits");
+  const [selectedAuthor, setSelectedAuthor] = useState<string>("all");
+  const [selectedBranch, setSelectedBranch] = useState<string>("all");
+  const [page, setPage] = useState<number>(1);
+  const perPage = 10;
+
+  const {
+    data: commitsMetadata,
+    isLoading: isLoadingCommitsMetadata,
+    error: errorCommitsMetadata,
+  } = useQueryCommitsMetadata(repoId);
+
+  const {
+    data: commitsData,
+    isLoading: isLoadingCommits,
+    error: errorCommits,
+  } = useQueryCommits(repoId, {
+    page,
+    perPage,
+    author: selectedAuthor !== "all" ? selectedAuthor : undefined,
+    branch: selectedBranch !== "all" ? selectedBranch : undefined,
+  });
+
+  const selectedAuthorData = commitsMetadata?.authors.find(
+    (author) => author.username === selectedAuthor
+  );
+
+  const commits = commitsData?.commits ?? [];
+  const totalCommits = commitsData?.pagination?.total ?? 0;
+  const totalPages = commitsData?.pagination?.totalPages ?? 0;
 
   const tabs = [
     {
       id: "commits" as TabType,
       label: "Commits",
       icon: GitCommit,
-      count: commits.length,
+      count: totalCommits,
     },
     {
       id: "pr" as TabType,
@@ -70,7 +110,7 @@ export function ActivityTabs({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+                className={`flex-1 cursor-pointer flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
                   activeTab === tab.id
                     ? "bg-violet-600 text-white shadow-md"
                     : "text-slate-600 hover:bg-violet-50 hover:text-violet-600"
@@ -94,46 +134,75 @@ export function ActivityTabs({
       </div>
 
       <div className="p-6">
-        <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200/50 rounded-xl">
-          <div className="flex items-start gap-3">
-            <Sparkles className="text-violet-600 mt-0.5" size={18} />
-            <div className="flex-1">
-              <p className="text-sm text-slate-700">
-                {activeTab === "commits" &&
-                  "Analyse IA : Catégorisation automatique détectée (fix: 40%, feat: 35%, refactor: 25%). Aucune anomalie détectée."}
-                {activeTab === "pr" &&
-                  "Résumé IA : Temps moyen avant merge : 2.3 jours. 1 PR ouverte nécessite attention. Risque de conflit faible."}
-                {activeTab === "issues" &&
-                  "Insight IA : 2 issues ouvertes, 1 stale (>7 jours). Suggestion : assigner un label 'priority' aux issues critiques."}
-              </p>
-            </div>
-          </div>
-        </div>
-
         <div className="mb-6 flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-              size={16}
-            />
-            <input
-              type="text"
-              placeholder="Rechercher..."
-              className="w-full pl-10 pr-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50"
-            />
-          </div>
-
           {activeTab === "commits" && (
             <>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>Tous les auteurs</option>
-              </select>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>Toutes les branches</option>
-              </select>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>30 derniers jours</option>
-              </select>
+              <Select
+                value={selectedAuthor}
+                onValueChange={(value) => {
+                  setSelectedAuthor(value);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  {selectedAuthorData ? (
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={selectedAuthorData.avatar}
+                        alt={selectedAuthorData.username}
+                        className="w-4 h-4 rounded-full"
+                      />
+                      <span className="truncate max-w-[110px]">
+                        {selectedAuthorData.username}
+                      </span>
+                    </div>
+                  ) : (
+                    <SelectValue
+                      placeholder="Tous les auteurs"
+                      className="truncate"
+                    />
+                  )}
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les auteurs</SelectItem>
+                  {commitsMetadata?.authors.map((author) => (
+                    <SelectItem key={author.username} value={author.username}>
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={author.avatar}
+                          alt={author.username}
+                          className="w-4 h-4 rounded-full"
+                        />
+                        <span className="truncate max-w-[140px]">
+                          {author.username}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={selectedBranch}
+                onValueChange={(value) => {
+                  setSelectedBranch(value);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue
+                    placeholder="Toutes les branches"
+                    className="truncate"
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les branches</SelectItem>
+                  {commitsMetadata?.branches.map((branch) => (
+                    <SelectItem key={branch} value={branch}>
+                      <span className="truncate max-w-[160px]">{branch}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </>
           )}
 
@@ -145,17 +214,9 @@ export function ActivityTabs({
                 <option>Fermé</option>
                 <option>Fusionné</option>
               </select>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>Tous les labels</option>
-              </select>
+
               <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
                 <option>Tous les auteurs</option>
-              </select>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>Toutes les branches</option>
-              </select>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>30 derniers jours</option>
               </select>
             </>
           )}
@@ -168,116 +229,108 @@ export function ActivityTabs({
                 <option>Fermé</option>
               </select>
               <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>Tous les labels</option>
-              </select>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>Tous les assignés</option>
-              </select>
-              <select className="px-4 py-2 bg-white border border-violet-200/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50">
-                <option>30 derniers jours</option>
+                <option>Tous les auteurs</option>
               </select>
             </>
           )}
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-xl border border-violet-100">
-            <div className="text-sm text-slate-600 mb-1">Total</div>
-            <div className="text-2xl font-bold text-slate-900">
-              {activeTab === "commits" && commits.length}
-              {activeTab === "pr" && pullRequests.length}
-              {activeTab === "issues" && issues.length}
-            </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl border border-violet-100">
-            <div className="text-sm text-slate-600 mb-1">Ouverts</div>
-            <div className="text-2xl font-bold text-blue-600">
-              {activeTab === "commits" && "-"}
-              {activeTab === "pr" &&
-                pullRequests.filter((pr) => pr.state === "open").length}
-              {activeTab === "issues" &&
-                issues.filter((i) => i.state === "open").length}
-            </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl border border-violet-100">
-            <div className="text-sm text-slate-600 mb-1">Moyenne/jour</div>
-            <div className="text-2xl font-bold text-violet-600">
-              {activeTab === "commits" && avgCommitsPerDay.toFixed(1)}
-              {activeTab === "pr" && (pullRequests.length / 30).toFixed(1)}
-              {activeTab === "issues" && (issues.length / 30).toFixed(1)}
-            </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl border border-violet-100">
-            <div className="text-sm text-slate-600 mb-1">
-              {activeTab === "commits" && "Contributeurs actifs"}
-              {activeTab === "pr" && "Taux de merge"}
-              {activeTab === "issues" && "Taux de résolution"}
-            </div>
-            <div className="text-lg font-bold text-slate-900">
-              {activeTab === "commits" && contributorsCount}
-              {activeTab === "pr" && "85.2%"}
-              {activeTab === "issues" && "78.5%"}
-            </div>
-          </div>
-        </div>
-
         <div className="space-y-3">
           {activeTab === "commits" &&
-            (commits.length > 0 ? (
-              commits.map((commit) => (
-                <div
-                  key={commit.id}
-                  className="p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span
-                          className={`px-2 py-0.5 rounded text-xs font-medium ${
-                            commit.type === "fix"
-                              ? "bg-red-100 text-red-700"
-                              : commit.type === "feat"
-                              ? "bg-green-100 text-green-700"
-                              : commit.type === "refactor"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-slate-100 text-slate-700"
-                          }`}
-                        >
-                          {commit.type}
-                        </span>
-                        <span className="font-medium text-slate-900">
-                          {commit.message}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-slate-500">
-                        <div className="flex items-center gap-1.5">
-                          <img
-                            src={commit.author.avatar}
-                            alt={commit.author.name}
-                            className="w-5 h-5 rounded-full"
-                          />
-                          <span>{commit.author.name}</span>
+            (isLoadingCommits ? (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="p-3 bg-white rounded-xl border border-violet-100"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <div className="flex items-center gap-3 text-xs">
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="h-5 w-5 rounded-full" />
+                            <Skeleton className="h-3 w-24" />
+                          </div>
+                          <Skeleton className="h-3 w-16" />
                         </div>
-                        <span>•</span>
-                        <span>{commit.branch}</span>
-                        <span>•</span>
-                        <span>{formatRelativeDate(new Date(commit.date))}</span>
-                        <span>•</span>
-                        <span className="font-mono text-xs">
-                          {commit.sha.substring(0, 7)}
-                        </span>
                       </div>
+                      <Skeleton className="h-3 w-12" />
                     </div>
-                    <a
-                      href="#"
-                      className="text-violet-600 hover:text-violet-700 ml-4"
-                    >
-                      <ExternalLink size={16} />
-                    </a>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
+            ) : errorCommits ? (
+              <div className="text-center py-8 text-red-500">
+                <p>Erreur lors du chargement des commits</p>
+              </div>
+            ) : commits.length > 0 ? (
+              <>
+                {commits.map((commit) => (
+                  <a
+                    key={commit.sha}
+                    href={commit.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-3 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all group"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium text-slate-900 group-hover:text-violet-600 transition-colors line-clamp-2">
+                          {commit.message}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <div className="flex items-center gap-1.5">
+                            <img
+                              src={commit.author.avatar}
+                              alt={commit.author.name}
+                              className="w-5 h-5 rounded-full"
+                            />
+                            <span>{commit.author.name}</span>
+                          </div>
+                          <span>•</span>
+                          <span>
+                            {formatRelativeDate(new Date(commit.date))}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-violet-600 group-hover:text-violet-700 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity ml-3">
+                        Voir →
+                      </span>
+                    </div>
+                  </a>
+                ))}
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4 border-t border-violet-200/50">
+                    <div className="text-sm text-slate-600">
+                      Page {page} sur {totalPages} ({totalCommits} commits)
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        <ChevronLeft size={16} />
+                        Précédent
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={page === totalPages}
+                      >
+                        Suivant
+                        <ChevronRight size={16} />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="text-center py-8 text-slate-500">
                 <p>Aucun commit disponible</p>

@@ -1,12 +1,10 @@
 // Types pour les données mockées (en attente de l'API)
 export interface Commit {
-  id: string;
-  message: string;
-  author: { name: string; avatar: string; email: string };
-  date: string;
-  branch: string;
   sha: string;
-  type: "fix" | "feat" | "refactor" | "docs" | "chore";
+  message: string;
+  author: { name: string; login: string; avatar: string };
+  date: string;
+  url: string;
 }
 
 export interface PullRequest {

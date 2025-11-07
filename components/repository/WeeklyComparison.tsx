@@ -30,7 +30,7 @@ export function WeeklyComparison({ comparison }: WeeklyComparisonProps) {
           Cette semaine vs semaine dernière
         </h2>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="flex flex-col gap-4 md:grid md:grid-cols-3">
         {hasNoActivity ? (
           <div className="col-span-3 text-center py-8 text-slate-500">
             <p>Aucune activité cette semaine ou la semaine dernière</p>

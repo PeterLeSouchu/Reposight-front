@@ -18,7 +18,6 @@ import { ReportHistory } from "@/components/repository/ReportHistory";
 import type {
   ActivityDay,
   ContributorDisplay,
-  Commit,
   PullRequest,
   Issue,
   ReportHistory as ReportHistoryType,
@@ -87,7 +86,6 @@ export default function RepositoryPage() {
   );
 
   // Données mockées pour les onglets (pas encore disponibles dans l'API)
-  const commits: Commit[] = [];
   const pullRequests: PullRequest[] = [];
   const issues: Issue[] = [];
 
@@ -110,7 +108,7 @@ export default function RepositoryPage() {
         <ContributorsList contributors={contributorsData} />
 
         <ActivityTabs
-          commits={commits}
+          repoId={repoId}
           pullRequests={pullRequests}
           issues={issues}
           avgCommitsPerDay={avgCommitsPerDay}
