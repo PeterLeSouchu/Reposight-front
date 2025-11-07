@@ -203,7 +203,7 @@ export function PullRequestsTabContent({
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full font-medium ${stateStyles}`}
                         >
@@ -216,7 +216,7 @@ export function PullRequestsTabContent({
                           #{pr.number}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-slate-500">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                         <div className="flex items-center gap-1.5">
                           <img
                             src={pr.author.avatar}

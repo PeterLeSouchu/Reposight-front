@@ -25,9 +25,9 @@ export function WeeklyComparison({ comparison }: WeeklyComparisonProps) {
       transition={{ duration: 0.5, delay: 0.14 }}
       className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
     >
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-4 max-[585px]:justify-center">
         <TrendingUp className="text-violet-600" size={20} />
-        <h2 className="text-xl font-bold text-slate-900">
+        <h2 className="text-xl font-bold text-slate-900 text-center">
           Cette semaine vs semaine dernière
         </h2>
       </div>
@@ -46,8 +46,8 @@ export function WeeklyComparison({ comparison }: WeeklyComparisonProps) {
               key={key}
               className="bg-white p-4 rounded-xl border border-violet-100"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-slate-700 capitalize">
+              <div className="flex items-center justify-between mb-2 max-[585px]:flex-col max-[585px]:items-center max-[585px]:gap-1">
+                <span className="text-sm font-medium text-slate-700 capitalize text-center">
                   {key === "prs"
                     ? "PRs"
                     : key === "commits"

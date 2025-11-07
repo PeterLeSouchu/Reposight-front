@@ -27,10 +27,10 @@ export function useNotifyDeletedRepos(
     // On affiche le toast seulement pour les NOUVEAUX dépôts
     const message =
       newRepos.length === 1
-        ? `Le dépôt ${newRepos[0]} a été supprimé de github`
+        ? `Le dépôt ${newRepos[0]} a été supprimé de github ou vous n'êtes plus collaborateur de ce dernier.`
         : `Les dépôts ${newRepos.slice(0, -1).join(", ")} et ${
             newRepos[newRepos.length - 1]
-          } ont été supprimés de github`;
+          } ont été supprimés de github ou vous n'êtes plus collaborateur des ces dépôts.`;
 
     toast.warning(message);
   }, [reposDeletedFromGithub]);

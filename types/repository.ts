@@ -63,8 +63,6 @@ export interface ContributorDisplay {
   avatar: string;
   commits: number;
   url: string;
-  additions: number;
-  deletions: number;
 }
 
 export interface ActivityDay {

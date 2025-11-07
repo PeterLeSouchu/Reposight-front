@@ -10,6 +10,7 @@ export interface ReposResponse {
 export function useQueryRepos() {
   return useQuery({
     queryKey: ["repos"],
+    staleTime: 0,
     queryFn: async () => {
       const response = await api.get<ReposResponse>("/repos");
       return response.data;

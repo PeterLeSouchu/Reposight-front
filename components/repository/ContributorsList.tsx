@@ -17,8 +17,8 @@ export function ContributorsList({ contributors }: ContributorsListProps) {
       transition={{ duration: 0.5, delay: 0.16 }}
       className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-4 max-[585px]:flex-col max-[585px]:gap-2 max-[585px]:items-center">
+        <div className="flex items-center gap-2 max-[585px]:justify-center">
           <Users className="text-violet-600" size={20} />
           <h2 className="text-xl font-bold text-slate-900">Contributeurs</h2>
         </div>
@@ -48,22 +48,6 @@ export function ContributorsList({ contributors }: ContributorsListProps) {
                   </div>
                 </div>
               </div>
-              {(contributor.additions > 0 || contributor.deletions > 0) && (
-                <div className="flex items-center gap-4 text-xs text-slate-600">
-                  <div className="flex items-center gap-1">
-                    <ArrowUp className="text-green-600" size={12} />
-                    <span className="font-medium text-green-600">
-                      {contributor.additions.toLocaleString("en-US")}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ArrowDown className="text-red-600" size={12} />
-                    <span className="font-medium text-red-600">
-                      {contributor.deletions.toLocaleString("en-US")}
-                    </span>
-                  </div>
-                </div>
-              )}
             </a>
           ))
         ) : (

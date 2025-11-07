@@ -148,37 +148,41 @@ export function ActivityTabs({ repoId }: ActivityTabsProps) {
       className="bg-slate-50 border border-violet-200/50 rounded-2xl shadow-lg overflow-hidden mb-6"
     >
       <div className="border-b border-violet-200/50 bg-white">
-        <div className="flex gap-1 p-2">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 cursor-pointer flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
-                  activeTab === tab.id
-                    ? "bg-violet-600 text-white shadow-md"
-                    : "text-slate-600 hover:bg-violet-50 hover:text-violet-600"
-                }`}
-              >
-                <Icon size={18} />
-                <span>{tab.label}</span>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${
+        <div className="p-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:gap-1">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full cursor-pointer flex items-center justify-between sm:justify-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
                     activeTab === tab.id
-                      ? "bg-white/20 text-white"
-                      : "bg-slate-200 text-slate-600"
+                      ? "bg-violet-600 text-white shadow-md"
+                      : "text-slate-600 hover:bg-violet-50 hover:text-violet-600"
                   }`}
                 >
-                  {tab.isLoading ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    tab.count
-                  )}
-                </span>
-              </button>
-            );
-          })}
+                  <span className="flex items-center gap-2">
+                    <Icon size={18} />
+                    <span>{tab.label}</span>
+                  </span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full ${
+                      activeTab === tab.id
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-200 text-slate-600"
+                    }`}
+                  >
+                    {tab.isLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      tab.count
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

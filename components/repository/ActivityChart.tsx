@@ -42,15 +42,15 @@ export function ActivityChart({ activityData }: ActivityChartProps) {
       transition={{ duration: 0.5, delay: 0.12 }}
       className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 max-[585px]:flex-col max-[585px]:items-center">
+        <div className="flex items-center gap-2 max-[585px]:justify-center">
           <Activity className="text-violet-600" size={20} />
           <h2 className="text-xl font-bold text-slate-900">
             Activité sur 30 jours
           </h2>
         </div>
-        <div className="flex items-center gap-3 text-xs text-slate-600">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 text-xs text-slate-600 max-[585px]:w-full max-[585px]:justify-center">
+          <div className="flex flex-wrap items-center gap-3 max-[585px]:gap-2 max-[585px]:justify-center">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded bg-blue-500"></div>
               <span>Commits</span>

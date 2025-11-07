@@ -34,11 +34,7 @@ interface RepositoryHeaderProps {
   onRefresh: () => void;
 }
 
-export function RepositoryHeader({
-  info,
-
-  onRefresh,
-}: RepositoryHeaderProps) {
+export function RepositoryHeader({ info, onRefresh }: RepositoryHeaderProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { mutate: deleteRepo, isPending: isDeleting } = useMutationDeleteRepo();
@@ -237,13 +233,6 @@ export function RepositoryHeader({
               >
                 <RefreshCw size={16} />
                 Actualiser
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-white border-violet-200 hover:bg-violet-50 text-violet-700"
-              >
-                <FileDown size={16} />
-                Exporter rapport
               </Button>
 
               <Button

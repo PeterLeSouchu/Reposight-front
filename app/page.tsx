@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 export default function LandingPage() {
@@ -65,7 +66,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-white/90 backdrop-blur-xs rounded-full border border-slate-200 shadow-sm px-6 py-3 flex items-center justify-between"
+            className="backdrop-blur bg-white/20 border-violet-200 rounded-full border shadow-sm px-6 py-3 flex items-center justify-between"
           >
             <div
               className="flex items-center gap-3 "
@@ -84,19 +85,19 @@ export default function LandingPage() {
             <nav className="hidden md:flex items-center gap-2 rounded-full px-4 py-2">
               <a
                 href="#fonctionnalites"
-                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-50 hover:bg-violet-100"
+                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-100 hover:bg-violet-200"
               >
                 Fonctionnalités
               </a>
               <a
                 href="#comment-ca-marche"
-                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-50 hover:bg-violet-100"
+                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-100 hover:bg-violet-200"
               >
                 Comment ça marche
               </a>
               <a
                 href="#avis"
-                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-50 hover:bg-violet-100"
+                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-100 hover:bg-violet-200"
               >
                 Avis
               </a>
@@ -224,9 +225,9 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            Connectez-vous avec votre compte GitHub et transformez vos dépôts en
-            visualisations claires, rapports détaillés et recommandations IA
-            personnalisées.
+            Connectez-vous avec votre compte GitHub et accédez à des
+            statistiques détaillées, des graphiques comparatifs et une interface
+            fluide pour analyser vos dépôts.
           </motion.p>
 
           <motion.div
@@ -255,17 +256,56 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-16"
+            className="mt-32 md:mt-40"
           >
-            <div className="relative max-w-5xl mx-auto">
-              <div className="absolute inset-0 bg-gradient-to-b from-indigo-100/30 to-transparent rounded-2xl blur-3xl" />
-              <div className="relative bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden">
-                <div className="aspect-video bg-gradient-to-br from-indigo-50/50 to-purple-50/50 flex items-center justify-center">
-                  <img
-                    src="/logo-reposight.png"
-                    alt="Dashboard preview"
-                    className="w-32 h-32 opacity-20"
-                  />
+            <div className="relative max-w-6xl mx-auto">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-200/40 via-transparent to-transparent rounded-[40px] blur-[160px]" />
+
+              <div className="relative flex justify-center px-4">
+                <div className="relative w-full max-w-4xl">
+                  <div className="h-24 md:h-28" />
+                  <div className="absolute inset-0 -z-10">
+                    <div className="absolute -top-24 left-1/4 h-64 w-64 rounded-full bg-gradient-to-br from-violet-200/60 via-white/20 to-transparent blur-3xl" />
+                    <div className="absolute bottom-0 right-1/4 h-56 w-56 rounded-full bg-gradient-to-tr from-indigo-200/55 via-white/20 to-transparent blur-[120px]" />
+                  </div>
+
+                  <div className="relative overflow-hidden rounded-[28px] border border-white/50 shadow-[0_55px_110px_-70px_rgba(15,23,42,0.55)] backdrop-blur-sm">
+                    <Image
+                      src="/dashboard.png"
+                      alt="Tableau de bord Reposight"
+                      width={2876}
+                      height={1294}
+                      className="w-full h-auto object-cover"
+                      priority
+                    />
+                  </div>
+
+                  <div className="absolute -top-14 right-[-6%] w-[55%] max-w-[420px] md:w-1/2 md:max-w-[440px]">
+                    <div className="relative overflow-hidden rounded-[24px] border border-white/45 shadow-[0_45px_90px_-65px_rgba(91,33,182,0.55)] rotate-3">
+                      <Image
+                        src="/table.png"
+                        alt="Liste des dépôts"
+                        width={2848}
+                        height={1278}
+                        className="w-full h-auto object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/0 to-violet-500/10" />
+                    </div>
+                  </div>
+
+                  <div className="absolute -bottom-16 left-[-6%] w-[60%] max-w-[460px] md:w-1/2 md:max-w-[480px]">
+                    <div className="relative overflow-hidden rounded-[24px] border border-white/45 shadow-[0_45px_90px_-65px_rgba(59,7,100,0.5)] -rotate-3">
+                      <Image
+                        src="/graphic.png"
+                        alt="Graphiques analytiques"
+                        width={2858}
+                        height={1312}
+                        className="w-full h-auto object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/0 to-indigo-500/12" />
+                    </div>
+                  </div>
+                  <div className="h-20 md:h-32" />
                 </div>
               </div>
             </div>
@@ -306,19 +346,19 @@ export default function LandingPage() {
               {
                 icon: <BarChart3 className="w-10 h-10 text-violet-600" />,
                 title: "Visualisations avancées",
-                desc: "Graphiques interactifs et tableaux de bord personnalisables pour une analyse approfondie de vos projets.",
+                desc: "Graphiques interactifs et tableaux de bord détaillés pour comprendre instantanément l'activité de vos projets.",
                 gradient: "from-violet-500/10 to-fuchsia-500/10",
               },
               {
                 icon: <Brain className="w-10 h-10 text-violet-600" />,
-                title: "IA intégrée",
-                desc: "Recommandations intelligentes basées sur l'analyse de vos patterns de code et vos tendances de développement.",
+                title: "Comparaisons instantanées",
+                desc: "Comparez branches, équipes ou périodes en un clin d'œil pour visualiser l'activité et piloter vos décisions.",
                 gradient: "from-fuchsia-500/10 to-violet-500/10",
               },
               {
                 icon: <Zap className="w-10 h-10 text-violet-600" />,
-                title: "Performance optimale",
-                desc: "Architecture cloud scalable avec AWS et NoSQL pour une expérience rapide et fiable, même avec des milliers de dépôts.",
+                title: "Interface fluide",
+                desc: "Navigation rapide, filtres intuitifs et expérience soignée pour explorer vos données sans friction.",
                 gradient: "from-violet-500/10 to-purple-500/10",
               },
             ].map((feature, i) => (
@@ -390,7 +430,7 @@ export default function LandingPage() {
               {
                 step: "03",
                 title: "Obtenez des insights",
-                desc: "Consultez vos rapports détaillés, exportez en PDF, et recevez des recommandations IA pour optimiser votre workflow.",
+                desc: "Consultez vos statistiques détaillées, visualisez vos comparaisons et pilotez vos projets avec une interface fluide.",
                 color: "violet",
               },
             ].map((step, i) => (

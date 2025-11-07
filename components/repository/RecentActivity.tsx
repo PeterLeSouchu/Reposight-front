@@ -45,12 +45,12 @@ export function RecentActivity({ recentActivity }: RecentActivityProps) {
       transition={{ duration: 0.5, delay: 0.1 }}
       className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 max-[585px]:flex-col max-[585px]:items-center">
+        <div className="flex items-center gap-2 max-[585px]:justify-center">
           <Clock className="text-violet-600" size={20} />
           <h2 className="text-xl font-bold text-slate-900">Activité récente</h2>
         </div>
-        <div className="flex items-center gap-2 text-sm bg-violet-100/50 text-violet-700 px-3 py-1 rounded-lg border border-violet-200/50">
+        <div className="flex items-center gap-2 text-sm bg-violet-100/50 text-violet-700 px-3 py-1 rounded-lg border border-violet-200/50 max-[585px]:self-center">
           <Sparkles size={14} />
           <span>
             {hasActivity
@@ -82,7 +82,7 @@ export function RecentActivity({ recentActivity }: RecentActivityProps) {
                     {activity.title}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-slate-500">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
                   <div className="flex items-center gap-1.5">
                     <img
                       src={activity.authorAvatar}

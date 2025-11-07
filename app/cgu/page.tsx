@@ -109,31 +109,40 @@ export default function CGUPage() {
                 2. Description du service
               </h3>
               <p className="text-slate-600 leading-relaxed mb-4">
-                Reposight est une plateforme d'analyse de dépôts GitHub qui
-                permet aux utilisateurs de :
+                Reposight est un projet expérimental proposant une interface
+                améliorée pour explorer des dépôts GitHub. Le service permet
+                essentiellement de consulter :
               </p>
               <ul className="text-slate-600 list-disc list-inside space-y-2 ml-4">
-                <li>Connecter leur compte GitHub via OAuth sécurisé</li>
-                <li>Analyser leurs dépôts publics et privés</li>
-                <li>Générer des rapports et visualisations</li>
-                <li>Exporter des données en format PDF</li>
-                <li>Recevoir des recommandations basées sur l'IA</li>
+                <li>Des statistiques détaillées sur vos dépôts</li>
+                <li>Des graphiques interactifs pour visualiser l'activité</li>
+                <li>Des comparaisons simples entre périodes ou branches</li>
               </ul>
+              <p className="text-slate-500 text-sm mt-4">
+                Aucune fonctionnalité d'intelligence artificielle, d'export PDF
+                ou de recommandation automatisée n'est proposée dans cette
+                version expérimentale.
+              </p>
             </section>
 
             <section className="mb-8">
               <h3 className="text-xl font-semibold text-violet-600 mb-4">
-                3. Utilisation autorisée
+                3. Usage autorisé
               </h3>
               <p className="text-slate-600 leading-relaxed mb-4">
                 Vous vous engagez à utiliser Reposight uniquement à des fins
-                légales et conformément à ces conditions. Il est interdit de :
+                légitimes et en respectant les lois applicables. Il est
+                notamment interdit de :
               </p>
               <ul className="text-slate-600 list-disc list-inside space-y-2 ml-4">
-                <li>Utiliser le service pour des activités illégales</li>
-                <li>Tenter de contourner les mesures de sécurité</li>
-                <li>Partager vos identifiants de connexion</li>
-                <li>Surcharger intentionnellement nos serveurs</li>
+                <li>
+                  Procéder à une utilisation abusive ou malveillante du service
+                </li>
+                <li>
+                  Tenter de contourner les mécanismes de sécurité en place
+                </li>
+                <li>Partager des accès sans autorisation</li>
+                <li>Collecter ou exploiter des données de manière illicite</li>
               </ul>
             </section>
 
@@ -142,34 +151,36 @@ export default function CGUPage() {
                 4. Données et confidentialité
               </h3>
               <p className="text-slate-600 leading-relaxed mb-4">
-                Nous nous engageons à protéger vos données personnelles et vos
-                informations GitHub. Nous collectons uniquement les données
-                nécessaires au fonctionnement du service et nous ne les
-                partageons pas avec des tiers sans votre consentement explicite.
+                Reposight s'appuie uniquement sur les informations nécessaires à
+                l'affichage des statistiques. Les données restent la propriété
+                de leurs détenteurs et ne sont ni revendues, ni partagées avec
+                des tiers. L'utilisateur conserve la responsabilité de la
+                protection de ses identifiants GitHub.
               </p>
             </section>
 
             <section className="mb-8">
               <h3 className="text-xl font-semibold text-violet-600 mb-4">
-                5. Limitation de responsabilité
+                5. Limitations et absence de garantie
               </h3>
               <p className="text-slate-600 leading-relaxed mb-4">
-                Reposight est fourni "en l'état". Nous ne garantissons pas que
-                le service sera exempt d'erreurs ou disponible en permanence.
-                Nous ne saurions être tenus responsables des dommages indirects
-                résultant de l'utilisation du service.
+                Reposight est fourni à titre expérimental « en l'état ». Aucune
+                garantie de disponibilité, d'exactitude ou de continuité de
+                service n'est offerte. L'auteur du projet ne peut être tenu
+                responsable des conséquences directes ou indirectes liées à
+                l'utilisation ou à l'indisponibilité du service.
               </p>
             </section>
 
             <section className="mb-8">
               <h3 className="text-xl font-semibold text-violet-600 mb-4">
-                6. Modification des conditions
+                6. Évolutions du projet
               </h3>
               <p className="text-slate-600 leading-relaxed mb-4">
-                Nous nous réservons le droit de modifier ces conditions à tout
-                moment. Les modifications prendront effet dès leur publication
-                sur cette page. Votre utilisation continue du service constitue
-                votre acceptation des nouvelles conditions.
+                Le service étant en constante expérimentation, son périmètre
+                peut évoluer sans préavis. Toute modification substantielle sera
+                signalée sur cette page. En cas de désaccord, vous pouvez cesser
+                d'utiliser Reposight à tout moment.
               </p>
             </section>
 
@@ -178,14 +189,15 @@ export default function CGUPage() {
                 7. Contact
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Pour toute question concernant ces conditions d'utilisation,
-                veuillez nous contacter à l'adresse : contact@reposight.com
+                Pour toute question liée à ces conditions ou au statut du
+                projet, vous pouvez écrire à : contact@reposight.com
               </p>
             </section>
 
             <div className="border-t border-violet-200/50 pt-6 mt-8">
               <p className="text-sm text-slate-600 text-center">
-                Dernière mise à jour : Janvier 2025
+                Dernière mise à jour : Janvier 2025 — Reposight est un projet
+                expérimental non commercial.
               </p>
             </div>
           </div>

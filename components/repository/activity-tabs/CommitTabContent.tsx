@@ -195,7 +195,7 @@ export function CommitTabContent({
                     <p className="text-sm font-medium text-slate-900 group-hover:text-violet-600 transition-colors line-clamp-2">
                       {commit.message}
                     </p>
-                    <div className="flex items-center gap-3 text-xs text-slate-500">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                       <div className="flex items-center gap-1.5">
                         <img
                           src={commit.author.avatar}
