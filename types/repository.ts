@@ -8,25 +8,28 @@ export interface Commit {
 }
 
 export interface PullRequest {
-  id: number;
+  number: number;
   title: string;
   state: "open" | "closed" | "merged";
-  author: { name: string; avatar: string };
-  reviewers: { name: string; avatar: string; approved: boolean }[];
-  labels: string[];
-  date: string;
-  branch: string;
-  baseBranch: string;
+  author: { login: string; avatar: string };
+  createdAt: string;
+  updatedAt: string;
+  closedAt: string | null;
+  mergedAt: string | null;
+  url: string;
 }
 
 export interface Issue {
-  id: number;
+  number: number;
   title: string;
   state: "open" | "closed";
-  assignee: { name: string; avatar: string } | null;
-  labels: string[];
+  author: { login: string; avatar: string };
+  createdAt: string;
+  updatedAt: string;
+  closedAt: string | null;
   comments: number;
-  date: string;
+  labels: string[];
+  url: string;
 }
 
 export interface ReportHistory {

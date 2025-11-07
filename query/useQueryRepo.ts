@@ -19,6 +19,7 @@ export interface RepoInfo {
   description: string | null;
   languages: RepoLanguage[];
   isFork: boolean;
+  isPrivate: boolean;
   sizeMb: number;
   contributorsCount: number;
   starsCount: number;

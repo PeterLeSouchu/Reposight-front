@@ -13,13 +13,11 @@ import { RecentActivity } from "@/components/repository/RecentActivity";
 import { ActivityChart } from "@/components/repository/ActivityChart";
 import { WeeklyComparison } from "@/components/repository/WeeklyComparison";
 import { ContributorsList } from "@/components/repository/ContributorsList";
-import { ActivityTabs } from "@/components/repository/ActivityTabs";
+import { ActivityTabs } from "@/components/repository/activity-tabs/ActivityTabs";
 import { ReportHistory } from "@/components/repository/ReportHistory";
 import type {
   ActivityDay,
   ContributorDisplay,
-  PullRequest,
-  Issue,
   ReportHistory as ReportHistoryType,
 } from "@/types/repository";
 
@@ -85,10 +83,6 @@ export default function RepositoryPage() {
     })
   );
 
-  // Données mockées pour les onglets (pas encore disponibles dans l'API)
-  const pullRequests: PullRequest[] = [];
-  const issues: Issue[] = [];
-
   // Historique des rapports PDF (mocké pour l'instant)
   const reportHistory: ReportHistoryType[] = [];
 
@@ -107,11 +101,7 @@ export default function RepositoryPage() {
 
         <ContributorsList contributors={contributorsData} />
 
-        <ActivityTabs
-          repoId={repoId}
-          pullRequests={pullRequests}
-          issues={issues}
-        />
+        <ActivityTabs repoId={repoId} />
 
         <ReportHistory reports={reportHistory} />
       </div>

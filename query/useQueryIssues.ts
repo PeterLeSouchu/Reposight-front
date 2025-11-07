@@ -1,9 +1,9 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import api from "@/lib/api";
-import type { Commit } from "@/types/repository";
+import type { Issue } from "@/types/repository";
 import { buildQueryString, type QueryValue } from "./utils/buildQueryString";
 
-export interface Pagination {
+export interface IssuesPagination {
   page: number;
   perPage: number;
   total: number;
@@ -12,35 +12,35 @@ export interface Pagination {
   hasPrevious: boolean;
 }
 
-export interface CommitsResponse {
-  commits: Commit[];
-  pagination: Pagination;
+export interface IssuesResponse {
+  issues: Issue[];
+  pagination: IssuesPagination;
 }
 
-export type CommitsQueryParams = {
+export type IssuesQueryParams = {
   page?: number;
   perPage?: number;
   author?: string;
-  branch?: string;
+  state?: string;
 } & Record<string, QueryValue>;
 
-export function useQueryCommits(
+export function useQueryIssues(
   repoId: number | null,
-  params: CommitsQueryParams = {}
-): UseQueryResult<CommitsResponse, unknown> {
+  params: IssuesQueryParams = {}
+): UseQueryResult<IssuesResponse, unknown> {
   return useQuery({
-    queryKey: ["repo", repoId, "commits", params],
+    queryKey: ["repo", repoId, "issues", params],
     queryFn: async () => {
       if (!repoId) {
         throw new Error("repoId is required");
       }
 
       const queryString = buildQueryString(params);
-      const url = `/repos/${repoId}/commits${
+      const url = `/repos/${repoId}/issues${
         queryString ? `?${queryString}` : ""
       }`;
 
-      const response = await api.get<CommitsResponse>(url);
+      const response = await api.get<IssuesResponse>(url);
       return response.data;
     },
     enabled: !!repoId,
