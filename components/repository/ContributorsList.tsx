@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { Users, ArrowUp, ArrowDown } from "lucide-react";
 import type { ContributorDisplay } from "@/types/repository";
+import { EmptyState } from "@/components/EmptyState";
 
 interface ContributorsListProps {
   contributors: ContributorDisplay[];
@@ -66,8 +67,12 @@ export function ContributorsList({ contributors }: ContributorsListProps) {
             </a>
           ))
         ) : (
-          <div className="col-span-2 text-center py-8 text-slate-500">
-            <p>Aucun contributeur disponible</p>
+          <div className="col-span-2">
+            <EmptyState
+              icon={<Users size={20} />}
+              title="Aucun contributeur pour l'instant"
+              description="Les membres actifs de ce dépôt s'afficheront ici dès qu'ils contribueront."
+            />
           </div>
         )}
       </div>

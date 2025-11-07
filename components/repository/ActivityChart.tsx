@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { ActivityDay } from "@/types/repository";
+import { EmptyState } from "@/components/EmptyState";
 
 interface ActivityChartProps {
   activityData: ActivityDay[];
@@ -179,9 +180,11 @@ export function ActivityChart({ activityData }: ActivityChartProps) {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div className="text-center py-12 text-slate-500">
-            <p className="text-sm">Aucune activité sur les 30 derniers jours</p>
-          </div>
+          <EmptyState
+            icon={<Activity size={20} />}
+            title="Aucune activité enregistrée"
+            description="Aucune contribution n'a été détectée sur les 30 derniers jours."
+          />
         )}
       </div>
     </motion.div>

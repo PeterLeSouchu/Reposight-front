@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { TrendingUp, ArrowUp, ArrowDown } from "lucide-react";
 import type { WeeklyComparison as WeeklyComparisonType } from "@/types/repository";
+import { EmptyState } from "@/components/EmptyState";
 
 interface WeeklyComparisonProps {
   comparison: WeeklyComparisonType;
@@ -32,8 +33,12 @@ export function WeeklyComparison({ comparison }: WeeklyComparisonProps) {
       </div>
       <div className="flex flex-col gap-4 md:grid md:grid-cols-3">
         {hasNoActivity ? (
-          <div className="col-span-3 text-center py-8 text-slate-500">
-            <p>Aucune activité cette semaine ou la semaine dernière</p>
+          <div className="col-span-3">
+            <EmptyState
+              icon={<TrendingUp size={20} />}
+              title="Pas de variation récente"
+              description="Aucune différence notable entre cette semaine et la précédente."
+            />
           </div>
         ) : (
           Object.entries(comparison).map(([key, value]) => (

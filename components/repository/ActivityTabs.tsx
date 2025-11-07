@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   GitCommit,
   GitPullRequest,
@@ -12,12 +12,15 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { formatRelativeDate } from "@/lib/utils";
 import type { Commit, PullRequest, Issue, TabType } from "@/types/repository";
 import { useQueryCommitsMetadata } from "@/query/useQueryCommitsMetadata";
 import { useQueryCommits } from "@/query/useQueryCommits";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorMessage } from "@/components/ErrorMessage";
+import { EmptyState } from "@/components/EmptyState";
 import {
   Select,
   SelectContent,
@@ -30,8 +33,6 @@ import { Button } from "@/components/ui/button";
 interface ActivityTabsProps {
   pullRequests: PullRequest[];
   issues: Issue[];
-  avgCommitsPerDay: number;
-  contributorsCount: number;
   repoId: number;
 }
 
@@ -39,25 +40,26 @@ export function ActivityTabs({
   repoId,
   pullRequests,
   issues,
-  avgCommitsPerDay,
-  contributorsCount,
 }: ActivityTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("commits");
   const [selectedAuthor, setSelectedAuthor] = useState<string>("all");
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [page, setPage] = useState<number>(1);
-  const perPage = 10;
+  const [perPage, setPerPage] = useState<number>(10);
 
   const {
     data: commitsMetadata,
     isLoading: isLoadingCommitsMetadata,
     error: errorCommitsMetadata,
+    refetch: refetchCommitsMetadata,
   } = useQueryCommitsMetadata(repoId);
 
   const {
     data: commitsData,
     isLoading: isLoadingCommits,
     error: errorCommits,
+    refetch: refetchCommits,
+    isFetching: isFetchingCommits,
   } = useQueryCommits(repoId, {
     page,
     perPage,
@@ -72,13 +74,40 @@ export function ActivityTabs({
   const commits = commitsData?.commits ?? [];
   const totalCommits = commitsData?.pagination?.total ?? 0;
   const totalPages = commitsData?.pagination?.totalPages ?? 0;
+  const isCommitsLoading =
+    (isLoadingCommits && !commitsData) || isFetchingCommits;
+
+  const paginationItems = useMemo(() => {
+    if (totalPages <= 1) {
+      return [] as Array<number | "ellipsis">;
+    }
+
+    const pages = new Set<number>([1, 2, totalPages, page - 1, page, page + 1]);
+    const filteredPages = Array.from(pages)
+      .filter((p) => p >= 1 && p <= totalPages)
+      .sort((a, b) => a - b);
+
+    const items: Array<number | "ellipsis"> = [];
+    filteredPages.forEach((p, index) => {
+      if (index > 0 && p - filteredPages[index - 1] > 1) {
+        items.push("ellipsis");
+      }
+      items.push(p);
+    });
+
+    return items;
+  }, [page, totalPages]);
 
   const tabs = [
     {
       id: "commits" as TabType,
       label: "Commits",
       icon: GitCommit,
-      count: totalCommits,
+      count: isCommitsLoading ? (
+        <Loader2 className="animate-spin" size={18} />
+      ) : (
+        totalCommits
+      ),
     },
     {
       id: "pr" as TabType,
@@ -106,6 +135,7 @@ export function ActivityTabs({
         <div className="flex gap-1 p-2">
           {tabs.map((tab) => {
             const Icon = tab.icon;
+            const showLoader = tab.id === "commits" && isCommitsLoading;
             return (
               <button
                 key={tab.id}
@@ -125,7 +155,11 @@ export function ActivityTabs({
                       : "bg-slate-200 text-slate-600"
                   }`}
                 >
-                  {tab.count}
+                  {showLoader ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    tab.count
+                  )}
                 </span>
               </button>
             );
@@ -137,72 +171,115 @@ export function ActivityTabs({
         <div className="mb-6 flex flex-wrap gap-3">
           {activeTab === "commits" && (
             <>
-              <Select
-                value={selectedAuthor}
-                onValueChange={(value) => {
-                  setSelectedAuthor(value);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-[180px]">
-                  {selectedAuthorData ? (
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={selectedAuthorData.avatar}
-                        alt={selectedAuthorData.username}
-                        className="w-4 h-4 rounded-full"
-                      />
-                      <span className="truncate max-w-[110px]">
-                        {selectedAuthorData.username}
-                      </span>
-                    </div>
-                  ) : (
-                    <SelectValue
-                      placeholder="Tous les auteurs"
-                      className="truncate"
-                    />
-                  )}
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les auteurs</SelectItem>
-                  {commitsMetadata?.authors.map((author) => (
-                    <SelectItem key={author.username} value={author.username}>
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={author.avatar}
-                          alt={author.username}
-                          className="w-4 h-4 rounded-full"
-                        />
-                        <span className="truncate max-w-[140px]">
-                          {author.username}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={selectedBranch}
-                onValueChange={(value) => {
-                  setSelectedBranch(value);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue
-                    placeholder="Toutes les branches"
-                    className="truncate"
+              {isLoadingCommitsMetadata ? (
+                <>
+                  <Skeleton className="h-10 w-[180px]" />
+                  <Skeleton className="h-10 w-[180px]" />
+                  <Skeleton className="h-10 w-[160px]" />
+                </>
+              ) : errorCommitsMetadata ? (
+                <div className="w-full">
+                  <ErrorMessage
+                    error={errorCommitsMetadata}
+                    onRetry={() => refetchCommitsMetadata()}
                   />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les branches</SelectItem>
-                  {commitsMetadata?.branches.map((branch) => (
-                    <SelectItem key={branch} value={branch}>
-                      <span className="truncate max-w-[160px]">{branch}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                </div>
+              ) : (
+                <>
+                  <Select
+                    value={selectedAuthor}
+                    onValueChange={(value) => {
+                      setSelectedAuthor(value);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      {selectedAuthorData ? (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={selectedAuthorData.avatar}
+                            alt={selectedAuthorData.username}
+                            className="w-4 h-4 rounded-full"
+                          />
+                          <span className="truncate max-w-[110px]">
+                            {selectedAuthorData.username}
+                          </span>
+                        </div>
+                      ) : (
+                        <SelectValue
+                          placeholder="Tous les auteurs"
+                          className="truncate"
+                        />
+                      )}
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les auteurs</SelectItem>
+                      {commitsMetadata?.authors.map((author) => (
+                        <SelectItem
+                          key={author.username}
+                          value={author.username}
+                        >
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={author.avatar}
+                              alt={author.username}
+                              className="w-4 h-4 rounded-full"
+                            />
+                            <span className="truncate max-w-[140px]">
+                              {author.username}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={selectedBranch}
+                    onValueChange={(value) => {
+                      setSelectedBranch(value);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue
+                        placeholder="Toutes les branches"
+                        className="truncate"
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les branches</SelectItem>
+                      {commitsMetadata?.branches.map((branch) => (
+                        <SelectItem key={branch} value={branch}>
+                          <span className="truncate max-w-[160px]">
+                            {branch}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={String(perPage)}
+                    onValueChange={(value) => {
+                      setPerPage(Number(value));
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue
+                        placeholder="10 par page"
+                        className="truncate"
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[10, 20, 30, 50].map((value) => (
+                        <SelectItem key={value} value={String(value)}>
+                          {value} par page
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              )}
             </>
           )}
 
@@ -261,9 +338,10 @@ export function ActivityTabs({
                 ))}
               </div>
             ) : errorCommits ? (
-              <div className="text-center py-8 text-red-500">
-                <p>Erreur lors du chargement des commits</p>
-              </div>
+              <ErrorMessage
+                error={errorCommits}
+                onRetry={() => refetchCommits()}
+              />
             ) : commits.length > 0 ? (
               <>
                 {commits.map((commit) => (
@@ -302,39 +380,47 @@ export function ActivityTabs({
                 ))}
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between pt-4 border-t border-violet-200/50">
-                    <div className="text-sm text-slate-600">
-                      Page {page} sur {totalPages} ({totalCommits} commits)
-                    </div>
+                  <div className="flex items-center justify-end pt-4 border-t border-violet-200/50">
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                      >
-                        <ChevronLeft size={16} />
-                        Précédent
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setPage((p) => Math.min(totalPages, p + 1))
-                        }
-                        disabled={page === totalPages}
-                      >
-                        Suivant
-                        <ChevronRight size={16} />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        {paginationItems.map((item, index) => {
+                          if (item === "ellipsis") {
+                            return (
+                              <span
+                                key={`ellipsis-${index}`}
+                                className="px-2 text-xs  text-slate-400"
+                              >
+                                …
+                              </span>
+                            );
+                          }
+
+                          const isActive = item === page;
+                          return (
+                            <button
+                              key={item}
+                              onClick={() => setPage(item)}
+                              className={`min-w-[32px] cursor-pointer h-8 rounded-md text-xs font-medium transition-all border ${
+                                isActive
+                                  ? "bg-violet-600 text-white border-violet-600 shadow-md"
+                                  : "border-violet-200/60 bg-white text-slate-600 hover:border-violet-400 hover:text-violet-600"
+                              }`}
+                            >
+                              {item}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}
               </>
             ) : (
-              <div className="text-center py-8 text-slate-500">
-                <p>Aucun commit disponible</p>
-              </div>
+              <EmptyState
+                icon={<GitCommit size={20} />}
+                title="Aucun commit trouvé"
+                description="Essayez d'ajuster vos filtres ou réduisez la période affichée."
+              />
             ))}
 
           {activeTab === "pr" &&
@@ -415,9 +501,11 @@ export function ActivityTabs({
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-slate-500">
-                <p>Aucune pull request disponible</p>
-              </div>
+              <EmptyState
+                icon={<GitPullRequest size={20} />}
+                title="Aucune pull request"
+                description="Les pull requests apparaîtront ici dès qu'elles seront disponibles."
+              />
             ))}
 
           {activeTab === "issues" &&
@@ -482,9 +570,11 @@ export function ActivityTabs({
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-slate-500">
-                <p>Aucune issue disponible</p>
-              </div>
+              <EmptyState
+                icon={<AlertCircle size={20} />}
+                title="Aucune issue"
+                description="Tout est calme pour le moment. Ajoutez un filtre différent ou revenez plus tard."
+              />
             ))}
         </div>
       </div>

@@ -205,13 +205,17 @@ export function RepositoryHeader({
               {lastCommit && (
                 <div className="mt-4 flex items-center gap-3 text-sm">
                   <GitCommit className="text-violet-600" size={16} />
-                  <span className="text-slate-600">
-                    <span className="font-medium">
-                      {lastCommit.author.name}
-                    </span>{" "}
-                    •{lastCommit.message} •{" "}
-                    {formatRelativeDate(new Date(lastCommit.date))}
-                  </span>
+                  {lastCommit.date ? (
+                    <span className="text-slate-600">
+                      <span className="font-medium">
+                        {lastCommit.author.name}
+                      </span>{" "}
+                      • {lastCommit.message} •{" "}
+                      {formatRelativeDate(new Date(lastCommit.date))}
+                    </span>
+                  ) : (
+                    <span className="text-slate-500">Aucun commit</span>
+                  )}
                 </div>
               )}
             </div>

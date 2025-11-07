@@ -111,8 +111,6 @@ export default function RepositoryPage() {
           repoId={repoId}
           pullRequests={pullRequests}
           issues={issues}
-          avgCommitsPerDay={avgCommitsPerDay}
-          contributorsCount={contributorsData.length}
         />
 
         <ReportHistory reports={reportHistory} />

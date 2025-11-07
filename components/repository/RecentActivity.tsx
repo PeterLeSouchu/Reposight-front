@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { formatRelativeDate } from "@/lib/utils";
 import type { RecentActivity as RecentActivityType } from "@/query/useQueryRepo";
+import { EmptyState } from "@/components/EmptyState";
 
 interface RecentActivityProps {
   recentActivity: RecentActivityType | null | undefined;
@@ -100,9 +101,11 @@ export function RecentActivity({ recentActivity }: RecentActivityProps) {
             </motion.a>
           ))
         ) : (
-          <div className="text-center py-8 text-slate-500">
-            <p>Aucune activité récente pour le moment</p>
-          </div>
+          <EmptyState
+            icon={<Clock size={20} />}
+            title="Aucune activité récente trouvée"
+            description="Les activités les plus récentes apparaîtront ici dès qu'elles seront disponibles."
+          />
         )}
       </div>
     </motion.div>
