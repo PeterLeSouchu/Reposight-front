@@ -171,7 +171,7 @@ export function NextStepWrapper({ children }: { children: React.ReactNode }) {
   }, [isNextStepVisible, handleOnboardingComplete, closeNextStep]);
 
   return (
-    <NextStep steps={steps} cardComponent={CustomCard}>
+    <NextStep steps={steps} cardComponent={CustomCard} noInViewScroll>
       {children}
     </NextStep>
   );
