@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Github, ArrowLeft, Loader2 } from "lucide-react";
+import { GithubIcon, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,9 +12,7 @@ export default function LoginPage() {
 
   const handleGitHubLogin = () => {
     setIsLoading(true);
-    const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://reposight.up.railway.app";
-    window.location.href = `${backendUrl}/auth/github`;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
   };
 
   const handleBack = () => {
@@ -127,7 +125,7 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    <Github size={20} className="text-white" />
+                    <GithubIcon size={20} className="text-white" />
                     Se connecter avec GitHub
                   </>
                 )}
