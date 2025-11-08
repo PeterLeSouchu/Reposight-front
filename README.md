@@ -9,7 +9,7 @@ L’application n’est malheureusement pas disponible en production : elle re
 ## ⭐ Fonctionnalités principales
 
 - Se connecter en liant son compte GitHub à la plateforme.
-- Rechercher, trier et sélectionner les dépôts à suivre dans Reposight.
+- Rechercher, trier et sélectionner/ajouter les dépôts à suivre dans Reposight.
 - Retirer un dépôt GitHub de sa sélection.
 - Supprimer son compte.
 - Accéder à une page détail riche pour chaque dépôt :
