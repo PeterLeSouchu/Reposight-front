@@ -29,7 +29,6 @@ L’application n’est malheureusement pas disponible en production : elle re
 
 - Application Next.js (App Router) avec React 19.
 - Tailwind CSS 4 pour la base stylistique et composants UI inspirés de shadcn/ui.
-- Pages protégées (`/repositories`, `/repository/[id]`) via middleware Next.js.
 - Visualisations et animations réalisées avec Recharts et Motion.
 
 ### 🔒 Sécurité & Authentification
