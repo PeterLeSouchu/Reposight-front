@@ -11,7 +11,7 @@ interface RefreshTokenResponse {
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
-  withCredentials: true, // Pas de cookies par défaut
+  withCredentials: false, // Cookies désactivés par défaut, activés au cas par cas
   headers: {
     "Content-Type": "application/json",
   },
