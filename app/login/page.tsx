@@ -12,7 +12,7 @@ export default function LoginPage() {
 
   const handleGitHubLogin = () => {
     setIsLoading(true);
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
+    window.location.href = `https://reposight.up.railway.app/auth/github`;
   };
 
   const handleBack = () => {
