@@ -12,6 +12,7 @@ export function middleware(request: NextRequest) {
 
   // Récupérer le cookie refresh_token
   const refreshToken = request.cookies.get("refresh_token");
+  console.log("refreshToken dans le middleware ", refreshToken);
 
   // Vérifier si la route nécessite une authentification
   const isProtectedRoute = protectedRoutes.some((route) =>
