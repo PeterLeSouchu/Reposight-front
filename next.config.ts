@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        source: "/api/auth/github/callback",
+        destination: "https://reposight.up.railway.app/auth/github/callback",
+      },
+      {
         source: "/api/:path*",
         destination,
       },

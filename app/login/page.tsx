@@ -12,7 +12,9 @@ export default function LoginPage() {
 
   const handleGitHubLogin = () => {
     setIsLoading(true);
-    window.location.href = `https://reposight.up.railway.app/auth/github`;
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://reposight.up.railway.app";
+    window.location.href = `${backendUrl}/auth/github`;
   };
 
   const handleBack = () => {
