@@ -58,6 +58,7 @@ api.interceptors.response.use(
 
     // Vérifier si c'est une erreur 401 avec message "Token d'accès JWT expiré"
     const errorData = error.response?.data;
+    console.log("errorData dans l'instance axios", errorData);
     const errorMessage =
       errorData &&
       typeof errorData === "object" &&
