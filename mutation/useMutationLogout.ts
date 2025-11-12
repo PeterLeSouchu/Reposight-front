@@ -5,9 +5,6 @@ import { useAuthStore } from "@/lib/authStore";
 export function useMutationLogout() {
   return useMutation({
     mutationFn: async () => {
-      // Nettoyer le token d'accès en mémoire avant la requête
-      useAuthStore.getState().clearAccessToken();
-
       // Essayer d'appeler le backend avec credentials pour permettre la suppression du cookie
       try {
         // Utiliser withCredentials: true pour cette requête spécifique
