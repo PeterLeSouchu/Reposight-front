@@ -29,7 +29,6 @@ export default function Repositories() {
   } = useQueryRepos();
   const { mutate: logoutMutate, isPending: isLoggingOut } = useMutationLogout();
   const { startNextStep } = useNextStep();
-  console.log("reposData", reposData);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch] = useDebounce(searchQuery, 500);

@@ -30,8 +30,6 @@ export default function RepositoryPage() {
     isFetching,
   } = useQueryRepo(repoId);
 
-  console.log("repoApi", repoApi);
-
   const activityData = useMemo<ActivityDay[]>(() => {
     if (!repoApi?.dailyStats) {
       return [];

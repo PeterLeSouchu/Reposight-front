@@ -11,10 +11,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGitHubLogin = () => {
-    console.log(
-      "process.env.NEXT_PUBLIC_API_URL",
-      process.env.NEXT_PUBLIC_API_URL
-    );
     setIsLoading(true);
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
   };
