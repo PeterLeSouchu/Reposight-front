@@ -12,13 +12,7 @@ export function useMutationLogout() {
       try {
         // Utiliser withCredentials: true pour cette requête spécifique
         // pour que le backend puisse supprimer le cookie refresh_token
-        const response = await api.post(
-          "/auth/logout",
-          {},
-          {
-            withCredentials: true, // IMPORTANT: envoyer les cookies au backend
-          }
-        );
+        const response = await api.post("/auth/logout");
         return response.data;
       } catch (error) {
         // On ignore l'erreur car on va faire le logout côté client de toute façon
