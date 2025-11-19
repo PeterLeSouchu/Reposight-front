@@ -31,10 +31,12 @@ const CustomCard = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border border-slate-200 p-4 sm:p-6 max-w-sm w-full mx-auto">
+    <div className="bg-white rounded-lg shadow-lg border border-slate-200 p-3 sm:p-6 max-w-[280px] sm:max-w-sm w-full mx-auto">
       <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-        {step.icon && <span className="text-xl sm:text-2xl">{step.icon}</span>}
-        <h3 className="text-base sm:text-lg font-semibold text-slate-900">
+        {step.icon && (
+          <span className="text-lg sm:text-2xl flex-shrink-0">{step.icon}</span>
+        )}
+        <h3 className="text-sm sm:text-lg font-semibold text-slate-900 leading-tight">
           {step.title}
         </h3>
       </div>
@@ -42,43 +44,43 @@ const CustomCard = ({
         {step.content}
       </p>
       <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-200">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-2">
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 w-full sm:w-auto justify-center sm:justify-start">
-            {currentStep > 0 && (
-              <button
-                onClick={prevStep}
-                className="px-2 sm:px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition-colors cursor-pointer text-xs sm:text-sm font-medium whitespace-nowrap flex-1 sm:flex-none"
-              >
-                Précédent
-              </button>
-            )}
-            {currentStep < totalSteps - 1 ? (
-              <button
-                onClick={nextStep}
-                className="px-2 sm:px-2.5 py-1.5 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap flex-1 sm:flex-none"
-              >
-                Suivant
-              </button>
-            ) : (
-              <button
-                onClick={handleSkipTour}
-                className="px-2 sm:px-2.5 py-1.5 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap flex-1 sm:flex-none"
-              >
-                Terminer
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 justify-center sm:justify-end">
-            <span className="text-xs text-slate-400 whitespace-nowrap">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 w-full justify-between">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+              {currentStep > 0 && (
+                <button
+                  onClick={prevStep}
+                  className="px-2 sm:px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition-colors cursor-pointer text-xs sm:text-sm font-medium whitespace-nowrap"
+                >
+                  Précédent
+                </button>
+              )}
+              {currentStep < totalSteps - 1 ? (
+                <button
+                  onClick={nextStep}
+                  className="px-2 sm:px-2.5 py-1.5 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+                >
+                  Suivant
+                </button>
+              ) : (
+                <button
+                  onClick={handleSkipTour}
+                  className="px-2 sm:px-2.5 py-1.5 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+                >
+                  Terminer
+                </button>
+              )}
+            </div>
+            <span className="text-xs text-slate-400 whitespace-nowrap flex-shrink-0">
               {currentStep + 1} / {totalSteps}
             </span>
-            <button
-              onClick={handleSkipTour}
-              className="px-2 sm:px-2.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-900 hover:text-slate-700 cursor-pointer rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
-            >
-              Passer
-            </button>
           </div>
+          <button
+            onClick={handleSkipTour}
+            className="w-full px-2 sm:px-2.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-900 hover:text-slate-700 cursor-pointer rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+          >
+            Passer
+          </button>
         </div>
       </div>
       {arrow}
