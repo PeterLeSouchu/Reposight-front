@@ -151,4 +151,25 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  /* Styles pour nextstepjs - contraindre le stepper à rester dans la fenêtre */
+  [data-nextstep-card] {
+    max-width: min(calc(100vw - 2rem), 24rem) !important;
+    left: auto !important;
+    right: auto !important;
+    transform: translateX(0) !important;
+  }
+
+  /* Sur mobile, forcer la carte à rester dans la fenêtre */
+  @media (max-width: 640px) {
+    [data-nextstep-card] {
+      max-width: calc(100vw - 1rem) !important;
+      margin: 0 0.5rem !important;
+    }
+  }
+
+  /* Conteneur nextstepjs - éviter le débordement */
+  [data-nextstep-container] {
+    overflow: visible !important;
+  }
 }
