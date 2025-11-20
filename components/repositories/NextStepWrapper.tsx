@@ -120,7 +120,7 @@ const steps: Tour[] = [
         icon: "⬆️",
         showControls: true,
         showSkip: true,
-        side: "bottom",
+        side: "bottom-right",
       },
       {
         title: "Mon profil",
