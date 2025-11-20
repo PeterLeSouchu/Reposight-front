@@ -130,7 +130,7 @@ const steps: Tour[] = [
         icon: "👤",
         showControls: true,
         showSkip: true,
-        side: "bottom-right",
+        side: "bottom-left",
       },
     ],
   },
