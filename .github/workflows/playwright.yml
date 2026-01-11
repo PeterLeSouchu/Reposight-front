@@ -1,27 +1,66 @@
-name: Playwright Tests
+name: Playwright Tests (PNPM + Next.js server)
+
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
+      - dev
   pull_request:
-    branches: [ main, master ]
+    branches:
+      - main
+      - dev
+
 jobs:
-  test:
-    timeout-minutes: 60
+  playwright-tests:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm install -g pnpm && pnpm install
-    - name: Install Playwright Browsers
-      run: pnpm exec playwright install --with-deps
-    - name: Run Playwright tests
-      run: pnpm exec playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      # 1️⃣ Checkout du code
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # 2️⃣ Installer pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # 3️⃣ Installer Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      # 4️⃣ Installer les dépendances
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 5️⃣ Installer les navigateurs Playwright
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      # 6️⃣ Build du projet Next.js
+      - name: Build Next.js app
+        run: pnpm build
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+
+      # 7️⃣ Démarrer le serveur en arrière-plan et attendre qu'il soit prêt
+      - name: Start Next.js server
+        run: |
+          pnpm run start &           # démarre le serveur en arrière-plan
+          npx wait-on http://localhost:3000  # attend que le serveur soit prêt
+
+      # 8️⃣ Lancer les tests E2E Playwright
+      - name: Run Playwright tests
+        run: pnpm exec playwright test
+
+      # 9️⃣ Upload du rapport Playwright (même si tests KO)
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
