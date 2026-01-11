@@ -51,16 +51,16 @@ export default defineConfig({
     },
 
     // Firefox activé
-    // {
-    //   name: "firefox",
-    //   use: {
-    //     ...devices["Desktop Firefox"],
-    //     // Firefox peut être plus lent, on augmente les timeouts
-    //     actionTimeout: 90000,
-    //     navigationTimeout: 90000,
-    //     headless: process.env.CI ? true : false,
-    //   },
-    // },
+    {
+      name: "firefox",
+      use: {
+        ...devices["Desktop Firefox"],
+        // Firefox peut être plus lent, on augmente les timeouts
+        actionTimeout: 90000,
+        navigationTimeout: 90000,
+        headless: process.env.CI ? true : false,
+      },
+    },
 
     // Quand on active safari, aucun test ne passnt l'etape du btn "paiement sécurisé". Le click est bien présent sur ce btn, maison ne passe pas à l'étape suivante ???
     // {
