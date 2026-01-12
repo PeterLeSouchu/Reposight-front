@@ -63,6 +63,10 @@ L'application est accessible à l'adresse suivante: https://reposight.peterlesou
 - Détection des dépôts supprimés grâce à `useNotifyDeletedRepos` (toast) pour informer l’utilisateur si les dépôts ont été supprimés ou si nous ne sommes plus collaborateurs sur ce dépôt.
 - Recherche instantanée avec debounce (`use-debounce`) et tris côté client pour conserver une interface fluide.
 
+### 🧪 Test End-to-End (E2E)
+
+Le projet inclut un **test End-to-End (E2E)** réalisé avec **Playwright**, permettant de valider un parcours utilisateur clé : la navigation depuis la page d’accueil jusqu'à la page login.
+
 ### 💻 Technologies utilisées
 
 - [Next.js](https://nextjs.org/) 15 & [React](https://react.dev/) 19
