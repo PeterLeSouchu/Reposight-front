@@ -1,4 +1,4 @@
-name: Playwright Tests (PNPM + Next.js server)
+name: Playwright Tests (PNPM + Next.js + Backend)
 
 on:
   push:
@@ -15,48 +15,89 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout du code
-      - name: Checkout repository
+      # 1️⃣ Checkout frontend
+      - name: Checkout frontend
         uses: actions/checkout@v5
 
-      # 2️⃣ Installer pnpm
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      # 2️⃣ Checkout backend
+      - name: Checkout backend
+        uses: actions/checkout@v5
         with:
-          version: 9
+          repository: PeterLeSouchu/Reposight-back
+          path: backend
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 3️⃣ Installer Node.js
+      # 3️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: "pnpm"
 
-      # 4️⃣ Installer les dépendances
-      - name: Install dependencies
+      # 4️⃣ Setup PNPM
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # 5️⃣ Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: backend
         run: pnpm install --frozen-lockfile
 
-      # 5️⃣ Installer les navigateurs Playwright
+      # 6️⃣ Create backend .env
+      - name: Create backend .env
+        working-directory: backend
+        run: |
+          cat <<EOF > .env
+          FRONTEND_URL=http://localhost:3000
+          PORT=3001
+          NODE_ENV=DEVELOPMENT
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+          GITHUB_CLIENT_ID=${{ secrets.GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET=${{ secrets.GITHUB_CLIENT_SECRET }}
+          CALLBACK_URL=http://localhost:3001/auth/github/callback
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION=eu-north-1
+          DYNAMODB_USERS_TABLE=${{ secrets.DYNAMODB_USERS_TABLE }}
+          EOF
+
+      # 7️⃣ Start backend
+      - name: Start backend
+        working-directory: backend
+        run: pnpm dev &
+
+      # 8️⃣ Install frontend dependencies
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 9️⃣ Install Playwright browsers
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps
 
-      # 6️⃣ Build du projet Next.js
-      - name: Build Next.js app
+      # 🔟 Build frontend Next.js
+      - name: Build Next.js
         run: pnpm build
         env:
           NODE_OPTIONS: --max-old-space-size=8192
 
-      # 7️⃣ Démarrer le serveur en arrière-plan et attendre qu'il soit prêt
+      # 1️⃣1️⃣ Start frontend
       - name: Start Next.js server
         run: |
-          pnpm run start &           # démarre le serveur en arrière-plan
-          npx wait-on http://localhost:3000  # attend que le serveur soit prêt
+          pnpm run start &
+          npx wait-on http://localhost:3000
 
-      # 8️⃣ Lancer les tests E2E Playwright
+      # 1️⃣2️⃣ Wait for backend
+      - name: Wait for backend
+        run: npx wait-on http://localhost:3001
+
+      # 1️⃣3️⃣ Run Playwright tests
       - name: Run Playwright tests
         run: pnpm exec playwright test
 
-      # 9️⃣ Upload du rapport Playwright (même si tests KO)
+      # 1️⃣4️⃣ Upload Playwright report
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -65,7 +106,7 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-        # 🔟 Déployer sur Vercel uniquement si les tests passent
+      # 1️⃣5️⃣ Deploy to Vercel (si tests OK)
       - name: Deploy to Vercel
         if: success() && github.event_name == 'push'
         uses: amondnet/vercel-action@v25
