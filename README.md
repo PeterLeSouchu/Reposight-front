@@ -79,3 +79,4 @@ Le projet inclut un **test End-to-End (E2E)** réalisé avec **Playwright**, per
 - [nextstepjs](https://www.nextstepjs.com/) pour l’onboarding interactif
 - [Sonner](https://sonner.emilkowal.ski/) pour les notifications toast
 - [lucide-react](https://lucide.dev/) et `react-fast-marquee` pour l’illustration et l’animation
+- [playwright](https://playwright.dev/) pour les tests E2E
