@@ -1,0 +1,37 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+.next
+out
+build
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env (les variables sont passées via docker-compose ou --env-file)
+.env
+.env.local
+.env.*.local
+
+# Tests
+test-results
+playwright-report
+blob-report
+coverage
+
+# Misc
+README.md
+.claude
+.github
+playwright.config.ts
