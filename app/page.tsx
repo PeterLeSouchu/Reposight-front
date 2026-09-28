@@ -17,19 +17,19 @@ const FEATURES = [
     icon: FolderGit2,
     title: "Tous vos dépôts au même endroit",
     desc: "Ajoutez les dépôts qui comptent, retrouvez-les par leur nom et triez-les par date d'ajout ou par dernier commit.",
-    image: { src: "/dashboard.png", width: 2868, height: 1310, alt: "Liste des dépôts suivis dans Reposight" },
+    image: { src: "/lp-repositories.png", width: 2608, height: 1230, alt: "Liste des dépôts suivis dans Reposight" },
   },
   {
     icon: BarChart3,
     title: "L'activité des 30 derniers jours",
     desc: "Commits, pull requests et issues sur un seul graphique, avec la comparaison entre cette semaine et la précédente.",
-    image: { src: "/graphic.png", width: 2858, height: 1312, alt: "Graphique d'activité sur 30 jours et comparaison hebdomadaire" },
+    image: { src: "/lp-activity.png", width: 2574, height: 884, alt: "Graphique d'activité sur 30 jours et comparaison hebdomadaire" },
   },
   {
     icon: ListTree,
     title: "Chaque commit, PR et issue en détail",
     desc: "Filtrez par contributeur ou par branche et parcourez l'historique du projet sans quitter Reposight.",
-    image: { src: "/table.png", width: 2848, height: 1278, alt: "Liste des commits filtrée par contributeur et par branche" },
+    image: { src: "/lp-activity-tabs.png", width: 2576, height: 1148, alt: "Liste des commits filtrée par contributeur et par branche" },
   },
 ];
 
