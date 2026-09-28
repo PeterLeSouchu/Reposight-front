@@ -44,10 +44,16 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Brand({ className }: { className?: string }) {
+export function Brand({
+  href = "/",
+  className,
+}: {
+  href?: string;
+  className?: string;
+}) {
   return (
     <Link
-      href="/"
+      href={href}
       aria-label="Reposight, accueil"
       className={cn(
         "inline-flex items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-iris-400",

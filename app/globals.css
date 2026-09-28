@@ -61,38 +61,38 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 0.75rem;
+  --background: #f7f5ff;
+  --foreground: #1b1433;
+  --card: #ffffff;
+  --card-foreground: #1b1433;
+  --popover: #ffffff;
+  --popover-foreground: #1b1433;
+  --primary: #6523cc;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f1fe;
+  --secondary-foreground: #531ba8;
+  --muted: #f4f1fe;
+  --muted-foreground: #6b6485;
+  --accent: #f4f1fe;
+  --accent-foreground: #531ba8;
+  --destructive: #e11d48;
+  --border: #e9e3fc;
+  --input: #d3c6fa;
+  --ring: #8d6aef;
+  --chart-1: #6523cc;
+  --chart-2: #a98ef5;
+  --chart-3: #d946ef;
+  --chart-4: #d3c6fa;
+  --chart-5: #3f1580;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1b1433;
+  --sidebar-primary: #6523cc;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f4f1fe;
+  --sidebar-accent-foreground: #531ba8;
+  --sidebar-border: #e9e3fc;
+  --sidebar-ring: #8d6aef;
 }
 
 .dark {
@@ -139,7 +139,7 @@
 
   /* Garde l'effet de bounce mais avec la bonne couleur */
   html {
-    background-color: #fafafa;
+    background-color: #f7f5ff;
   }
 
   /* Assure que le body prend toute la hauteur */
@@ -148,16 +148,6 @@
     height: 100%;
     overflow-x: hidden;
     scroll-behavior: smooth;
-  }
-
-  /* Pattern de points subtils pour l'arrière-plan */
-  .dot-pattern {
-    background-image: radial-gradient(
-      circle,
-      rgba(167, 139, 250, 0.25) 1px,
-      transparent 1px
-    );
-    background-size: 25px 25px;
   }
 
   /* Troncature avec 2 lignes et trois points */
@@ -171,7 +161,7 @@
 
   /* Styles pour nextstepjs - forcer le stepper à rester dans la fenêtre */
   /* Cibler directement la carte avec les classes spécifiques */
-  .bg-white.rounded-lg.shadow-lg.border {
+  .nextstep-card {
     max-width: min(calc(100vw - 1rem), 24rem) !important;
     width: auto !important;
     box-sizing: border-box !important;
@@ -184,8 +174,8 @@
   }
 
   /* S'assurer que le conteneur parent ne dépasse pas */
-  div[style*="position: fixed"] .bg-white.rounded-lg.shadow-lg,
-  div[style*="position:absolute"] .bg-white.rounded-lg.shadow-lg {
+  div[style*="position: fixed"] .nextstep-card,
+  div[style*="position:absolute"] .nextstep-card {
     max-width: min(calc(100vw - 1rem), 24rem) !important;
     width: auto !important;
     box-sizing: border-box !important;
@@ -193,7 +183,7 @@
 
   /* Sur mobile, forcer toutes les cartes à rester dans la fenêtre */
   @media (max-width: 640px) {
-    .bg-white.rounded-lg.shadow-lg.border {
+    .nextstep-card {
       max-width: calc(100vw - 1rem) !important;
       width: auto !important;
     }
@@ -205,8 +195,8 @@
       right: 0.5rem !important;
     }
 
-    div[style*="position: fixed"] .bg-white.rounded-lg.shadow-lg,
-    div[style*="position:absolute"] .bg-white.rounded-lg.shadow-lg {
+    div[style*="position: fixed"] .nextstep-card,
+    div[style*="position:absolute"] .nextstep-card {
       max-width: calc(100vw - 1rem) !important;
       width: auto !important;
     }

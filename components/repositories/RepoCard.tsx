@@ -1,7 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
-import { ExternalLink, GitBranch, Clock, Trash2 } from "lucide-react";
+import { Clock, ExternalLink, FolderGit2, Globe, Lock, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Repo } from "@/types/repo";
 import {
@@ -56,84 +55,75 @@ export function RepoCard({ repo }: RepoCardProps) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+    <div
+      role="link"
+      tabIndex={0}
       onClick={handleCardClick}
-      className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-sm sm:hover:shadow-xl sm:hover:border-violet-300/50 transition-all duration-300 cursor-pointer group flex flex-col h-full"
+      onKeyDown={(e) => {
+        if (e.key === "Enter") handleCardClick();
+      }}
+      className="group flex h-full cursor-pointer flex-col rounded-2xl border border-iris-100 bg-white p-5 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-iris-200 hover:shadow-[0_20px_40px_-24px_rgba(83,27,168,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-iris-500"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3 flex-1">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-            <GitBranch className="text-white" size={18} />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-iris-50 text-iris-600 ring-1 ring-iris-100">
+            <FolderGit2 size={18} />
+          </span>
+          <div className="min-w-0">
+            <h3 className="truncate font-display font-semibold tracking-tight text-ink transition-colors group-hover:text-iris-700">
+              {repo.name}
+            </h3>
+            <span className="mt-0.5 flex items-center gap-1 text-xs text-ink/50">
+              {repo.private ? <Lock size={11} /> : <Globe size={11} />}
+              {repo.private ? "Privé" : "Public"}
+            </span>
           </div>
-          <h3 className="text-lg font-bold text-slate-900 group-hover:text-violet-600 transition-colors break-words leading-tight">
-            {repo.name}
-          </h3>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="-mr-1.5 -mt-1 flex shrink-0 items-center transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           <a
             href={repo.htmlUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="p-2 rounded-lg cursor-pointer sm:hover:bg-violet-50 transition-colors group/link"
-            aria-label="Ouvrir le repository sur GitHub"
+            className="rounded-lg p-2 text-ink/40 transition-colors hover:bg-iris-50 hover:text-iris-600"
+            aria-label="Ouvrir le dépôt sur GitHub"
           >
-            <ExternalLink
-              className="text-slate-400 sm:group-hover/link:text-violet-600 transition-colors"
-              size={18}
-            />
+            <ExternalLink size={16} />
           </a>
           <button
             onClick={handleDeleteClick}
-            className="p-2 rounded-lg cursor-pointer sm:hover:bg-red-50 transition-colors group/trash"
-            aria-label="Supprimer le repository"
+            className="cursor-pointer rounded-lg p-2 text-ink/40 transition-colors hover:bg-rose-50 hover:text-rose-600"
+            aria-label="Retirer le dépôt de Reposight"
           >
-            <Trash2
-              className="text-slate-400 sm:group-hover/trash:text-red-600 transition-colors"
-              size={18}
-            />
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col">
-        <p className="text-slate-600 text-sm mb-3 line-clamp-2">
-          {repo.description || "Aucune description"}
-        </p>
-
-        {repo.language && (
-          <div className="flex items-center gap-2 mb-4">
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: getLanguageColor(repo.language) }}
-            ></span>
-            <span className="text-xs text-slate-600 font-medium">
-              {repo.language}
-            </span>
-          </div>
+      <p className="mt-4 line-clamp-2 flex-1 text-sm leading-relaxed text-ink/60">
+        {repo.description || (
+          <span className="text-ink/35">Aucune description</span>
         )}
-      </div>
+      </p>
 
-      <div className="pt-4 border-t border-violet-200/30 mt-auto">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Clock className="text-violet-500" size={14} />
-          <span className="text-xs text-slate-500 font-medium">
-            Mis à jour {formatRelativeDate(new Date(repo.pushedAt))}
+      <div className="mt-5 flex items-center justify-between gap-3 border-t border-iris-100 pt-4 text-xs text-ink/55">
+        {repo.language ? (
+          <span className="flex items-center gap-1.5">
+            <span
+              className="size-2.5 rounded-full"
+              style={{ backgroundColor: getLanguageColor(repo.language) }}
+            />
+            {repo.language}
           </span>
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full ${
-              repo.private
-                ? "bg-orange-100 text-orange-700"
-                : "bg-green-100 text-green-700"
-            }`}
-          >
-            {repo.private ? "Privé" : "Public"}
-          </span>
-        </div>
+        ) : (
+          <span />
+        )}
+        <span className="flex items-center gap-1.5">
+          <Clock size={12} />
+          {formatRelativeDate(new Date(repo.pushedAt))}
+        </span>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -4,14 +4,12 @@ import { useState, useMemo, useEffect } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useNextStep } from 'nextstepjs';
 import { useQueryUser } from '@/query/useQueryUser';
-import { useMutationLogout } from '@/mutation/useMutationLogout';
-import { useAuthStore } from '@/lib/authStore';
 import { AddRepoModal } from '@/components/repositories/AddRepoModal';
 import { useQueryRepos } from '@/query/useQueryRepos';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { useNotifyDeletedRepos } from '@/hooks/useNotifyDeletedRepos';
-import { BackgroundDots } from '@/components/BackgroundDots';
-import { UserHeader } from '@/components/repositories/UserHeader';
+import { AppShell } from '@/components/app/AppShell';
+import { RepositoriesHeading } from '@/components/repositories/RepositoriesHeading';
 import {
   RepositoriesSearchBar,
   type SortType,
@@ -27,7 +25,6 @@ export default function Repositories() {
     isLoading: isReposLoading,
     error: reposError,
   } = useQueryRepos();
-  const { mutate: logoutMutate, isPending: isLoggingOut } = useMutationLogout();
   const { startNextStep } = useNextStep();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,26 +76,6 @@ export default function Repositories() {
     return sortedRepos;
   }, [reposData, debouncedSearch, sortType]);
 
-  const handleClientSideLogout = () => {
-    useAuthStore.getState().clearAccessToken();
-
-    localStorage.clear();
-
-    window.location.href = '/';
-  };
-
-  const handleLogout = () => {
-    logoutMutate(undefined, {
-      onSuccess: () => {
-        handleClientSideLogout();
-      },
-      onError: (error) => {
-        console.error('Erreur lors de la déconnexion:', error);
-        handleClientSideLogout();
-      },
-    });
-  };
-
   if (userError || reposError) {
     return (
       <ErrorMessage
@@ -109,41 +86,36 @@ export default function Repositories() {
   }
 
   return (
-    <div className="relative min-h-screen text-slate-900 overflow-hidden bg-[#fafafa]">
-      <BackgroundDots />
+    <AppShell>
+      <RepositoriesHeading
+        username={data?.username}
+        repoCount={reposData?.repos.length}
+        isLoading={isLoading || isReposLoading}
+        onAddRepo={() => setIsAddRepoModalOpen(true)}
+      />
 
-      <div className="relative z-10 max-w-7xl mx-auto p-8">
-        <UserHeader
-          user={data}
-          isLoading={isLoading}
-          isLoggingOut={isLoggingOut}
+      <RepositoriesSearchBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        sortType={sortType}
+        onSortChange={setSortType}
+      />
+
+      {isReposLoading ? (
+        <RepositoriesSkeleton />
+      ) : filteredRepos.length === 0 ? (
+        <EmptyRepositoriesState
+          isEmpty={reposData?.repos.length === 0}
           onAddRepo={() => setIsAddRepoModalOpen(true)}
-          onLogout={handleLogout}
         />
+      ) : (
+        <RepositoriesGrid repos={filteredRepos} />
+      )}
 
-        <RepositoriesSearchBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          sortType={sortType}
-          onSortChange={setSortType}
-        />
-
-        {isReposLoading ? (
-          <RepositoriesSkeleton />
-        ) : filteredRepos.length === 0 ? (
-          <EmptyRepositoriesState
-            isEmpty={reposData?.repos.length === 0}
-            onAddRepo={() => setIsAddRepoModalOpen(true)}
-          />
-        ) : (
-          <RepositoriesGrid repos={filteredRepos} />
-        )}
-
-        <AddRepoModal
-          open={isAddRepoModalOpen}
-          onOpenChange={setIsAddRepoModalOpen}
-        />
-      </div>
-    </div>
+      <AddRepoModal
+        open={isAddRepoModalOpen}
+        onOpenChange={setIsAddRepoModalOpen}
+      />
+    </AppShell>
   );
 }

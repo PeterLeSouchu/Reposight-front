@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { Activity } from "lucide-react";
 import {
   BarChart,
@@ -13,12 +12,20 @@ import {
 } from "recharts";
 import type { ActivityDay } from "@/types/repository";
 import { EmptyState } from "@/components/EmptyState";
+import { Panel } from "@/components/app/Panel";
+
+const SERIES = [
+  { key: "commits", label: "Commits", color: "#6523cc" },
+  { key: "prs", label: "Pull requests", color: "#a98ef5" },
+  { key: "issues", label: "Issues", color: "#e879f9" },
+];
 
 interface ActivityChartProps {
   activityData: ActivityDay[];
+  className?: string;
 }
 
-export function ActivityChart({ activityData }: ActivityChartProps) {
+export function ActivityChart({ activityData, className }: ActivityChartProps) {
   const chartData = activityData.map((day) => ({
     date: `${day.date.getDate()}/${day.date.getMonth() + 1}`,
     fullDate: day.date,
@@ -36,39 +43,27 @@ export function ActivityChart({ activityData }: ActivityChartProps) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.12 }}
-      className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
+    <Panel
+      title="Activité sur 30 jours"
+      icon={Activity}
+      className={className}
+      action={
+        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink/60">
+          {SERIES.map((serie) => (
+            <li key={serie.key} className="flex items-center gap-1.5">
+              <span
+                className="size-2.5 rounded-[3px]"
+                style={{ backgroundColor: serie.color }}
+              />
+              {serie.label}
+            </li>
+          ))}
+        </ul>
+      }
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 max-[585px]:flex-col max-[585px]:items-center">
-        <div className="flex items-center gap-2 max-[585px]:justify-center">
-          <Activity className="text-violet-600" size={20} />
-          <h2 className="text-xl font-bold text-slate-900">
-            Activité sur 30 jours
-          </h2>
-        </div>
-        <div className="flex items-center gap-3 text-xs text-slate-600 max-[585px]:w-full max-[585px]:justify-center">
-          <div className="flex flex-wrap items-center gap-3 max-[585px]:gap-2 max-[585px]:justify-center">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-blue-500"></div>
-              <span>Commits</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-yellow-500"></div>
-              <span>PRs</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-red-500"></div>
-              <span>Issues</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="bg-white p-6 rounded-xl border border-violet-100">
+      <div className="flex-1">
         {activityData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer width="100%" height={300}>
             <BarChart
               data={chartData}
               margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
@@ -76,37 +71,37 @@ export function ActivityChart({ activityData }: ActivityChartProps) {
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="#f1f5f9"
+                stroke="#ece8f7"
                 vertical={false}
               />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 11, fill: "#94a3b8", fontWeight: 500 }}
+                tick={{ fontSize: 11, fill: "#8a83a3", fontWeight: 500 }}
                 tickFormatter={formatXAxisLabel}
                 axisLine={false}
                 tickLine={false}
                 height={40}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: "#94a3b8", fontWeight: 500 }}
+                tick={{ fontSize: 11, fill: "#8a83a3", fontWeight: 500 }}
                 axisLine={false}
                 tickLine={false}
                 width={40}
               />
               <Tooltip
-                cursor={{ fill: "rgba(139, 92, 246, 0.05)" }}
+                cursor={{ fill: "rgba(101, 35, 204, 0.06)" }}
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     const getLabel = (dataKey: string) => {
                       if (dataKey === "commits") return "Commits";
-                      if (dataKey === "prs") return "PRs";
+                      if (dataKey === "prs") return "Pull requests";
                       if (dataKey === "issues") return "Issues";
                       return dataKey;
                     };
 
                     return (
-                      <div className="bg-white rounded-lg shadow-lg border border-slate-200 p-3 min-w-[140px]">
-                        <p className="text-xs font-semibold text-slate-900 mb-2">
+                      <div className="min-w-[150px] rounded-xl border border-iris-100 bg-white p-3 shadow-[0_20px_40px_-20px_rgba(42,14,87,0.35)]">
+                        <p className="mb-2 text-xs font-semibold text-ink">
                           {label}
                         </p>
                         <div className="space-y-1.5">
@@ -120,11 +115,11 @@ export function ActivityChart({ activityData }: ActivityChartProps) {
                                   className="w-2 h-2 rounded-full"
                                   style={{ backgroundColor: entry.color }}
                                 />
-                                <span className="text-xs text-slate-600">
+                                <span className="text-xs text-ink/60">
                                   {getLabel(entry.dataKey as string)}
                                 </span>
                               </div>
-                              <span className="text-xs font-semibold text-slate-900">
+                              <span className="text-xs font-semibold text-ink">
                                 {entry.value}
                               </span>
                             </div>
@@ -165,16 +160,16 @@ export function ActivityChart({ activityData }: ActivityChartProps) {
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="0%" stopColor="#60a5fa" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={1} />
+                  <stop offset="0%" stopColor="#7442e3" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#6523cc" stopOpacity={1} />
                 </linearGradient>
                 <linearGradient id="prsGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#eab308" stopOpacity={1} />
+                  <stop offset="0%" stopColor="#b19bf6" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#a98ef5" stopOpacity={1} />
                 </linearGradient>
                 <linearGradient id="issuesGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f87171" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#ef4444" stopOpacity={1} />
+                  <stop offset="0%" stopColor="#f0abfc" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#e879f9" stopOpacity={1} />
                 </linearGradient>
               </defs>
             </BarChart>
@@ -187,6 +182,6 @@ export function ActivityChart({ activityData }: ActivityChartProps) {
           />
         )}
       </div>
-    </motion.div>
+    </Panel>
   );
 }

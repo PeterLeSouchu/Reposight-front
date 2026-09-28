@@ -1,7 +1,9 @@
 "use client";
 
-import { Plus, GitBranch } from "lucide-react";
-import { motion } from "motion/react";
+import { Plus, SearchX } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { buttonStyles } from "@/components/public/Brand";
+import { ContributionGrid } from "@/components/public/ContributionGrid";
 
 interface EmptyRepositoriesStateProps {
   isEmpty: boolean;
@@ -14,43 +16,44 @@ export function EmptyRepositoriesState({
 }: EmptyRepositoriesStateProps) {
   if (!isEmpty) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="relative z-10 text-center py-16"
-      >
-        <p className="text-slate-600 text-lg">Aucun dépôt trouvé</p>
-      </motion.div>
+      <div className="flex flex-col items-center rounded-2xl border border-dashed border-iris-200 bg-white/60 px-6 py-14 text-center">
+        <span className="flex size-11 items-center justify-center rounded-xl bg-iris-50 text-iris-600">
+          <SearchX size={20} />
+        </span>
+        <p className="mt-4 font-display font-semibold text-ink">
+          Aucun dépôt ne correspond à votre recherche
+        </p>
+        <p className="mt-1 text-sm text-ink/55">
+          Vérifiez l'orthographe ou essayez un autre nom.
+        </p>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="relative z-10 flex flex-col items-center justify-center py-20 px-6"
-    >
-      <div className="relative mb-8">
-        <div className="absolute inset-0 bg-violet-100 rounded-full blur-2xl opacity-50 animate-pulse" />
-        <div className="relative w-32 h-32 bg-gradient-to-br from-violet-100 to-indigo-100 rounded-full flex items-center justify-center border-4 border-violet-200">
-          <GitBranch className="text-violet-600" size={64} />
-        </div>
-      </div>
-      <h3 className="text-2xl font-bold text-slate-900 mb-3">
-        Aucun dépôt pour le moment
-      </h3>
-      <p className="text-slate-600 text-center max-w-md mb-8">
-        Commencez par ajouter vos premiers dépôts GitHub pour bénéficier
-        d'analyses détaillées et de rapports personnalisés.
-      </p>
-      <button
-        onClick={onAddRepo}
-        className="px-8 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors font-medium shadow-lg cursor-pointer shadow-violet-900/20 border border-violet-500/30 flex items-center gap-2"
+    <div className="relative overflow-hidden rounded-3xl border border-iris-100 bg-white px-6 py-16 text-center sm:py-20">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 mx-auto max-w-2xl opacity-60 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
       >
-        <Plus size={20} />
-        Ajouter mon premier dépôt
-      </button>
-    </motion.div>
+        <ContributionGrid weeks={26} seed={5} animated={false} />
+      </div>
+      <div className="relative mx-auto max-w-md pt-10 sm:pt-16">
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">
+          Aucun dépôt suivi pour le moment
+        </h2>
+        <p className="mt-3 leading-relaxed text-ink/60">
+          Choisissez les dépôts GitHub à suivre : Reposight affichera leur
+          activité, leurs commits, pull requests et issues.
+        </p>
+        <button
+          onClick={onAddRepo}
+          className={cn(buttonStyles.primary, "mt-8 h-11 cursor-pointer")}
+        >
+          <Plus size={18} />
+          Ajouter mes premiers dépôts
+        </button>
+      </div>
+    </div>
   );
 }
