@@ -10,12 +10,18 @@ import {
 } from "@/components/ui/dialog";
 import { useQueryGitHubRepos } from "@/query/useQueryGitHubRepos";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, GitBranch, Check } from "lucide-react";
+import { Search, FolderGit2, Check, Globe, Lock } from "lucide-react";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { useMutationSelectRepos } from "@/mutation/useMutationSelectRepos";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getErrorMessage, formatRelativeDate } from "@/lib/utils";
+import {
+  cn,
+  getErrorMessage,
+  formatRelativeDate,
+  getLanguageColor,
+} from "@/lib/utils";
+import { buttonStyles } from "@/components/public/Brand";
 import { Repo } from "@/types/repo";
 
 interface AddRepoModalProps {
@@ -70,34 +76,34 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
+      <DialogContent className="flex max-h-[85vh] flex-col gap-5 sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Ajouter des dépôts</DialogTitle>
           <DialogDescription>
-            Sélectionnez un ou plusieurs dépôts à ajouter à vos repos
+            Sélectionnez les dépôts GitHub que Reposight doit suivre.
           </DialogDescription>
         </DialogHeader>
 
         {/* Barre de recherche */}
-        <div className="relative mb-4">
+        <div className="relative">
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            size={18}
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink/40"
+            size={17}
           />
           <input
             type="text"
-            placeholder="Rechercher un dépôt..."
+            placeholder="Rechercher un dépôt…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-violet-200/50 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
+            className="h-11 w-full rounded-full border border-iris-200 bg-white pl-11 pr-4 text-ink transition-[border-color,box-shadow] placeholder:text-ink/40 focus:border-iris-400 focus:outline-none focus:ring-4 focus:ring-iris-200/60"
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+        <div className="-mx-1 flex-1 space-y-2 overflow-y-auto px-1">
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-20 w-full rounded-lg" />
+                <Skeleton key={i} className="h-[72px] w-full rounded-xl" />
               ))}
             </div>
           ) : error ? (
@@ -115,19 +121,21 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
                 <div
                   key={repo.id}
                   onClick={() => toggleRepo(repo.id)}
-                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                  className={cn(
+                    "cursor-pointer rounded-xl border p-4 transition-colors",
                     selectedRepos.includes(repo.id)
-                      ? "bg-violet-50 border-violet-300"
-                      : "bg-slate-50 border-violet-200/50 hover:border-violet-300/50"
-                  }`}
+                      ? "border-iris-400 bg-iris-50"
+                      : "border-iris-100 bg-white hover:border-iris-200 hover:bg-iris-50/50"
+                  )}
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${
+                      className={cn(
+                        "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors",
                         selectedRepos.includes(repo.id)
-                          ? "bg-violet-600 border-violet-600"
-                          : "border-slate-300"
-                      }`}
+                          ? "border-iris-600 bg-iris-600"
+                          : "border-iris-200 bg-white"
+                      )}
                     >
                       {selectedRepos.includes(repo.id) && (
                         <Check className="text-white" size={12} />
@@ -135,29 +143,29 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <GitBranch className="text-violet-600" size={16} />
-                        <h3 className="font-semibold text-slate-900 truncate">
+                        <FolderGit2 className="shrink-0 text-iris-600" size={15} />
+                        <h3 className="truncate font-semibold text-ink">
                           {repo.name}
                         </h3>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            repo.private
-                              ? "bg-orange-100 text-orange-700"
-                              : "bg-green-100 text-green-700"
-                          }`}
-                        >
+                        <span className="flex shrink-0 items-center gap-1 text-xs text-ink/50">
+                          {repo.private ? <Lock size={11} /> : <Globe size={11} />}
                           {repo.private ? "Privé" : "Public"}
                         </span>
                       </div>
                       {repo.description && (
-                        <p className="text-sm text-slate-600 line-clamp-2 mb-2">
+                        <p className="mb-2 line-clamp-2 text-sm text-ink/60">
                           {repo.description}
                         </p>
                       )}
-                      <div className="flex items-center gap-4 text-xs text-slate-500">
+                      <div className="flex items-center gap-4 text-xs text-ink/50">
                         {repo.language && (
-                          <span className="flex items-center gap-1">
-                            <span className="w-3 h-3 rounded-full bg-violet-500"></span>
+                          <span className="flex items-center gap-1.5">
+                            <span
+                              className="size-2.5 rounded-full"
+                              style={{
+                                backgroundColor: getLanguageColor(repo.language),
+                              }}
+                            />
                             {repo.language}
                           </span>
                         )}
@@ -172,15 +180,15 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
                 </div>
               ))
           ) : (
-            <div className="text-center py-8 text-slate-500">
+            <div className="py-10 text-center text-sm text-ink/50">
               Aucun dépôt trouvé
             </div>
           )}
         </div>
 
         {/* Footer avec boutons */}
-        <div className="flex items-center justify-between pt-4 border-t border-violet-200/50">
-          <span className="text-sm text-slate-600">
+        <div className="flex flex-col-reverse gap-3 border-t border-iris-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-sm text-ink/60">
             {selectedRepos.length > 0
               ? `${selectedRepos.length} dépôt${
                   selectedRepos.length > 1 ? "s" : ""
@@ -194,16 +202,23 @@ export function AddRepoModal({ open, onOpenChange }: AddRepoModalProps) {
                 setSelectedRepos([]);
                 setSearchQuery("");
               }}
-              className="px-4 py-2 cursor-pointer text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              className="h-10 cursor-pointer rounded-full px-4 text-sm font-medium text-ink/70 transition-colors hover:bg-iris-50 hover:text-ink"
             >
               Annuler
             </button>
             <button
               onClick={handleAdd}
               disabled={selectedRepos.length === 0 || isAdding}
-              className="px-6 py-2 bg-violet-600 cursor-pointer hover:bg-violet-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className={cn(
+                buttonStyles.primary,
+                "h-10 cursor-pointer px-5 text-sm disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+              )}
             >
-              {isAdding ? "Ajout en cours..." : "Ajouter"}
+              {isAdding
+                ? "Ajout en cours…"
+                : selectedRepos.length > 1
+                ? `Ajouter ${selectedRepos.length} dépôts`
+                : "Ajouter"}
             </button>
           </div>
         </div>

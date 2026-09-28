@@ -25,41 +25,41 @@ export function ErrorMessage({
 
   const content = (
     <div
-      className={`bg-white border-2 border-red-200 rounded-2xl shadow-lg ${
-        variant === "full" ? "p-8 max-w-md w-full" : "p-6"
+      className={`rounded-2xl border border-rose-100 bg-white shadow-[0_20px_40px_-24px_rgba(42,14,87,0.3)] ${
+        variant === "full" ? "w-full max-w-md p-8" : "w-full max-w-md p-6"
       } ${className}`}
     >
       <div className="flex flex-col items-center text-center gap-4">
         <div
-          className={`rounded-full bg-red-100 flex items-center justify-center ${
-            variant === "full" ? "w-16 h-16" : "w-14 h-14"
+          className={`flex items-center justify-center rounded-2xl bg-rose-50 ${
+            variant === "full" ? "size-14" : "size-12"
           }`}
         >
           <AlertCircle
-            className="text-red-600"
-            size={variant === "full" ? 32 : 28}
+            className="text-rose-600"
+            size={variant === "full" ? 26 : 22}
           />
         </div>
         <div>
           <h3
-            className={`font-bold text-slate-900 mb-2 ${
+            className={`mb-2 font-display font-semibold tracking-tight text-ink ${
               variant === "full" ? "text-xl" : "text-lg"
             }`}
           >
             {title}
           </h3>
-          <p className="text-slate-600 text-sm leading-relaxed bg-red-200 rounded-full p-2 inline-flex items-center justify-center">
+          <p className="inline-flex items-center justify-center rounded-lg bg-rose-50 px-3 py-1.5 text-sm leading-relaxed text-rose-700">
             {message}
           </p>
-          <p className="text-slate-600 mt-3 text-xs italic leading-relaxed">
+          <p className="mt-3 text-xs leading-relaxed text-ink/50">
             {subtitle}
           </p>
         </div>
         {onRetry && (
           <button
             onClick={onRetry}
-            className={`bg-violet-600 cursor-pointer hover:bg-violet-700 text-white rounded-lg transition-colors font-medium shadow-md ${
-              variant === "full" ? "mt-2 px-6 py-2" : "px-5 py-2 text-sm"
+            className={`cursor-pointer rounded-full bg-iris-600 font-medium text-white transition-colors hover:bg-iris-700 ${
+              variant === "full" ? "mt-2 px-6 py-2.5" : "px-5 py-2 text-sm"
             }`}
           >
             Réessayer
@@ -71,7 +71,7 @@ export function ErrorMessage({
 
   if (variant === "full") {
     return (
-      <div className="relative min-h-screen flex items-center justify-center p-8 text-slate-900 bg-[#fafafa]">
+      <div className="relative flex min-h-screen items-center justify-center bg-paper p-6 text-ink">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -88,7 +88,7 @@ export function ErrorMessage({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative z-10 flex items-center justify-center py-16"
+      className="relative z-10 flex items-center justify-center py-10"
     >
       {content}
     </motion.div>

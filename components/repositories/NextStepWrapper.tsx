@@ -32,25 +32,29 @@ const CustomCard = ({
 
   return (
     <div
-      className="bg-white rounded-lg shadow-lg border border-slate-200 p-6 max-w-sm"
+      className="nextstep-card max-w-sm rounded-2xl border border-iris-100 bg-white p-5 shadow-[0_30px_60px_-20px_rgba(42,14,87,0.4)]"
       style={{
         maxWidth: "min(calc(100vw - 1rem), 24rem)",
         width: "auto",
       }}
     >
-      <div className="flex items-center gap-3 mb-3">
-        {step.icon && <span className="text-2xl">{step.icon}</span>}
-        <h3 className="text-lg font-semibold text-slate-900">{step.title}</h3>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h3 className="font-display text-lg font-semibold tracking-tight text-ink">
+          {step.title}
+        </h3>
+        <span className="shrink-0 rounded-full bg-iris-50 px-2 py-0.5 text-xs font-medium text-iris-700">
+          {currentStep + 1} / {totalSteps}
+        </span>
       </div>
-      <p className="text-slate-600 mb-4 text-sm leading-relaxed">
+      <p className="mb-4 text-sm leading-relaxed text-ink/60">
         {step.content}
       </p>
-      <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t border-slate-200">
+      <div className="mt-4 flex items-center justify-between gap-4 border-t border-iris-100 pt-4">
         <div className="flex items-center gap-2 flex-shrink-0">
           {currentStep > 0 && (
             <button
               onClick={prevStep}
-              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition-colors cursor-pointer text-sm font-medium whitespace-nowrap"
+              className="cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-ink/70 transition-colors hover:bg-iris-50 hover:text-ink"
             >
               Précédent
             </button>
@@ -58,26 +62,23 @@ const CustomCard = ({
           {currentStep < totalSteps - 1 ? (
             <button
               onClick={nextStep}
-              className="px-3 py-1.5 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-md transition-colors text-sm font-medium whitespace-nowrap"
+              className="cursor-pointer whitespace-nowrap rounded-full bg-iris-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-iris-700"
             >
               Suivant
             </button>
           ) : (
             <button
               onClick={handleSkipTour}
-              className="px-3 py-1.5 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white rounded-md transition-colors text-sm font-medium whitespace-nowrap"
+              className="cursor-pointer whitespace-nowrap rounded-full bg-iris-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-iris-700"
             >
               Terminer
             </button>
           )}
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
-          <span className="text-xs text-slate-400 whitespace-nowrap">
-            {currentStep + 1} / {totalSteps}
-          </span>
           <button
             onClick={handleSkipTour}
-            className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-900 hover:text-slate-700 cursor-pointer rounded-md transition-colors text-sm font-medium whitespace-nowrap"
+            className="cursor-pointer whitespace-nowrap text-sm text-ink/50 transition-colors hover:text-ink"
           >
             Passer
           </button>

@@ -1,13 +1,28 @@
 "use client";
 
-import { motion } from "motion/react";
-import { GithubIcon, ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Brand, GithubMark, LogoMark, buttonStyles } from "@/components/public/Brand";
+import { RepoPanel } from "@/components/public/RepoPanel";
+
+const NEXT_STEPS = [
+  {
+    title: "GitHub vous demande d'autoriser Reposight",
+    desc: "Vous restez sur github.com, votre mot de passe n'est jamais partagé.",
+  },
+  {
+    title: "Vous choisissez les dépôts à suivre",
+    desc: "Publics ou privés, modifiables à tout moment.",
+  },
+  {
+    title: "Votre tableau de bord est prêt",
+    desc: "Activité, comparaisons, commits, pull requests et issues.",
+  },
+];
 
 export default function LoginPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGitHubLogin = () => {
@@ -15,143 +30,106 @@ export default function LoginPage() {
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
   };
 
-  const handleBack = () => {
-    router.push("/");
-  };
-
   return (
-    <div className="relative min-h-screen flex flex-col text-slate-900 overflow-hidden bg-[#fafafa]">
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <motion.div
-          className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2"
-          animate={{ opacity: [0.6, 0.8, 0.6], scale: [1, 1.12, 1] }}
-          transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute top-1/3 right-1/4 w-[900px] h-[900px] bg-purple-500/15 rounded-full blur-[280px]"
-          animate={{ opacity: [0.4, 0.6, 0.4], scale: [1, 1.1, 1] }}
-          transition={{
-            repeat: Infinity,
-            duration: 20,
-            ease: "easeInOut",
-            delay: 2,
-          }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 left-1/4 w-[800px] h-[800px] bg-indigo-400/12 rounded-full blur-[220px]"
-          animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.08, 1] }}
-          transition={{
-            repeat: Infinity,
-            duration: 18,
-            ease: "easeInOut",
-            delay: 4,
-          }}
-        />
-      </div>
+    <div className="relative grid min-h-screen overflow-hidden bg-paper text-ink lg:grid-cols-[1fr_1.15fr]">
+      <div aria-hidden="true" className="bg-dots absolute inset-0" />
 
-      {/* Brume violette légère centrée sur la section */}
-      <div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        style={{ zIndex: 0 }}
-      >
-        <div
-          className="w-[900px] h-[900px] rounded-full blur-[250px]"
-          style={{ backgroundColor: "rgba(139, 92, 246, 0.35)" }}
-        ></div>
-      </div>
-
-      <header className="flex items-center justify-between px-8 py-6 max-w-6xl mx-auto w-full relative z-10">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <button
-            onClick={handleBack}
-            className="flex items-center cursor-pointer gap-2 text-violet-600 hover:text-violet-700 transition-colors"
+      <div className="relative flex flex-col px-4 py-5 sm:px-10">
+        <div className="flex h-11 items-center justify-between">
+          <Brand />
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-ink/60 transition-colors hover:text-iris-700"
           >
-            <ArrowLeft size={18} />
-            Retour
-          </button>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="flex items-center gap-3"
-        >
-          <img
-            src="/logo-reposight.png"
-            alt="Reposight Logo"
-            className="w-8 h-8"
-          />
-          <h1 className="text-2xl -ml-2.5  font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-            eposight
-          </h1>
-        </motion.div>
-        <div className="w-20"></div>
-      </header>
+            <ArrowLeft size={16} />
+            Accueil
+          </Link>
+        </div>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="w-full max-w-md mx-auto px-6"
-        >
-          <div className="bg-slate-50 backdrop-blur-md rounded-3xl p-8 border border-violet-200/50 shadow-xl">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-slate-900 mb-4">
-                Connexion à Reposight
-              </h2>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Pour utiliser l'application, vous devez connecter votre compte
-                GitHub. Cela nous permet d'analyser vos dépôts et de générer des
-                rapports personnalisés.
-              </p>
+        <main className="flex flex-1 items-center justify-center py-16">
+          <div className="w-full max-w-sm">
+            <div aria-hidden="true" className="mb-10 flex items-center gap-3">
+              <LogoMark className="size-12 drop-shadow-[0_8px_16px_rgba(101,35,204,0.35)]" />
+              <span className="flex items-center gap-1.5">
+                {[0, 1, 2, 3, 4].map((dot) => (
+                  <span key={dot} className="size-1.5 rounded-full bg-iris-300" />
+                ))}
+              </span>
+              <span className="flex size-12 items-center justify-center rounded-[14px] bg-ink text-white shadow-[0_8px_16px_rgba(27,20,51,0.25)]">
+                <GithubMark className="size-6" />
+              </span>
             </div>
 
-            <motion.button
+            <h1 className="font-display text-4xl font-semibold tracking-tight">
+              Connexion à Reposight
+            </h1>
+            <p className="mt-4 leading-relaxed text-ink/60">
+              Connectez votre compte GitHub pour retrouver vos dépôts et leurs
+              statistiques.
+            </p>
+
+            <button
               onClick={handleGitHubLogin}
               disabled={isLoading}
-              className="relative w-full bg-violet-600 cursor-pointer hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl px-6 py-4 font-semibold flex items-center justify-center gap-3 shadow-md border border-violet-500/30 hover:border-violet-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-500 overflow-hidden group"
+              className={cn(
+                buttonStyles.primary,
+                "mt-10 h-12 w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-80"
+              )}
               aria-label="Se connecter avec votre compte GitHub"
             >
-              <span className="relative z-10 flex items-center gap-3">
-                {isLoading ? (
-                  <>
-                    Se connecter avec GitHub{" "}
-                    <Loader2 size={18} className="animate-spin" />
-                  </>
-                ) : (
-                  <>
-                    <GithubIcon size={20} className="text-white" />
-                    Se connecter avec GitHub
-                  </>
-                )}
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
-            </motion.button>
+              {isLoading ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <GithubMark className="size-[18px]" />
+              )}
+              {isLoading ? "Redirection vers GitHub…" : "Se connecter avec GitHub"}
+            </button>
 
-            <div className="mt-6 text-center">
-              <p className="text-xs text-slate-600">
-                En vous connectant, vous acceptez nos{" "}
-                <Link
-                  href="/cgu"
-                  className="text-violet-600 hover:text-violet-700 underline transition-colors"
-                >
-                  conditions d'utilisation
-                </Link>{" "}
-                et notre politique de confidentialité.
+            <div className="mt-10">
+              <p className="text-sm font-semibold text-ink">
+                Ce qui se passe ensuite
               </p>
+              <ol className="relative mt-5 space-y-5">
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-3 left-[7px] top-3 w-0.5 bg-gradient-to-b from-iris-400 to-iris-100"
+                />
+                {NEXT_STEPS.map((step) => (
+                  <li key={step.title} className="relative pl-8 text-sm">
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-0.5 size-4 rounded-full border-2 border-iris-500 bg-white"
+                    />
+                    <span className="block font-medium text-ink">{step.title}</span>
+                    <span className="mt-0.5 block text-ink/55">{step.desc}</span>
+                  </li>
+                ))}
+              </ol>
             </div>
-          </div>
-        </motion.div>
-      </main>
 
-      <footer className="text-center py-8 text-sm text-slate-600">
-        Reposight © 2025
-      </footer>
+            <p className="mt-10 border-t border-iris-100 pt-6 text-xs leading-relaxed text-ink/50">
+              En vous connectant, vous acceptez nos{" "}
+              <Link
+                href="/cgu"
+                className="text-iris-700 underline underline-offset-2 hover:text-iris-600"
+              >
+                conditions d'utilisation
+              </Link>{" "}
+              et notre politique de confidentialité.
+            </p>
+          </div>
+        </main>
+      </div>
+
+      <aside className="relative hidden items-center border-l border-iris-100 bg-iris-100/50 px-16 lg:flex">
+        <div
+          aria-hidden="true"
+          className="absolute left-1/2 top-1/2 h-[520px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-iris-300/50 blur-[130px]"
+        />
+        <div className="relative w-full [perspective:1800px]">
+          <RepoPanel className="mx-auto max-w-xl [transform:rotateY(-10deg)_rotateX(4deg)]" />
+        </div>
+      </aside>
     </div>
   );
 }

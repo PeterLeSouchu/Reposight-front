@@ -1,65 +1,62 @@
 "use client";
 
-import { motion } from "motion/react";
-import { Users, ArrowUp, ArrowDown } from "lucide-react";
+import { Users } from "lucide-react";
 import type { ContributorDisplay } from "@/types/repository";
 import { EmptyState } from "@/components/EmptyState";
+import { Panel } from "@/components/app/Panel";
 
 interface ContributorsListProps {
   contributors: ContributorDisplay[];
+  className?: string;
 }
 
-export function ContributorsList({ contributors }: ContributorsListProps) {
+export function ContributorsList({ contributors, className }: ContributorsListProps) {
+  const maxCommits = Math.max(...contributors.map((c) => c.commits), 1);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.16 }}
-      className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
-    >
-      <div className="flex items-center justify-between mb-4 max-[585px]:flex-col max-[585px]:gap-2 max-[585px]:items-center">
-        <div className="flex items-center gap-2 max-[585px]:justify-center">
-          <Users className="text-violet-600" size={20} />
-          <h2 className="text-xl font-bold text-slate-900">Contributeurs</h2>
-        </div>
-      </div>
-      <div className="grid md:grid-cols-2 gap-4">
-        {contributors.length > 0 ? (
-          contributors.map((contributor, index) => (
-            <a
-              key={index}
-              href={contributor.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white p-4 rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all cursor-pointer group block"
-            >
-              <div className="flex items-center gap-3 mb-3">
+    <Panel title="Contributeurs" icon={Users} className={className}>
+      {contributors.length > 0 ? (
+        <ul className="-mx-2 space-y-1">
+          {contributors.map((contributor) => (
+            <li key={contributor.name}>
+              <a
+                href={contributor.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-iris-50"
+              >
                 <img
                   src={contributor.avatar}
-                  alt={contributor.name}
-                  className="w-10 h-10 rounded-full"
+                  alt=""
+                  className="size-9 shrink-0 rounded-full ring-2 ring-white"
                 />
-                <div className="flex-1">
-                  <div className="font-medium text-slate-900 group-hover:text-violet-600 transition-colors">
-                    {contributor.name}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="truncate text-sm font-medium text-ink group-hover:text-iris-700">
+                      {contributor.name}
+                    </span>
+                    <span className="shrink-0 text-xs text-ink/50">
+                      {contributor.commits} commit{contributor.commits > 1 ? "s" : ""}
+                    </span>
                   </div>
-                  <div className="text-sm text-slate-500">
-                    {contributor.commits} commits
+                  <div className="mt-1.5 h-1 rounded-full bg-iris-50" aria-hidden="true">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-iris-400 to-iris-600"
+                      style={{ width: `${(contributor.commits / maxCommits) * 100}%` }}
+                    />
                   </div>
                 </div>
-              </div>
-            </a>
-          ))
-        ) : (
-          <div className="col-span-2">
-            <EmptyState
-              icon={<Users size={20} />}
-              title="Aucun contributeur pour l'instant"
-              description="Les membres actifs de ce dépôt s'afficheront ici dès qu'ils contribueront."
-            />
-          </div>
-        )}
-      </div>
-    </motion.div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <EmptyState
+          icon={<Users size={18} />}
+          title="Aucun contributeur pour l'instant"
+          description="Les membres actifs de ce dépôt s'afficheront ici dès qu'ils contribueront."
+        />
+      )}
+    </Panel>
   );
 }

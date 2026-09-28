@@ -1,95 +1,85 @@
 "use client";
 
-import { motion } from "motion/react";
-import { TrendingUp, ArrowUp, ArrowDown } from "lucide-react";
+import { TrendingUp, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import type { WeeklyComparison as WeeklyComparisonType } from "@/types/repository";
 import { EmptyState } from "@/components/EmptyState";
+import { Panel } from "@/components/app/Panel";
+import { cn } from "@/lib/utils";
+
+const LABELS: Record<string, string> = {
+  commits: "Commits",
+  prs: "Pull requests",
+  issues: "Issues",
+};
 
 interface WeeklyComparisonProps {
   comparison: WeeklyComparisonType;
+  className?: string;
 }
 
-export function WeeklyComparison({ comparison }: WeeklyComparisonProps) {
-  const hasNoActivity =
-    comparison.commits.currentWeek === 0 &&
-    comparison.commits.lastWeek === 0 &&
-    comparison.prs.currentWeek === 0 &&
-    comparison.prs.lastWeek === 0 &&
-    comparison.issues.currentWeek === 0 &&
-    comparison.issues.lastWeek === 0;
+export function WeeklyComparison({ comparison, className }: WeeklyComparisonProps) {
+  const hasNoActivity = Object.values(comparison).every(
+    (value) => value.currentWeek === 0 && value.lastWeek === 0
+  );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.14 }}
-      className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
-    >
-      <div className="flex items-center gap-2 mb-4 max-[585px]:justify-center">
-        <TrendingUp className="text-violet-600" size={20} />
-        <h2 className="text-xl font-bold text-slate-900 text-center">
-          Cette semaine vs semaine dernière
-        </h2>
-      </div>
-      <div className="flex flex-col gap-4 md:grid md:grid-cols-3">
-        {hasNoActivity ? (
-          <div className="col-span-3">
-            <EmptyState
-              icon={<TrendingUp size={20} />}
-              title="Pas de variation récente"
-              description="Aucune différence notable entre cette semaine et la précédente."
-            />
-          </div>
-        ) : (
-          Object.entries(comparison).map(([key, value]) => (
-            <div
-              key={key}
-              className="bg-white p-4 rounded-xl border border-violet-100"
-            >
-              <div className="flex items-center justify-between mb-2 max-[585px]:flex-col max-[585px]:items-center max-[585px]:gap-1">
-                <span className="text-sm font-medium text-slate-700 capitalize text-center">
-                  {key === "prs"
-                    ? "PRs"
-                    : key === "commits"
-                    ? "Commits"
-                    : "Issues"}
-                </span>
-                <div
-                  className={`flex items-center gap-1 text-sm font-medium ${
-                    value.percentage > 0
-                      ? "text-green-600"
-                      : value.percentage < 0
-                      ? "text-red-600"
-                      : "text-slate-600"
-                  }`}
-                >
-                  {value.percentage > 0 ? (
-                    <ArrowUp size={14} />
-                  ) : value.percentage < 0 ? (
-                    <ArrowDown size={14} />
-                  ) : null}
-                  {Math.abs(value.percentage).toFixed(1)}%
+    <Panel title="Cette semaine" icon={TrendingUp} className={className}>
+      {hasNoActivity ? (
+        <EmptyState
+          icon={<TrendingUp size={18} />}
+          title="Pas de variation récente"
+          description="Aucune activité cette semaine ni la semaine dernière."
+          className="flex-1"
+        />
+      ) : (
+        <ul className="flex flex-1 flex-col divide-y divide-iris-100">
+          {Object.entries(comparison).map(([key, value]) => {
+            const max = Math.max(value.currentWeek, value.lastWeek, 1);
+            const isUp = value.percentage > 0;
+            const isDown = value.percentage < 0;
+            return (
+              <li key={key} className="flex flex-1 flex-col justify-center py-4 first:pt-0 last:pb-0">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-ink/60">{LABELS[key] ?? key}</span>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-semibold",
+                      isUp && "bg-emerald-50 text-emerald-700",
+                      isDown && "bg-rose-50 text-rose-700",
+                      !isUp && !isDown && "bg-iris-50 text-ink/55"
+                    )}
+                  >
+                    {isUp ? <ArrowUp size={12} /> : isDown ? <ArrowDown size={12} /> : <Minus size={12} />}
+                    {Math.abs(value.percentage).toFixed(0)} %
+                  </span>
                 </div>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-slate-500">
-                <span>
-                  Cette semaine:{" "}
-                  <span className="font-semibold text-slate-900">
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="font-display text-2xl font-semibold text-ink">
                     {value.currentWeek}
                   </span>
-                </span>
-                <span>•</span>
-                <span>
-                  Semaine dernière:{" "}
-                  <span className="font-semibold text-slate-900">
-                    {value.lastWeek}
+                  <span className="text-xs text-ink/50">
+                    contre {value.lastWeek} la semaine dernière
                   </span>
-                </span>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </motion.div>
+                </div>
+                <div className="mt-2.5 space-y-1" aria-hidden="true">
+                  <div className="h-1.5 rounded-full bg-iris-50">
+                    <div
+                      className="h-full rounded-full bg-iris-600"
+                      style={{ width: `${(value.currentWeek / max) * 100}%` }}
+                    />
+                  </div>
+                  <div className="h-1.5 rounded-full bg-iris-50">
+                    <div
+                      className="h-full rounded-full bg-iris-200"
+                      style={{ width: `${(value.lastWeek / max) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Panel>
   );
 }

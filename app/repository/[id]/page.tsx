@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { useQueryRepo } from "@/query/useQueryRepo";
 import { ErrorMessage } from "@/components/ErrorMessage";
-import { BackgroundDots } from "@/components/BackgroundDots";
+import { AppShell } from "@/components/app/AppShell";
 import { RepositorySkeleton } from "@/components/repository/RepositorySkeleton";
 import { RepositoryHeader } from "@/components/repository/RepositoryHeader";
 import { RecentActivity } from "@/components/repository/RecentActivity";
@@ -48,11 +48,9 @@ export default function RepositoryPage() {
 
   if (error || !repoApi) {
     return (
-      <div className="relative min-h-screen  overflow-hidden bg-[#fafafa]">
-        <div className="relative z-10 max-w-7xl mx-auto p-4 sm:p-8">
-          <ErrorMessage error={error} />
-        </div>
-      </div>
+      <AppShell>
+        <ErrorMessage error={error} variant="inline" />
+      </AppShell>
     );
   }
 
@@ -77,22 +75,17 @@ export default function RepositoryPage() {
   );
 
   return (
-    <div className="relative min-h-screen text-slate-900 overflow-hidden bg-[#fafafa]">
-      <BackgroundDots />
+    <AppShell>
+      <RepositoryHeader info={info} onRefresh={handleRefresh} />
 
-      <div className="relative z-10 max-w-7xl mx-auto p-4 sm:p-8">
-        <RepositoryHeader info={info} onRefresh={handleRefresh} />
-
-        <RecentActivity recentActivity={recentActivity} />
-
-        <ActivityChart activityData={activityData} />
-
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <ActivityChart activityData={activityData} className="lg:col-span-2" />
         <WeeklyComparison comparison={weeklyComparison} />
-
+        <RecentActivity recentActivity={recentActivity} className="lg:col-span-2" />
         <ContributorsList contributors={contributorsData} />
-
-        <ActivityTabs repoId={repoId} />
       </div>
-    </div>
+
+      <ActivityTabs repoId={repoId} className="mt-6" />
+    </AppShell>
   );
 }

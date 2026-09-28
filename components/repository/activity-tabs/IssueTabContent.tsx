@@ -1,4 +1,4 @@
-import { AlertCircle, ExternalLink, MessageCircle } from "lucide-react";
+import { CircleDot, ExternalLink, MessageCircle } from "lucide-react";
 
 import { formatRelativeDate } from "@/lib/utils";
 import type { Issue } from "@/types/repository";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/EmptyState";
 import { useQueryIssuesMetadata } from "@/query/useQueryIssuesMetadata";
-import { buildPagination } from "./utils/pagination";
+import { Pagination } from "./Pagination";
 import type { IssueFilters } from "./ActivityTabs";
 import type { IssuesResponse } from "@/query/useQueryIssues";
 
@@ -34,7 +34,7 @@ const ISSUE_STATE_LABEL: Record<string, string> = {
 
 const ISSUE_STATE_STYLES: Record<string, string> = {
   open: "bg-green-100 text-green-700",
-  closed: "bg-slate-200 text-slate-700",
+  closed: "bg-ink/5 text-ink/60",
 };
 
 export function IssueTabContent({
@@ -61,16 +61,15 @@ export function IssueTabContent({
   const issuesList: Issue[] = issues?.issues ?? [];
   const totalPages = issues?.pagination?.totalPages ?? 0;
   const isLoadingList = (issuesLoading && !issues) || issuesFetching;
-  const paginationItems = buildPagination(filters.page, totalPages);
 
   return (
     <>
       <div className="mb-6 flex flex-wrap items-center gap-3">
         {metadataLoading ? (
           <>
-            <Skeleton className="h-10 w-[180px]" />
-            <Skeleton className="h-10 w-[180px]" />
-            <Skeleton className="h-10 w-[140px]" />
+            <Skeleton className="h-9 w-[180px] rounded-full" />
+            <Skeleton className="h-9 w-[180px] rounded-full" />
+            <Skeleton className="h-9 w-[140px] rounded-full" />
           </>
         ) : metadataError ? (
           <div className="w-full">
@@ -166,11 +165,11 @@ export function IssueTabContent({
       </div>
 
       {isLoadingList ? (
-        <div className="space-y-3">
+        <div className="divide-y divide-iris-100 overflow-hidden rounded-xl border border-iris-100">
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={index}
-              className="p-4 bg-white rounded-xl border border-violet-100"
+              className="bg-white p-4"
             >
               <div className="flex items-start gap-3">
                 <Skeleton className="h-8 w-8 rounded-full" />
@@ -188,12 +187,12 @@ export function IssueTabContent({
         <ErrorMessage error={issuesError} variant="inline" />
       ) : issuesList.length > 0 ? (
         <>
-          <div className="space-y-3">
+          <div className="divide-y divide-iris-100 overflow-hidden rounded-xl border border-iris-100">
             {issuesList.map((issue) => {
               const stateLabel = ISSUE_STATE_LABEL[issue.state] ?? issue.state;
               const stateStyles =
                 ISSUE_STATE_STYLES[issue.state] ??
-                "bg-slate-200 text-slate-700";
+                "bg-ink/5 text-ink/60";
 
               return (
                 <a
@@ -201,7 +200,7 @@ export function IssueTabContent({
                   href={issue.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all group"
+                  className="group block bg-white p-4 transition-colors hover:bg-iris-50/60"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 space-y-2">
@@ -211,14 +210,14 @@ export function IssueTabContent({
                         >
                           {stateLabel}
                         </span>
-                        <span className="text-sm font-semibold text-slate-900 group-hover:text-violet-600 transition-colors">
+                        <span className="text-sm font-semibold text-ink transition-colors group-hover:text-iris-700">
                           {issue.title}
                         </span>
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-ink/50">
                           #{issue.number}
                         </span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-ink/50">
                         <div className="flex items-center gap-1.5">
                           <img
                             src={issue.author.avatar}
@@ -252,7 +251,7 @@ export function IssueTabContent({
                           {issue.labels.map((label) => (
                             <span
                               key={label}
-                              className="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs rounded"
+                              className="rounded-full bg-iris-50 px-2 py-0.5 text-xs text-iris-700"
                             >
                               {label}
                             </span>
@@ -262,7 +261,7 @@ export function IssueTabContent({
                     </div>
                     <ExternalLink
                       size={16}
-                      className="text-violet-500 group-hover:text-violet-600"
+                      className="shrink-0 text-ink/30 transition-colors group-hover:text-iris-600"
                     />
                   </div>
                 </a>
@@ -270,45 +269,15 @@ export function IssueTabContent({
             })}
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-end pt-4 border-t border-violet-200/50">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  {paginationItems.map((item, index) => {
-                    if (item === "ellipsis") {
-                      return (
-                        <span
-                          key={`issues-ellipsis-${index}`}
-                          className="px-2 text-xs text-slate-400"
-                        >
-                          …
-                        </span>
-                      );
-                    }
-
-                    const isActive = item === filters.page;
-                    return (
-                      <button
-                        key={`issues-page-${item}`}
-                        onClick={() => onFiltersChange({ page: item })}
-                        className={`min-w-[32px] cursor-pointer h-8 rounded-md text-xs font-medium transition-all border ${
-                          isActive
-                            ? "bg-violet-600 text-white border-violet-600 shadow-md"
-                            : "border-violet-200/60 bg-white text-slate-600 hover:border-violet-400 hover:text-violet-600"
-                        }`}
-                      >
-                        {item}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
+          <Pagination
+            page={filters.page}
+            totalPages={totalPages}
+            onPageChange={(page) => onFiltersChange({ page })}
+          />
         </>
       ) : (
         <EmptyState
-          icon={<AlertCircle size={20} />}
+          icon={<CircleDot size={18} />}
           title="Aucune issue disponible"
           description="Tout est calme pour le moment. Essayez d'autres filtres ou revenez plus tard."
         />

@@ -1,564 +1,399 @@
 "use client";
 
-import { motion } from "motion/react";
-import Marquee from "react-fast-marquee";
-import {
-  ArrowRight,
-  BarChart3,
-  Brain,
-  Zap,
-  Star,
-  Check,
-  Github,
-  Menu,
-  X,
-} from "lucide-react";
+import { AnimatePresence, motion, MotionConfig } from "motion/react";
+import { BarChart3, FolderGit2, ListTree } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { GithubMark, buttonStyles } from "@/components/public/Brand";
+import { SiteHeader } from "@/components/public/SiteHeader";
+import { SiteFooter } from "@/components/public/SiteFooter";
+import { RepoPanel } from "@/components/public/RepoPanel";
+import { ContributionGrid } from "@/components/public/ContributionGrid";
+
+const FEATURES = [
+  {
+    icon: FolderGit2,
+    title: "Tous vos dépôts au même endroit",
+    desc: "Ajoutez les dépôts qui comptent, retrouvez-les par leur nom et triez-les par date d'ajout ou par dernier commit.",
+    image: { src: "/lp-repositories.png", width: 2608, height: 1230, alt: "Liste des dépôts suivis dans Reposight" },
+  },
+  {
+    icon: BarChart3,
+    title: "L'activité des 30 derniers jours",
+    desc: "Commits, pull requests et issues sur un seul graphique, avec la comparaison entre cette semaine et la précédente.",
+    image: { src: "/lp-activity.png", width: 2574, height: 884, alt: "Graphique d'activité sur 30 jours et comparaison hebdomadaire" },
+  },
+  {
+    icon: ListTree,
+    title: "Chaque commit, PR et issue en détail",
+    desc: "Filtrez par contributeur ou par branche et parcourez l'historique du projet sans quitter Reposight.",
+    image: { src: "/lp-activity-tabs.png", width: 2576, height: 1148, alt: "Liste des commits filtrée par contributeur et par branche" },
+  },
+];
+
+const STEPS = [
+  {
+    title: "Connectez GitHub",
+    desc: "Un clic pour autoriser Reposight via OAuth. Reposight n'a jamais accès à votre mot de passe.",
+  },
+  {
+    title: "Choisissez vos dépôts",
+    desc: "Sélectionnez les dépôts à suivre parmi ceux de votre compte, publics ou privés. Ajoutez-en ou retirez-en à tout moment.",
+  },
+  {
+    title: "Suivez l'activité",
+    desc: "Graphiques, comparaisons hebdomadaires, commits, pull requests et issues : tout est prêt, sans configuration.",
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    name: "Thomas D.",
+    role: "CTO",
+    text: "Simple, fluide et puissant. L'intégration GitHub est transparente et me fait gagner des heures chaque semaine.",
+  },
+  {
+    name: "Inès P.",
+    role: "Lead Developer",
+    text: "Le design et la précision des graphiques sont exceptionnels. Je peux enfin suivre l'activité de mes équipes.",
+  },
+  {
+    name: "Amina K.",
+    role: "Full Stack Developer",
+    text: "L'application est devenue indispensable pour suivre l'évolution de mes projets open source.",
+  },
+  {
+    name: "Hugo R.",
+    role: "Software Engineer",
+    text: "Je vois tout de suite où en est chaque projet. Reposight me fait gagner du temps chaque semaine.",
+  },
+];
+
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+};
+
+function SectionHeading({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="grid gap-5 lg:grid-cols-2 lg:items-end lg:gap-16">
+      <h2 className="font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+        {title}
+      </h2>
+      <p className="max-w-lg text-lg leading-relaxed text-ink/60 lg:justify-self-end">
+        {desc}
+      </p>
+    </div>
+  );
+}
+
+function Initials({ name, large = false }: { name: string; large?: boolean }) {
+  return (
+    <span
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-iris-400 to-iris-700 font-bold text-white",
+        large ? "size-11 text-sm" : "size-9 text-xs"
+      )}
+    >
+      {name
+        .split(" ")
+        .map((part) => part[0])
+        .join("")}
+    </span>
+  );
+}
 
 export default function LandingPage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeFeature, setActiveFeature] = useState(0);
+  const feature = FEATURES[activeFeature];
+  const [featured, ...others] = TESTIMONIALS;
 
   return (
-    <div className="relative min-h-screen flex flex-col text-slate-900 overflow-hidden bg-[#fafafa]">
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <motion.div
-          className="absolute top-0 left-1/2 w-[1400px] h-[1400px] bg-indigo-600/20 rounded-full blur-[350px] -translate-x-1/2 will-change-[opacity,transform]"
-          animate={{ opacity: [0.6, 0.8, 0.6], scale: [1, 1.12, 1] }}
-          transition={{
-            repeat: Infinity,
-            duration: 15,
-            ease: "easeInOut",
-            type: "tween",
-          }}
-          style={{ transformOrigin: "center center" }}
-        />
-        <motion.div
-          className="absolute top-1/3 right-1/4 w-[900px] h-[900px] bg-purple-500/15 rounded-full blur-[280px] will-change-[opacity,transform]"
-          animate={{ opacity: [0.4, 0.6, 0.4], scale: [1, 1.1, 1] }}
-          transition={{
-            repeat: Infinity,
-            duration: 20,
-            ease: "easeInOut",
-            delay: 2,
-            type: "tween",
-          }}
-          style={{ transformOrigin: "center center" }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 left-1/4 w-[800px] h-[800px] bg-indigo-400/12 rounded-full blur-[220px] will-change-[opacity,transform]"
-          animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.08, 1] }}
-          transition={{
-            repeat: Infinity,
-            duration: 18,
-            ease: "easeInOut",
-            delay: 4,
-            type: "tween",
-          }}
-          style={{ transformOrigin: "center center" }}
-        />
-      </div>
+    <MotionConfig reducedMotion="user">
+      <div className="relative min-h-screen bg-paper text-ink">
+        <SiteHeader />
 
-      <header className="sticky top-0 z-50 py-4">
-        <div className="max-w-7xl mx-auto px-4 ">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="backdrop-blur bg-white/20 border-violet-200 rounded-full border shadow-sm px-6 py-3 flex items-center justify-between"
-          >
+        <main>
+          {/* Hero */}
+          <section className="relative overflow-hidden pb-24 pt-32 sm:pt-40 lg:pb-32">
+            <div aria-hidden="true" className="bg-dots absolute inset-0" />
             <div
-              className="flex items-center gap-3 "
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            >
-              <img
-                src="/logo-reposight.png"
-                alt="Reposight Logo"
-                className="w-8 h-8"
-              />
-              <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-                Reposight
-              </span>
-            </div>
+              aria-hidden="true"
+              className="absolute -right-24 top-[28rem] h-[300px] w-[300px] rounded-full bg-iris-300/30 blur-[90px] sm:-right-40 sm:top-20 sm:h-[600px] sm:w-[800px] sm:bg-iris-300/45 sm:blur-[140px]"
+            />
 
-            <nav className="hidden md:flex items-center gap-2 rounded-full px-4 py-2">
-              <a
-                href="#fonctionnalites"
-                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-100 hover:bg-violet-200"
-              >
-                Fonctionnalités
-              </a>
-              <a
-                href="#comment-ca-marche"
-                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-100 hover:bg-violet-200"
-              >
-                Comment ça marche
-              </a>
-              <a
-                href="#avis"
-                className="text-sm font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-1.5 rounded-full bg-violet-100 hover:bg-violet-200"
-              >
-                Avis
-              </a>
-            </nav>
-
-            <div className="hidden md:flex items-center gap-4">
-              <Link
-                href="/login"
-                className="relative px-6 py-2.5 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-full transition-all shadow-md hover:shadow-lg overflow-hidden group"
-              >
-                <span className="relative z-10">Se connecter</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
-              </Link>
-            </div>
-
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-full hover:bg-slate-100 transition-colors"
-              aria-label="Toggle menu"
-            >
-              {isMobileMenuOpen ? (
-                <X size={24} className="text-slate-700" />
-              ) : (
-                <Menu size={24} className="text-slate-700" />
-              )}
-            </button>
-          </motion.div>
-
-          {isMobileMenuOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm  md:hidden"
-              />
-
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="fixed top-20 left-4 right-4 z-[60] md:hidden bg-white/95 backdrop-blur-lg rounded-2xl border border-slate-200 shadow-xl p-6"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <nav className="flex flex-col gap-4">
-                  <a
-                    href="#fonctionnalites"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100"
-                  >
-                    Fonctionnalités
-                  </a>
-                  <a
-                    href="#comment-ca-marche"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100"
-                  >
-                    Comment ça marche
-                  </a>
-                  <a
-                    href="#avis"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-violet-600 hover:text-violet-800 transition-[color,background-color] cursor-pointer px-4 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100"
-                  >
-                    Avis
-                  </a>
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="relative mt-2 px-6 py-3 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all shadow-md hover:shadow-lg overflow-hidden group text-center"
-                  >
-                    <span className="relative z-10">Se connecter</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+            <div className="relative mx-auto grid max-w-7xl items-center gap-16 px-4 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:gap-12">
+              <div>
+                <motion.h1
+                  {...fadeUp}
+                  transition={{ duration: 0.6 }}
+                  className="font-display text-[2.6rem] font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-[4.25rem]"
+                >
+                  L'analyse de vos dépôts GitHub, simplifiée
+                </motion.h1>
+                <motion.p
+                  {...fadeUp}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                  className="mt-6 max-w-xl text-lg leading-relaxed text-ink/65"
+                >
+                  Reposight lit l'historique de vos dépôts et le transforme en
+                  vues claires : activité quotidienne, comparaison hebdomadaire,
+                  commits, pull requests et issues.
+                </motion.p>
+                <motion.div
+                  {...fadeUp}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center"
+                >
+                  <Link href="/login" className={cn(buttonStyles.primary, "h-12")}>
+                    <GithubMark className="size-[18px]" />
+                    Commencer avec GitHub
                   </Link>
-                </nav>
-              </motion.div>
-            </>
-          )}
-        </div>
-      </header>
-
-      <section className="relative z-10 pt-16 pb-36 px-6">
-        {/* Brume violette légère centrée sur la section hero */}
-        <div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-          style={{ zIndex: 0 }}
-        >
-          <div
-            className="w-[900px] h-[900px] rounded-full blur-[250px]"
-            style={{ backgroundColor: "rgba(139, 92, 246, 0.35)" }}
-          ></div>
-        </div>
-        <div className="relative max-w-6xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-6"
-          >
-            <span className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-indigo-700 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-full border-2 border-indigo-200/60 shadow-sm">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-              </svg>
-              Connexion avec GitHub
-            </span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 mb-8 leading-[1.05]"
-          >
-            L'analyse de vos dépôts GitHub,
-            <br />
-            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              simplifiée
-            </span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed"
-          >
-            Connectez-vous avec votre compte GitHub et accédez à des
-            statistiques détaillées, des graphiques comparatifs et une interface
-            fluide pour analyser vos dépôts.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col items-center gap-3"
-          >
-            <Link
-              href="/login"
-              className="relative px-12 py-4 text-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-full transition-all shadow-xl flex items-center gap-3 overflow-hidden group"
-            >
-              <span className="relative z-10 flex items-center gap-3">
-                <Github size={20} />
-                Commencez maintenant
-                <ArrowRight size={20} />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
-            </Link>
-            <p className="text-sm text-slate-500">
-              Gratuit • Aucune carte bancaire requise
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-32 md:mt-40"
-          >
-            <div className="relative max-w-6xl mx-auto">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-200/40 via-transparent to-transparent rounded-[40px] blur-[160px]" />
-
-              <div className="relative flex justify-center px-4">
-                <div className="relative w-full max-w-4xl">
-                  <div className="h-24 md:h-28" />
-                  <div className="absolute inset-0 -z-10">
-                    <div className="absolute -top-24 left-1/4 h-64 w-64 rounded-full bg-gradient-to-br from-violet-200/60 via-white/20 to-transparent blur-3xl" />
-                    <div className="absolute bottom-0 right-1/4 h-56 w-56 rounded-full bg-gradient-to-tr from-indigo-200/55 via-white/20 to-transparent blur-[120px]" />
-                  </div>
-
-                  <div className="relative overflow-hidden rounded-[28px] border border-white/50 shadow-[0_55px_110px_-70px_rgba(15,23,42,0.55)] backdrop-blur-sm">
-                    <Image
-                      src="/dashboard.png"
-                      alt="Tableau de bord Reposight"
-                      width={2876}
-                      height={1294}
-                      className="w-full h-auto object-cover"
-                      priority
-                    />
-                  </div>
-
-                  <div className="absolute -top-14 right-[-6%] w-[55%] max-w-[420px] md:w-1/2 md:max-w-[440px]">
-                    <div className="relative overflow-hidden rounded-[24px] border border-white/45 shadow-[0_45px_90px_-65px_rgba(91,33,182,0.55)] rotate-3">
-                      <Image
-                        src="/table.png"
-                        alt="Liste des dépôts"
-                        width={2848}
-                        height={1278}
-                        className="w-full h-auto object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/0 to-violet-500/10" />
-                    </div>
-                  </div>
-
-                  <div className="absolute -bottom-16 left-[-6%] w-[60%] max-w-[460px] md:w-1/2 md:max-w-[480px]">
-                    <div className="relative overflow-hidden rounded-[24px] border border-white/45 shadow-[0_45px_90px_-65px_rgba(59,7,100,0.5)] -rotate-3">
-                      <Image
-                        src="/graphic.png"
-                        alt="Graphiques analytiques"
-                        width={2858}
-                        height={1312}
-                        className="w-full h-auto object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/0 to-indigo-500/12" />
-                    </div>
-                  </div>
-                  <div className="h-20 md:h-32" />
-                </div>
+                  <a href="#fonctionnalites" className={cn(buttonStyles.secondary, "h-12")}>
+                    Découvrir l'application
+                  </a>
+                </motion.div>
+                <motion.p
+                  {...fadeUp}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="mt-6 text-sm text-ink/50"
+                >
+                  Gratuit, sans carte bancaire. Dépôts publics et privés.
+                </motion.p>
               </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
+                className="min-w-0 lg:[perspective:1800px]"
+              >
+                <RepoPanel className="lg:origin-left lg:[transform:rotateY(-12deg)_rotateX(5deg)]" />
+              </motion.div>
             </div>
-          </motion.div>
-        </div>
-      </section>
+          </section>
 
-      <div className="relative z-10 border-t border-gradient-to-r from-transparent via-slate-200 to-transparent">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-200/30 to-transparent h-px"></div>
-      </div>
-
-      <section
-        id="fonctionnalites"
-        className="relative z-10 py-24 px-6 scroll-mt-24 bg-gradient-to-b from-transparent via-violet-50/5 to-transparent"
-      >
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+          {/* Fonctionnalités */}
+          <section
+            id="fonctionnalites"
+            className="scroll-mt-16 border-t border-iris-100 px-4 py-24 sm:px-6 sm:py-32"
           >
-            <span className="inline-block px-4 py-1 text-sm font-semibold text-violet-600 bg-violet-100 rounded-full mb-4">
-              Fonctionnalités
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-violet-700 to-slate-900 bg-clip-text text-transparent mb-4 leading-tight">
-              Tout ce dont vous avez besoin
-            </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Des fonctionnalités puissantes pour analyser et optimiser vos
-              dépôts GitHub
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <BarChart3 className="w-10 h-10 text-violet-600" />,
-                title: "Visualisations avancées",
-                desc: "Graphiques interactifs et tableaux de bord détaillés pour comprendre instantanément l'activité de vos projets.",
-                gradient: "from-violet-500/10 to-fuchsia-500/10",
-              },
-              {
-                icon: <Brain className="w-10 h-10 text-violet-600" />,
-                title: "Comparaisons instantanées",
-                desc: "Comparez branches, équipes ou périodes en un clin d'œil pour visualiser l'activité et piloter vos décisions.",
-                gradient: "from-fuchsia-500/10 to-violet-500/10",
-              },
-              {
-                icon: <Zap className="w-10 h-10 text-violet-600" />,
-                title: "Interface fluide",
-                desc: "Navigation rapide, filtres intuitifs et expérience soignée pour explorer vos données sans friction.",
-                gradient: "from-violet-500/10 to-purple-500/10",
-              },
-            ].map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-                className="relative p-8 bg-white rounded-2xl border-2 border-violet-100"
-              >
-                <div className="relative mb-6 p-4 bg-violet-50 rounded-xl w-fit">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3 relative">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-600 leading-relaxed relative">
-                  {feature.desc}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="relative z-10 border-t border-gradient-to-r from-transparent via-slate-200 to-transparent">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-200/40 to-transparent h-px"></div>
-      </div>
-
-      <section
-        id="comment-ca-marche"
-        className="relative z-10 py-24 px-6 scroll-mt-24 bg-gradient-to-b from-transparent via-violet-50/5 to-transparent"
-      >
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <span className="inline-block px-4 py-1 text-sm font-semibold text-violet-600 bg-violet-100 rounded-full mb-4">
-              Processus
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-violet-700 to-slate-900 bg-clip-text text-transparent mb-4 leading-tight">
-              Simple et rapide
-            </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Connectez-vous avec GitHub en quelques secondes, tout le reste est
-              automatique
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto">
-            {[
-              {
-                step: "01",
-                title: "Connectez-vous avec GitHub",
-                desc: "Un seul clic pour autoriser Reposight via OAuth sécurisé. Vos données restent privées et sous votre contrôle total.",
-                color: "violet",
-              },
-              {
-                step: "02",
-                title: "Analyse automatique",
-                desc: "Nos algorithmes analysent vos commits, pull requests, issues et identifient les tendances clés de vos projets.",
-                color: "violet",
-              },
-              {
-                step: "03",
-                title: "Obtenez des insights",
-                desc: "Consultez vos statistiques détaillées, visualisez vos comparaisons et pilotez vos projets avec une interface fluide.",
-                color: "violet",
-              },
-            ].map((step, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.15 }}
-                className="relative"
-              >
-                <div className="text-7xl font-bold mb-4 bg-gradient-to-r from-violet-200 to-violet-300 bg-clip-text text-transparent">
-                  {step.step}
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                  {step.title}
-                </h3>
-                <p className="text-slate-600 leading-relaxed">{step.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="relative z-10 border-t border-gradient-to-r from-transparent via-slate-200 to-transparent">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-fuchsia-200/40 to-transparent h-px"></div>
-      </div>
-
-      <section
-        id="avis"
-        className="relative z-10 py-24 pb-32  scroll-mt-24 bg-gradient-to-b from-transparent via-violet-50/5 to-transparent"
-      >
-        <div className="w-full">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16 pb-2"
-          >
-            <span className="inline-block px-4 py-1 text-sm font-semibold text-violet-600 bg-violet-100 rounded-full mb-4">
-              Témoignages
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-violet-700 to-slate-900 bg-clip-text text-transparent mb-4 leading-tight">
-              Rejoignez des centaines de développeurs
-            </h2>
-            <p className="text-xl text-slate-600">
-              Découvrez ce qu'ils pensent de Reposight
-            </p>
-          </motion.div>
-
-          <Marquee pauseOnHover gradient={false} speed={35}>
-            {[
-              {
-                name: "Inès P.",
-                role: "Lead Developer",
-                text: "Le design et la précision des graphiques sont exceptionnels. Je peux maintenant analyser facilement la performance de mes équipes.",
-              },
-              {
-                name: "Thomas D.",
-                role: "CTO",
-                text: "Simple, fluide et puissant. L'intégration GitHub est transparente et les analyses automatiques me font gagner des heures chaque semaine.",
-              },
-              {
-                name: "Amina K.",
-                role: "Full Stack Developer",
-                text: "Interface superbe avec une UX premium. L'application est devenue indispensable pour suivre l'évolution de mes projets open source.",
-              },
-              {
-                name: "Hugo R.",
-                role: "Software Engineer",
-                text: "Reposight me fait gagner du temps chaque semaine. Les insights sur les langages utilisés sont très utiles pour optimiser mon workflow.",
-              },
-            ].map((testimonial, i) => (
-              <div
-                key={i}
-                className="mx-4 w-[420px] bg-white rounded-2xl p-8 border-2 border-violet-100  hover:border-violet-300 transition-all"
-              >
-                <div className="mb-5 flex items-center gap-1">
-                  {Array(5)
-                    .fill(0)
-                    .map((_, j) => (
-                      <Star
-                        key={j}
-                        size={18}
-                        className="text-violet-500 fill-violet-500"
-                      />
-                    ))}
-                </div>
-                <p className="text-slate-700 mb-6 leading-relaxed text-base">
-                  "{testimonial.text}"
-                </p>
-                <div>
-                  <div className="font-bold text-slate-900 text-lg">
-                    {testimonial.name}
-                  </div>
-                  <div className="text-sm text-violet-600 font-medium">
-                    {testimonial.role}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </Marquee>
-        </div>
-      </section>
-
-      <footer className="relative z-10 py-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col items-center justify-between gap-4">
-            <div className="flex items-center justify-center flex-col gap-3">
-              <img
-                src="/logo-reposight.png"
-                alt="Reposight Logo"
-                className="w-6 h-6"
+            <div className="mx-auto max-w-7xl">
+              <SectionHeading
+                title="Tout ce qu'il faut pour suivre vos projets"
+                desc="Trois vues pensées pour être lues en quelques secondes, sans fouiller dans l'interface de GitHub."
               />
+
+              <div className="mt-16 grid gap-8 lg:grid-cols-[22rem_1fr] lg:gap-12">
+                <div role="tablist" aria-label="Fonctionnalités" className="flex flex-col gap-2">
+                  {FEATURES.map((item, i) => {
+                    const isActive = i === activeFeature;
+                    return (
+                      <button
+                        key={item.title}
+                        role="tab"
+                        aria-selected={isActive}
+                        onClick={() => setActiveFeature(i)}
+                        className={cn(
+                          "relative cursor-pointer overflow-hidden rounded-2xl border p-5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-iris-400",
+                          isActive
+                            ? "border-iris-200 bg-white shadow-[0_12px_30px_-18px_rgba(83,27,168,0.35)]"
+                            : "border-transparent hover:bg-white/60"
+                        )}
+                      >
+                        {isActive && (
+                          <motion.span
+                            layoutId="feature-indicator"
+                            className="absolute inset-y-4 left-0 w-[3px] rounded-full bg-iris-500"
+                          />
+                        )}
+                        <span className="flex items-center gap-3">
+                          <item.icon
+                            size={18}
+                            className={isActive ? "text-iris-600" : "text-ink/35"}
+                          />
+                          <span
+                            className={cn(
+                              "font-display font-semibold",
+                              isActive ? "text-ink" : "text-ink/60"
+                            )}
+                          >
+                            {item.title}
+                          </span>
+                        </span>
+                        <span
+                          className={cn(
+                            "mt-2 block pl-[30px] text-sm leading-relaxed",
+                            isActive ? "text-ink/65" : "text-ink/45"
+                          )}
+                        >
+                          {item.desc}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="relative">
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-10 rounded-full bg-iris-300/40 blur-[100px]"
+                  />
+                  <div className="relative rounded-2xl border border-iris-100 bg-white p-2 shadow-[0_40px_80px_-40px_rgba(83,27,168,0.35)] sm:p-3">
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.div
+                        key={feature.image.src}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -12 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden rounded-xl border border-iris-100 bg-white"
+                      >
+                        <Image
+                          src={feature.image.src}
+                          alt={feature.image.alt}
+                          width={feature.image.width}
+                          height={feature.image.height}
+                          sizes="(min-width: 1024px) 860px, 100vw"
+                          className="h-auto w-full"
+                          priority={activeFeature === 0}
+                        />
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center flex-col gap-6 text-sm text-slate-600">
-              <Link
-                href="/cgu"
-                className="hover:text-violet-600 transition-colors duration-150"
-              >
-                Conditions d'utilisation
-              </Link>
-              <span>© 2025 Reposight</span>
+          </section>
+
+          {/* Comment ça marche */}
+          <section
+            id="comment-ca-marche"
+            className="scroll-mt-16 border-t border-iris-100 px-4 py-24 sm:px-6 sm:py-32"
+          >
+            <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-2 lg:gap-24">
+              <div>
+                <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+                  Trois étapes, aucune configuration
+                </h2>
+                <p className="mt-5 max-w-md text-lg leading-relaxed text-ink/60">
+                  Pas d'installation, pas de webhook à configurer. Vous vous
+                  connectez, Reposight s'occupe du reste.
+                </p>
+                <Link href="/login" className={cn(buttonStyles.primary, "mt-8 h-12")}>
+                  <GithubMark className="size-[18px]" />
+                  Commencer avec GitHub
+                </Link>
+              </div>
+
+              <ol className="relative">
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-6 left-[15px] top-4 w-0.5 bg-gradient-to-b from-iris-400 via-iris-500/60 to-iris-500/0"
+                />
+                {STEPS.map((step, i) => (
+                  <li key={step.title} className="relative pb-14 pl-16 last:pb-0">
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-0.5 flex size-8 items-center justify-center rounded-full border-2 border-iris-500 bg-white shadow-[0_0_20px_rgba(116,66,227,0.45)]"
+                    >
+                      <span className="size-2.5 rounded-full bg-iris-500" />
+                    </span>
+                    <p className="text-sm font-medium text-iris-600">Étape {i + 1}</p>
+                    <h3 className="mt-1 font-display text-2xl font-semibold tracking-tight">
+                      {step.title}
+                    </h3>
+                    <p className="mt-3 max-w-md leading-relaxed text-ink/60">
+                      {step.desc}
+                    </p>
+                  </li>
+                ))}
+              </ol>
             </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+          </section>
+
+          {/* Avis */}
+          <section
+            id="avis"
+            className="scroll-mt-16 border-t border-iris-100 px-4 py-24 sm:px-6 sm:py-32"
+          >
+            <div className="mx-auto max-w-7xl">
+              <SectionHeading
+                title="Ils suivent leurs projets avec Reposight"
+                desc="Développeurs, leads et CTO utilisent Reposight pour garder un œil sur leurs dépôts."
+              />
+
+              <div className="mt-16 grid gap-5 lg:grid-cols-[1.2fr_1fr]">
+                <figure className="relative flex flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-iris-500 to-iris-800 p-8 text-white shadow-[0_40px_80px_-40px_rgba(83,27,168,0.6)] sm:p-10">
+                  <blockquote className="relative font-display text-2xl font-medium leading-snug sm:text-3xl">
+                    « {featured.text} »
+                  </blockquote>
+                  <figcaption className="relative mt-10 flex items-center gap-4">
+                    <Initials name={featured.name} large />
+                    <span>
+                      <span className="block font-semibold">{featured.name}</span>
+                      <span className="text-sm text-iris-100">{featured.role}</span>
+                    </span>
+                  </figcaption>
+                </figure>
+
+                <div className="flex flex-col gap-5">
+                  {others.map((testimonial) => (
+                    <figure
+                      key={testimonial.name}
+                      className="flex gap-4 rounded-2xl border border-iris-100 bg-white p-6"
+                    >
+                      <Initials name={testimonial.name} />
+                      <div>
+                        <blockquote className="leading-relaxed text-ink/80">
+                          {testimonial.text}
+                        </blockquote>
+                        <figcaption className="mt-3 text-sm">
+                          <span className="font-semibold">{testimonial.name}</span>
+                          <span className="text-ink/50"> · {testimonial.role}</span>
+                        </figcaption>
+                      </div>
+                    </figure>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Appel à l'action */}
+          <section className="relative overflow-hidden border-y border-iris-200 bg-iris-100/70 px-4 py-28 sm:px-6 sm:py-36">
+            <div
+              aria-hidden="true"
+              className="absolute inset-y-0 right-0 hidden w-[55%] items-center [mask-image:linear-gradient(to_right,transparent,black_50%)] lg:flex"
+            >
+              <ContributionGrid weeks={34} seed={3} animated={false} className="w-full" />
+            </div>
+            <div
+              aria-hidden="true"
+              className="absolute -left-24 bottom-0 h-[260px] w-[300px] rounded-full bg-iris-300/30 blur-[90px] sm:-left-40 sm:h-[400px] sm:w-[600px] sm:bg-iris-300/40 sm:blur-[130px]"
+            />
+            <div className="relative mx-auto max-w-7xl">
+              <div className="max-w-lg">
+                <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-6xl">
+                  Vos projets, semaine après semaine
+                </h2>
+                <p className="mt-5 text-lg leading-relaxed text-ink/60">
+                  Connectez GitHub et retrouvez commits, pull requests et issues
+                  dans un seul tableau de bord.
+                </p>
+                <Link href="/login" className={cn(buttonStyles.primary, "mt-10 h-12")}>
+                  <GithubMark className="size-[18px]" />
+                  Commencer avec GitHub
+                </Link>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <SiteFooter />
+      </div>
+    </MotionConfig>
   );
 }

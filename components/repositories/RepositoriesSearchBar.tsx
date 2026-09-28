@@ -1,7 +1,6 @@
 "use client";
 
-import { Search, ArrowUpDown } from "lucide-react";
-import { motion } from "motion/react";
+import { Search, ArrowUpDown, Check } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export type SortType = "added" | "oldest-commit" | "newest-commit";
+
+const SORT_OPTIONS: { value: SortType; label: string; short: string }[] = [
+  { value: "added", label: "Date d'ajout", short: "Date d'ajout" },
+  { value: "newest-commit", label: "Push le plus récent", short: "Push récent" },
+  { value: "oldest-commit", label: "Push le plus ancien", short: "Push ancien" },
+];
 
 interface RepositoriesSearchBarProps {
   searchQuery: string;
@@ -26,81 +31,52 @@ export function RepositoriesSearchBar({
   sortType,
   onSortChange,
 }: RepositoriesSearchBarProps) {
+  const currentSort = SORT_OPTIONS.find((option) => option.value === sortType);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-      className="relative z-10 mb-8 flex flex-col md:flex-row items-stretch md:items-center gap-3"
-    >
+    <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center">
       <div className="relative flex-1">
         <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-          size={20}
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink/40"
+          size={18}
         />
         <input
           id="searchbar-input"
           type="text"
-          placeholder="Rechercher un dépôt..."
+          placeholder="Rechercher un dépôt…"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-12 pr-4 py-2 bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all shadow-sm"
+          className="h-11 w-full rounded-full border border-iris-200 bg-white pl-11 pr-4 text-ink shadow-[0_1px_2px_rgba(42,14,87,0.04)] transition-[border-color,box-shadow] placeholder:text-ink/40 hover:border-iris-300 focus:border-iris-400 focus:outline-none focus:ring-4 focus:ring-iris-200/60"
         />
       </div>
-      <div className="flex items-center gap-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            id="sort-dropdown"
-            className="w-full md:w-auto px-4 py-2 cursor-pointer bg-slate-50 border border-violet-200/50 rounded-2xl text-slate-900 hover:bg-slate-100 hover:border-violet-300/50 transition-colors shadow-sm flex items-center justify-center gap-2"
-          >
-            <ArrowUpDown className="text-violet-600" size={18} />
-            <span className="text-sm font-medium">
-              {sortType === "added"
-                ? "Date d'ajout"
-                : sortType === "newest-commit"
-                ? "Push récent"
-                : "Push ancien"}
-            </span>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[180px]">
-            <DropdownMenuLabel>Trier par</DropdownMenuLabel>
-            <DropdownMenuSeparator />
+
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          id="sort-dropdown"
+          className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-iris-200 bg-white px-5 text-sm font-medium text-ink transition-colors hover:border-iris-300 hover:bg-iris-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-iris-500"
+        >
+          <ArrowUpDown className="text-iris-600" size={16} />
+          {currentSort?.short}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-[200px]">
+          <DropdownMenuLabel className="text-xs font-medium text-ink/50">
+            Trier par
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {SORT_OPTIONS.map((option) => (
             <DropdownMenuItem
-              onClick={() => onSortChange("added")}
-              className="cursor-pointer"
+              key={option.value}
+              onClick={() => onSortChange(option.value)}
+              className="justify-between"
             >
-              <div className="flex items-center justify-between w-full">
-                <span>Date d'ajout</span>
-                {sortType === "added" && (
-                  <span className="text-violet-600">✓</span>
-                )}
-              </div>
+              {option.label}
+              {sortType === option.value && (
+                <Check size={14} className="text-iris-600" />
+              )}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onSortChange("newest-commit")}
-              className="cursor-pointer"
-            >
-              <div className="flex items-center justify-between w-full">
-                <span>Push le plus récent</span>
-                {sortType === "newest-commit" && (
-                  <span className="text-violet-600">✓</span>
-                )}
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onSortChange("oldest-commit")}
-              className="cursor-pointer"
-            >
-              <div className="flex items-center justify-between w-full">
-                <span>Push le plus ancien</span>
-                {sortType === "oldest-commit" && (
-                  <span className="text-violet-600">✓</span>
-                )}
-              </div>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </motion.div>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

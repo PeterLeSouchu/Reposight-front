@@ -1,113 +1,88 @@
 "use client";
 
-import { motion } from "motion/react";
-import {
-  GitCommit,
-  GitPullRequest,
-  AlertCircle,
-  Sparkles,
-  Clock,
-} from "lucide-react";
+import { GitCommit, GitPullRequest, CircleDot, Clock } from "lucide-react";
 import { formatRelativeDate } from "@/lib/utils";
 import type { RecentActivity as RecentActivityType } from "@/query/useQueryRepo";
 import { EmptyState } from "@/components/EmptyState";
+import { Panel } from "@/components/app/Panel";
+
+const ACTIVITY_ICONS = {
+  commit: { icon: GitCommit, className: "bg-iris-50 text-iris-600" },
+  pr: { icon: GitPullRequest, className: "bg-iris-100 text-iris-700" },
+  issue: { icon: CircleDot, className: "bg-fuchsia-50 text-fuchsia-600" },
+};
 
 interface RecentActivityProps {
   recentActivity: RecentActivityType | null | undefined;
+  className?: string;
 }
 
-function getActivityIcon(type: string) {
-  switch (type) {
-    case "commit":
-      return <GitCommit className="text-violet-600" size={16} />;
-    case "pr":
-      return <GitPullRequest className="text-yellow-600" size={16} />;
-    case "issue":
-      return <AlertCircle className="text-red-600" size={16} />;
-    default:
-      return null;
-  }
-}
-
-export function RecentActivity({ recentActivity }: RecentActivityProps) {
-  const stats = recentActivity?.stats || {
-    commits: 0,
-    prs: 0,
-    issues: 0,
-  };
+export function RecentActivity({ recentActivity, className }: RecentActivityProps) {
+  const stats = recentActivity?.stats || { commits: 0, prs: 0, issues: 0 };
   const items = recentActivity?.items || [];
   const hasActivity = stats.commits > 0 || stats.prs > 0 || stats.issues > 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.1 }}
-      className="bg-slate-50 border border-violet-200/50 rounded-2xl p-6 shadow-lg mb-6"
+    <Panel
+      title="Activité récente"
+      icon={Clock}
+      className={className}
+      action={
+        <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink/60">
+          {hasActivity
+            ? `48 h : ${stats.commits} commits, ${stats.prs} PR, ${stats.issues} issues`
+            : "Rien depuis 48 h"}
+        </span>
+      }
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 max-[585px]:flex-col max-[585px]:items-center">
-        <div className="flex items-center gap-2 max-[585px]:justify-center">
-          <Clock className="text-violet-600" size={20} />
-          <h2 className="text-xl font-bold text-slate-900">Activité récente</h2>
-        </div>
-        <div className="flex items-center gap-2 text-sm bg-violet-100/50 text-violet-700 px-3 py-1 rounded-lg border border-violet-200/50 max-[585px]:self-center">
-          <Sparkles size={14} />
-          <span>
-            {hasActivity
-              ? `Depuis 48h : ${stats.commits} commits, ${stats.prs} PRs, ${stats.issues} issues`
-              : "Aucune activité récente"}
-          </span>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {items && items.length > 0 ? (
-          items.map((activity, index) => (
-            <motion.a
-              key={`${activity.type}-${
-                activity.sha || activity.number || index
-              }`}
-              href={activity.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              className="flex items-start gap-4 p-4 bg-white rounded-xl border border-violet-100 hover:border-violet-300/50 transition-all cursor-pointer group"
-            >
-              <div className="mt-1">{getActivityIcon(activity.type)}</div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-slate-900 group-hover:text-violet-600 transition-colors">
-                    {activity.title}
+      {items.length > 0 ? (
+        <ul className="-mx-2 space-y-1">
+          {items.map((activity, index) => {
+            const { icon: Icon, className: iconClass } = ACTIVITY_ICONS[activity.type];
+            return (
+              <li key={`${activity.type}-${activity.sha || activity.number || index}`}>
+                <a
+                  href={activity.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-iris-50"
+                >
+                  <span className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${iconClass}`}>
+                    <Icon size={15} />
                   </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                  <div className="flex items-center gap-1.5">
-                    <img
-                      src={activity.authorAvatar}
-                      alt={activity.author}
-                      className="w-4 h-4 rounded-full"
-                    />
-                    <span>{activity.author}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-ink group-hover:text-iris-700">
+                      {activity.title}
+                    </p>
+                    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink/50">
+                      <img src={activity.authorAvatar} alt="" className="size-4 rounded-full" />
+                      {activity.author}
+                    </p>
                   </div>
-                  <span>•</span>
-                  <span>{formatRelativeDate(new Date(activity.date))}</span>
-                </div>
-              </div>
-              <div className="text-violet-600 group-hover:text-violet-700 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Voir →
-              </div>
-            </motion.a>
-          ))
-        ) : (
-          <EmptyState
-            icon={<Clock size={20} />}
-            title="Aucune activité récente trouvée"
-            description="Les activités les plus récentes apparaîtront ici dès qu'elles seront disponibles."
-          />
-        )}
-      </div>
-    </motion.div>
+                  {activity.sha ? (
+                    <span className="hidden shrink-0 font-mono text-xs text-iris-600 sm:inline">
+                      {activity.sha.slice(0, 7)}
+                    </span>
+                  ) : activity.number ? (
+                    <span className="hidden shrink-0 text-xs text-ink/45 sm:inline">
+                      #{activity.number}
+                    </span>
+                  ) : null}
+                  <span className="w-24 shrink-0 text-right text-xs text-ink/45">
+                    {formatRelativeDate(new Date(activity.date))}
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <EmptyState
+          icon={<Clock size={18} />}
+          title="Aucune activité récente"
+          description="Les derniers commits, pull requests et issues apparaîtront ici."
+        />
+      )}
+    </Panel>
   );
 }
