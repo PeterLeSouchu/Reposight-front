@@ -1,5 +1,6 @@
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
+import { TableOfContents } from '@/components/public/TableOfContents';
 
 const SECTIONS = [
   {
@@ -136,21 +137,9 @@ export default function CGUPage() {
 
       <div className="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[15rem_1fr] lg:gap-20 lg:py-20">
         <aside className="hidden lg:block">
-          <nav aria-label="Sommaire" className="sticky top-28">
-            <p className="text-sm font-semibold">Sommaire</p>
-            <ol className="mt-4 space-y-2.5 border-l border-iris-200 text-sm">
-              {SECTIONS.map((section, i) => (
-                <li key={section.id}>
-                  <a
-                    href={`#${section.id}`}
-                    className="-ml-px block border-l border-transparent pl-4 text-ink/55 transition-colors hover:border-iris-600 hover:text-iris-700"
-                  >
-                    {i + 1}. {section.title}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </nav>
+          <TableOfContents
+            items={SECTIONS.map(({ id, title }) => ({ id, title }))}
+          />
         </aside>
 
         <main className="min-w-0 max-w-[68ch] divide-y divide-iris-100">
