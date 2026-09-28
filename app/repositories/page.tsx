@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useEffect } from "react";
-import { useDebounce } from "use-debounce";
-import { useNextStep } from "nextstepjs";
-import { useQueryUser } from "@/query/useQueryUser";
-import { useMutationLogout } from "@/mutation/useMutationLogout";
-import { useAuthStore } from "@/lib/authStore";
-import { AddRepoModal } from "@/components/repositories/AddRepoModal";
-import { useQueryRepos } from "@/query/useQueryRepos";
-import { ErrorMessage } from "@/components/ErrorMessage";
-import { useNotifyDeletedRepos } from "@/hooks/useNotifyDeletedRepos";
-import { BackgroundDots } from "@/components/BackgroundDots";
-import { UserHeader } from "@/components/repositories/UserHeader";
+import { useState, useMemo, useEffect } from 'react';
+import { useDebounce } from 'use-debounce';
+import { useNextStep } from 'nextstepjs';
+import { useQueryUser } from '@/query/useQueryUser';
+import { useMutationLogout } from '@/mutation/useMutationLogout';
+import { useAuthStore } from '@/lib/authStore';
+import { AddRepoModal } from '@/components/repositories/AddRepoModal';
+import { useQueryRepos } from '@/query/useQueryRepos';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { useNotifyDeletedRepos } from '@/hooks/useNotifyDeletedRepos';
+import { BackgroundDots } from '@/components/BackgroundDots';
+import { UserHeader } from '@/components/repositories/UserHeader';
 import {
   RepositoriesSearchBar,
   type SortType,
-} from "@/components/repositories/RepositoriesSearchBar";
-import { EmptyRepositoriesState } from "@/components/repositories/EmptyRepositoriesState";
-import { RepositoriesSkeleton } from "@/components/repositories/RepositoriesSkeleton";
-import { RepositoriesGrid } from "@/components/repositories/RepositoriesGrid";
+} from '@/components/repositories/RepositoriesSearchBar';
+import { EmptyRepositoriesState } from '@/components/repositories/EmptyRepositoriesState';
+import { RepositoriesSkeleton } from '@/components/repositories/RepositoriesSkeleton';
+import { RepositoriesGrid } from '@/components/repositories/RepositoriesGrid';
 
 export default function Repositories() {
   const { data, isLoading, error: userError } = useQueryUser();
@@ -30,9 +30,9 @@ export default function Repositories() {
   const { mutate: logoutMutate, isPending: isLoggingOut } = useMutationLogout();
   const { startNextStep } = useNextStep();
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch] = useDebounce(searchQuery, 500);
-  const [sortType, setSortType] = useState<SortType>("added");
+  const [sortType, setSortType] = useState<SortType>('added');
   const [isAddRepoModalOpen, setIsAddRepoModalOpen] = useState(false);
 
   // Notifier les dépôts supprimés de GitHub
@@ -41,7 +41,7 @@ export default function Repositories() {
   // Démarrer le tour si l'utilisateur est nouveau
   useEffect(() => {
     if (!isLoading && !isReposLoading && data && reposData && data.isNewUser) {
-      startNextStep("repositoriesTour");
+      startNextStep('repositoriesTour');
     }
   }, [isLoading, isReposLoading, data, reposData, startNextStep]);
 
@@ -58,16 +58,16 @@ export default function Repositories() {
 
     const sortedRepos = [...repos].sort((a, b) => {
       switch (sortType) {
-        case "added":
+        case 'added':
           return (
             new Date(b.createdAt || b.pushedAt).getTime() -
             new Date(a.createdAt || a.pushedAt).getTime()
           );
-        case "newest-commit":
+        case 'newest-commit':
           return (
             new Date(b.pushedAt).getTime() - new Date(a.pushedAt).getTime()
           );
-        case "oldest-commit":
+        case 'oldest-commit':
           return (
             new Date(a.pushedAt).getTime() - new Date(b.pushedAt).getTime()
           );
@@ -84,7 +84,7 @@ export default function Repositories() {
 
     localStorage.clear();
 
-    window.location.href = "/";
+    window.location.href = '/';
   };
 
   const handleLogout = () => {
@@ -93,7 +93,7 @@ export default function Repositories() {
         handleClientSideLogout();
       },
       onError: (error) => {
-        console.error("Erreur lors de la déconnexion:", error);
+        console.error('Erreur lors de la déconnexion:', error);
         handleClientSideLogout();
       },
     });

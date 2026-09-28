@@ -8,6 +8,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-sora), var(--font-geist-sans), sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -41,6 +42,22 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Palette des pages publiques, calée sur le violet du logo */
+@theme {
+  --color-paper: #f7f5ff;
+  --color-ink: #1b1433;
+  --color-iris-50: #f4f1fe;
+  --color-iris-100: #e9e3fc;
+  --color-iris-200: #d3c6fa;
+  --color-iris-300: #b19bf6;
+  --color-iris-400: #8d6aef;
+  --color-iris-500: #7442e3;
+  --color-iris-600: #6523cc;
+  --color-iris-700: #531ba8;
+  --color-iris-800: #3f1580;
+  --color-iris-900: #2a0e57;
 }
 
 :root {
@@ -193,5 +210,43 @@
       max-width: calc(100vw - 1rem) !important;
       width: auto !important;
     }
+  }
+}
+
+/* Remplissage progressif du graphe de contributions */
+@keyframes contrib-cell-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.contrib-cell {
+  animation: contrib-cell-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contrib-cell {
+    animation: none;
+  }
+}
+
+/* Trame de points violets des pages publiques */
+.bg-dots {
+  background-image: radial-gradient(rgba(101, 35, 204, 0.2) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 80% 70% at 30% 20%, black 20%, transparent 100%);
+}
+
+/* Sur mobile, points un peu plus marqués et masque plus large */
+@media (max-width: 640px) {
+  .bg-dots {
+    background-image: radial-gradient(rgba(101, 35, 204, 0.3) 1px, transparent 1px);
+    background-size: 18px 18px;
+    mask-image: radial-gradient(ellipse 120% 80% at 50% 20%, black 30%, transparent 100%);
   }
 }
